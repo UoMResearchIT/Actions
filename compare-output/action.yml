@@ -1,0 +1,64 @@
+name: Compare program output to a string
+description: >
+  Compare the output of a program to a string given as a parameter.
+  A single trailing newline will be ignored.
+inputs:
+  command:
+    description: The command to get the output of for comparison.
+    required: true
+  expected:
+    description: The string that the output is expected to equal.
+    required: true
+  init:
+    description: Extra initialisation code to run before the command to compare.
+    required: false
+  shell:
+    description: >
+      Which shell to use to run the program.
+      May be 'bash', 'pwsh', or 'auto' (default) to pick based on the runner's platform.
+    required: false
+    default: auto
+  working-directory:
+    description: >
+      The working directory to run in.
+      Defaults to the job's main working directory.
+    required: false
+    default: .
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      if: inputs.shell == 'bash' || (inputs.shell == 'auto' && runner.os != 'Windows')
+      run: |
+        eval $INIT
+        actual=`$COMMAND`
+        C='\033[0;33m'
+        NC='\033[0m'
+        echo -e "${C}actual:${NC}   $actual"
+        echo -e "${C}expected:${NC} $EXPECTED"
+        [ "$actual" = "$EXPECTED" ]
+      env:
+        COMMAND: ${{ inputs.command }}
+        EXPECTED: ${{ inputs.expected }}
+        INIT: ${{ inputs.init }}
+      working-directory: ${{ inputs.working-directory }}
+    - shell: pwsh
+      if: inputs.shell == 'pwsh' || (inputs.shell == 'auto' && runner.os == 'Windows')
+      run: |
+        if ($Env:INIT) {
+          Invoke-Expression $Env:INIT
+        }
+        $actual = (Invoke-Expression $Env:COMMAND)
+        $C = "$([char] 27)[0;33m"                       
+        $NC = "$([char] 27)[0m"
+        Write-Host "${C}actual:${NC}   $actual"
+        Write-Host "${C}expected:${NC} $Env:EXPECTED"
+        if ($actual -ne $Env:EXPECTED) {
+          exit 1
+        }
+      env:
+        COMMAND: ${{ inputs.command }}
+        EXPECTED: ${{ inputs.expected }}
+        INIT: ${{ inputs.init }}
+      working-directory: ${{ inputs.working-directory }}
