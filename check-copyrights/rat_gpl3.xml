@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="rat" xmlns:rat="antlib:org.apache.rat.anttasks"
+        xmlns:if="ant:if" xmlns="antlib:org.apache.tools.ant">
+	<property environment="env" />
+    <target name="rat">
+        <rat:report reportFile="${user.dir}/RAT_report.txt" addDefaultLicenseMatchers="false">
+            <fileset dir="${user.dir}" defaultexcludes="yes">
+            	<exclude name="RAT_report.txt" />
+            	<excludesfile name="${user.dir}/.ratexcludes" />
+            	<excludesfile name="${env.SUPPORT_DIR}/rat.excludes" />
+            </fileset>
+            <rat:gpl3/>
+        </rat:report>
+        <fail message="RAT_report.txt not generated">
+            <condition>
+                <not>
+                    <resourcecount count="1">
+                        <fileset dir="${user.dir}" includes="RAT_report.txt" />
+                    </resourcecount>
+                </not>
+            </condition>
+        </fail>
+        <loadfile property="report" srcfile="${user.dir}/RAT_report.txt">
+            <filterchain>
+                <tokenfilter>
+                    <filetokenizer />
+                    <replaceregex replace="" flags="s"
+                        pattern="\s*Printing headers for text files without a valid license header.*" />
+                </tokenfilter>
+            </filterchain>
+        </loadfile>
+        <condition property="problems">
+            <not>
+                <contains string="${report}"
+                    substring="&#10;0 Unknown Licenses" />
+            </not>
+        </condition>
+        <echo if:set="problems" message="${report}" />
+        <fail message="Unknown Licenses found">
+            <condition>
+                <not>
+                    <contains string="${report}"
+                        substring="&#10;0 Unknown Licenses" />
+                </not>
+            </condition>
+        </fail>
+    </target>
+</project>
