@@ -1,4 +1,4 @@
-# Copyright (c) 2020 The University of Manchester
+# Copyright (c) 2020-2025 The University of Manchester
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ inputs:
   mirror:
     description: >
       The mirror of the Apache download site to get the library from.
+      Example: `https://www.mirrorservice.org/sites/ftp.apache.org/`
     required: false
     default: https://www.apache.org/dyn/closer.cgi?action=download&filename=
     # Another alternative: https://www.mirrorservice.org/sites/ftp.apache.org/
@@ -30,23 +31,31 @@ inputs:
     description: |
       Which xml config file to use.
       Supported options are:
-        'rat.xml'  all license acceptable to rat
-        'rat_asl20.xml' Only the AppliedApacheSoftwareLicense20
-        'rat_gpl3.xml' Only the GNU General Public License version 3
+        `rat.xml` - All licenses acceptable to RAT (default)
+        `rat_asl20.xml` - Only the AppliedApacheSoftwareLicense20
+        `rat_gpl3.xml` - Only the GNU General Public License version 3
     # The file is expected to be in the same directory as this file
+    # Want another license setup? Submit a PR!
     required: false
     default: "rat.xml"
   excludes-file:
     description: >
       The name of the file describing what files should not be checked.
+      Defaults to the `.ratexcludes` file in the root of your project.
     required: false
     default: ".ratexcludes"
     
 runs:
   using: composite
   steps:
-    # TODO: cache the installation package of RAT
-    - name: Download
+    - name: Cache RAT
+      id: cache
+      uses: actions/cache@v4
+      with:
+        path: apache-rat-${{ inputs.version }}
+        key: apache-rat-${{ inputs.version }}
+    - name: Download RAT
+      if: steps.cache.outputs.cache-hit != 'true'
       run: bash $SUPPORT_DIR/download.bash
       shell: bash
       env:
