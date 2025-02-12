@@ -53,10 +53,11 @@ runs:
         RAT_VERSION: ${{ inputs.version }}
         RAT_MIRROR: ${{ inputs.mirror }}
         SUPPORT_DIR: ${{ github.action_path }}
-    - name: Fix missing excludes
-      if: hashFiles(inputs.excludes-file) == ''
-      run:
-        touch $EXCLUDES
+    - name: Locate excludes file
+      id: excludes
+      run: |
+        [ -f "$EXCLUDES" ] || touch "$EXCLUDES"
+        echo "excludes=$(cd "$(dirname "$EXCLUDES")" && pwd)/$(basename "$EXCLUDES")" >>$GITHUB_OUTPUT
       shell: bash
       env:
         EXCLUDES: ${{ inputs.excludes-file }}
@@ -68,7 +69,7 @@ runs:
         SUPPORT_DIR: ${{ github.action_path }}
         CFG: ${{ github.action_path }}/${{ inputs.config-file }}
         LIB: ${{ github.action_path }}/apache-rat-${{ inputs.version }}
-        EXCLUDES: ${{ inputs.excludes-file }}
+        EXCLUDES: ${{ steps.excludes.outputs.excludes }}
 branding:
   icon: search
   color: red
