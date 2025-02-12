@@ -1,0 +1,84 @@
+# Copyright (c) 2020-2025 The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Check Copyrights
+description: >
+  Uses Apache RAT to check for files without license declarations.
+inputs:
+  version:
+    description: The version of Apache RAT to use.
+    required: false
+    default: "0.14"
+  mirror:
+    description: >
+      The mirror of the Apache download site to get the library from.
+      Example: `https://www.mirrorservice.org/sites/ftp.apache.org/`
+    required: false
+    default: https://www.apache.org/dyn/closer.cgi?action=download&filename=
+    # Another alternative: https://www.mirrorservice.org/sites/ftp.apache.org/
+  config-file:
+    description: |
+      Which xml config file to use.
+      Supported options are:
+        `rat.xml` - All licenses acceptable to RAT (default)
+        `rat_asl20.xml` - Only the AppliedApacheSoftwareLicense20
+        `rat_gpl3.xml` - Only the GNU General Public License version 3
+    # The file is expected to be in the same directory as this file
+    # Want another license setup? Submit a PR!
+    required: false
+    default: "rat.xml"
+  excludes-file:
+    description: >
+      The name of the file describing what files should not be checked.
+      Defaults to the `.ratexcludes` file in the root of your project.
+    required: false
+    default: ".ratexcludes"
+    
+runs:
+  using: composite
+  steps:
+    - name: Cache RAT
+      id: cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ github.action_path }}/apache-rat-${{ inputs.version }}
+        key: apache-rat-${{ inputs.version }}
+    - name: Download RAT
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: bash $SUPPORT_DIR/download.bash
+      shell: bash
+      env:
+        RAT_VERSION: ${{ inputs.version }}
+        RAT_MIRROR: ${{ inputs.mirror }}
+        SUPPORT_DIR: ${{ github.action_path }}
+    - name: Locate excludes file
+      id: excludes
+      run: |
+        [ -f "$EXCLUDES" ] || touch "$EXCLUDES"
+        echo "excludes=$(cd "$(dirname "$EXCLUDES")" && pwd)/$(basename "$EXCLUDES")" >>$GITHUB_OUTPUT
+      shell: bash
+      env:
+        EXCLUDES: ${{ inputs.excludes-file }}
+    - name: Check
+      run: |
+        ant -e -q -f "$CFG" -lib "$LIB" rat
+      shell: bash
+      env:
+        SUPPORT_DIR: ${{ github.action_path }}
+        CFG: ${{ github.action_path }}/${{ inputs.config-file }}
+        LIB: ${{ github.action_path }}/apache-rat-${{ inputs.version }}
+        EXCLUDES: ${{ steps.excludes.outputs.excludes }}
+branding:
+  icon: search
+  color: red
