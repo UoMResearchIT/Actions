@@ -13,30 +13,38 @@
 # limitations under the License.
 
 name: Check Copyrights
-description: Uses Apache RAT to check for files without license declarations.
+description: >
+  Uses Apache RAT to check for files without license declarations.
 inputs:
   version:
-    description: The version of Apache RAT to use
+    description: The version of Apache RAT to use.
     required: false
     default: "0.14"
   mirror:
-    description: The mirror of the Apache download site to get the library from
+    description: >
+      The mirror of the Apache download site to get the library from.
     required: false
     default: https://www.apache.org/dyn/closer.cgi?action=download&filename=
     # Another alternative: https://www.mirrorservice.org/sites/ftp.apache.org/
-  config_file:
-    description: "Which xml config file to use.
-        Supported options are:
-          'rat.xml'  all license acceptable to rat
-          'rat_asl20.xml' Only the AppliedApacheSoftwareLicense20
-          'rat_gpl3.xml' Only the GNU General Public License version 3"
+  config-file:
+    description: |
+      Which xml config file to use.
+      Supported options are:
+        'rat.xml'  all license acceptable to rat
+        'rat_asl20.xml' Only the AppliedApacheSoftwareLicense20
+        'rat_gpl3.xml' Only the GNU General Public License version 3
     # The file is expected to be in the same directory as this file
     required: false
     default: "rat.xml"
+  excludes-file:
+    description: >
+      The name of the file describing what files should not be checked.
+    required: false
+    default: ".ratexcludes"
+    
 runs:
   using: composite
   steps:
-    # TODO: ensure that ant is installed
     # TODO: cache the installation package of RAT
     - name: Download
       run: bash $SUPPORT_DIR/download.bash
@@ -45,14 +53,22 @@ runs:
         RAT_VERSION: ${{ inputs.version }}
         RAT_MIRROR: ${{ inputs.mirror }}
         SUPPORT_DIR: ${{ github.action_path }}
+    - name: Fix missing excludes
+      if: hashFiles(inputs.excludes-file) == ''
+      run:
+        touch $EXCLUDES
+      shell: bash
+      env:
+        EXCLUDES: ${{ inputs.excludes-file }}
     - name: Check
       run: |
         ant -e -q -f "$CFG" -lib "$LIB" rat
       shell: bash
       env:
         SUPPORT_DIR: ${{ github.action_path }}
-        CFG: ${{ github.action_path }}/${{ inputs.config_file }}
+        CFG: ${{ github.action_path }}/${{ inputs.config-file }}
         LIB: ${{ github.action_path }}/apache-rat-${{ inputs.version }}
+        EXCLUDES: ${{ inputs.excludes-file }}
 branding:
   icon: search
   color: red

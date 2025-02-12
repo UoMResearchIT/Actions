@@ -6,7 +6,7 @@
         <rat:report reportFile="${user.dir}/RAT_report.txt">
             <fileset dir="${user.dir}" defaultexcludes="yes">
                 <exclude name="RAT_report.txt" />
-                <excludesfile name="${user.dir}/.ratexcludes" />
+                <excludesfile name="${env.EXCLUDES}" />
                 <excludesfile name="${env.SUPPORT_DIR}/rat.excludes" />
             </fileset>
         </rat:report>
