@@ -52,7 +52,7 @@ runs:
       id: cache
       uses: actions/cache@v4
       with:
-        path: apache-rat-${{ inputs.version }}
+        path: ${{ github.action_path }}/apache-rat-${{ inputs.version }}
         key: apache-rat-${{ inputs.version }}
     - name: Download RAT
       if: steps.cache.outputs.cache-hit != 'true'
