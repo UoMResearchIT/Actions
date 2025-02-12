@@ -2,6 +2,14 @@
 
 Installs packages on a Debian or Ubuntu runner. Does not support any other OS, but handles a few nuances of some packages that are fussy about their installation.
 
+Example usage:
+
+```yml
+  - uses: UoMResearchIT/actions/apt-get-install@0.1
+    with:
+      packages: vera++
+```
+
 ## Inputs
 
 * `packages`

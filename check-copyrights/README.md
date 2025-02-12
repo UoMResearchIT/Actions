@@ -6,6 +6,14 @@ This task does _not_ validate that all files have copyright declarations that ma
 
 Note that, in general, all public files with a suitable human-readable comment format should have a copyright notice and license declaration in a comment towards the front of the file.
 
+Example usage:
+
+```yml
+    - uses: UoMResearchIT/actions/check-copyrights@0.1
+      with:
+        config-file: rat_asl20.xml
+```
+
 ## Inputs
 
 * `version`
@@ -21,7 +29,7 @@ Note that, in general, all public files with a suitable human-readable comment f
     Examples: `https://www.apache.org/dyn/closer.cgi?action=download&filename=`,
     `https://www.mirrorservice.org/sites/ftp.apache.org/`
 
-* `config_file`
+* `config-file`
 
     Which configuration file to use. This is _actually_ the name of an ANT build file in the same directory as this README that runs RAT. **Optional.**
 
@@ -32,6 +40,13 @@ Note that, in general, all public files with a suitable human-readable comment f
 
     When writing a new file to use in this option (PRs accepted), please copy the `rat.xml` or `rat_asl20.xml` file and modify the contents of the `<rat:report>` element to adjust how the matching is done. You should consult [the RAT documentation](https://creadur.apache.org/rat/apache-rat-tasks/types.html) for how to do it, especially when matching a non-standard license.
 
+* `excludes-file`
+
+    The name of the file describing what files should not be checked.
+    Defaults to the `.ratexcludes` file in the root of your project. (This is ignored if there is no such file.)
+
+    You don't normally need to specify this unless you have an excludes file with a different name.
+
 ## Outputs
 
 None.
@@ -39,3 +54,7 @@ None.
 ## Permissions
 
 No special permissions required.
+
+## Caches
+
+Creates a cache in the overall workflow context with the key `apache-rat-${version}` to avoid hammering selected rate-limited services. This may be safely deleted if desired, but the cache is notably faster than a fresh download.

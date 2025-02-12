@@ -8,6 +8,15 @@ The action is successful if the output of the `command` is equal to the string g
 
 The expected and actual outputs are written to the log to aid debugging of failures.
 
+Example usage:
+
+```yml
+  - uses: UoMResearchIT/actions/compare-output@0.1
+    with:
+      command: echo foo
+      expected: foo
+```
+
 ## Inputs
 
 * `command`
