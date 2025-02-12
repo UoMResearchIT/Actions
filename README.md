@@ -12,3 +12,7 @@ This is a collection of Github Actions, mainly for University of Manchester use.
 ## `compare-output`
 
 [This](compare-output) compares the output of a program to a string. Great for testing!
+
+## `run-clang-tidy`
+
+[this](run-clang-tidy) does static analysis of C or C++ codebases to find likely problems.
