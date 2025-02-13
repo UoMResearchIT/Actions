@@ -1,12 +1,15 @@
 # Run clang-tidy
 
-Runs clang-tidy against a C or C++ codebase in a given directory. Assumes a Ubuntu runner.
+Runs clang-tidy against a C or C++ codebase in a given directory.
 
 Example usage:
 
 ```yml
   - uses: UoMResearchIT/actions/run-clang-tidy@main
 ```
+
+> [!IMPORTANT]
+> Assumes that it is being run in an Ubuntu-based runner.
 
 ## Inputs
 

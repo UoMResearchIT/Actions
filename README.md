@@ -15,4 +15,4 @@ This is a collection of Github Actions, mainly for University of Manchester use.
 
 ## `run-clang-tidy`
 
-[this](run-clang-tidy) does static analysis of C or C++ codebases to find likely problems.
+[This](run-clang-tidy) does static analysis of C or C++ codebases to find likely problems.
