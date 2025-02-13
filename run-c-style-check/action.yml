@@ -1,0 +1,49 @@
+# Copyright (c) 2020-2025 The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: "Run vera++"
+description: Runs vera++ on C and C++ code.
+inputs:
+  base-dir:
+    description: The name of the base directory containing the sources to check.
+    required: true
+  profile:
+    description: Which profile to use
+    required: false
+    default: std
+  options:
+    description: Extra options to pass to vera++
+    required: false
+    default: ""
+  skip-dir:
+    description: The name of a directory to skip.
+    required: false
+    default: .git
+runs:
+  using: composite
+  steps:
+    - name: install vera
+      uses: UoMResearchIT/actions/apt-get-install@main
+      with:
+        packages: vera++
+    - name: analyse code
+      run: >
+        find "$BASE_DIR" -name "$SKIP" -prune -o -name '*.[ch]' -print -o -name '*.cpp' -o -name '*.hpp' -print 
+        | vera++ --root "$VERA_ROOT" --profile "$VERA_PROFILE.tcl" --error ${{ inputs.options }}
+      shell: bash
+      env:
+        BASE_DIR: ${{ inputs.base-dir }}
+        VERA_ROOT: ${{ github.action_path }}
+        VERA_PROFILE: ${{ inputs.profile }}
+        SKIP: ${{ inputs.skip-dir }}

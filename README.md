@@ -12,3 +12,6 @@ This is a collection of Github Actions, mainly for University of Manchester use.
 ## `compare-output`
 
 [This](compare-output) compares the output of a program to a string. Great for testing!
+
+## `run-c-style-check`
+[This](run-c-style-check) runs a simple style checker against your C or C++ code.
