@@ -95,7 +95,7 @@ runs:
         python -m pip install pylint
     - name: Determine main dictionary language
       id: lang
-      if: inputs.langugage != ''
+      if: inputs.language != ''
       run: |
         import os
         with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
