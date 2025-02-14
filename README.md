@@ -12,3 +12,7 @@ This is a collection of Github Actions, mainly for University of Manchester use.
 ## `compare-output`
 
 [This](compare-output) compares the output of a program to a string. Great for testing!
+
+## `run-pylint`
+
+[This](run-pylint) runs the Python code style checker [`pylint`](https://github.com/pylint-dev/pylint) over some code. It includes support for spell-checking documentation strings.

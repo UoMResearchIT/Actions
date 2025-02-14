@@ -5,12 +5,23 @@ Runs pylint on a Python package.
 > If not already installed, this action will set up Python and install pylint.
 > If you want control over the versions of these, install them prior to running this action. 
 
-Example usage:
+> [!IMPORTANT]
+> Spell checking of docstrings is only supported on Ubuntu runners.
+
+Example basic usage:
 
 ```yml
   - uses: UoMResearchIT/actions/run-pylint@main
     with:
-      package: mycode.pkg
+      package: mycode.pkg_name
+```
+
+Example usage with spell checking:
+
+```yml
+  - uses: UoMResearchIT/actions/run-pylint@main
+    with:
+      package: mycode.pkg_name
       language: en_GB
 ```
 
@@ -20,7 +31,7 @@ Example usage:
 
   The name of the Python package (or packages) to analyse. **Required.**
 
-  Example: `mycode.pkg`
+  Example: `mycode.pkg_name`
 
 * `disable`
 
