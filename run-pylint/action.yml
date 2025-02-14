@@ -77,6 +77,21 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: Determine main dictionary language
+      id: lang
+      if: inputs.langugage != ''
+      run: |
+        import os
+        with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+          print(f"pkg=hunspell-{os.environ['USER_LANG'].lower().replace('_','_')}", file=f)
+      shell: python
+      env:
+        USER_LANG: ${{ inputs.language }}
+    - name: Install spell checker
+      if: inputs.language != ''
+      uses: UoMResearchIT/actions/apt-get-install@main
+      with:
+        packages: hunspell ${{ steps.lang.outputs.pkg }}
     - name: Build composite dictionary
       if: inputs.language != ''
       id: dict
