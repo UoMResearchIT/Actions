@@ -11,6 +11,8 @@ Example usage:
 ```yml
   - uses: UoMResearchIT/actions/run-pylint@main
     with:
+      package: mycode.pkg
+      language: en
 ```
 
 ## Inputs
