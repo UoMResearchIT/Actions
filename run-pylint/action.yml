@@ -103,7 +103,7 @@ runs:
       if: inputs.language != ''
       uses: UoMResearchIT/actions/apt-get-install@main
       with:
-        packages: hunspell ${{ steps.lang.outputs.pkg }}
+        packages: enchant-2 hunspell ${{ steps.lang.outputs.pkg }}
     - name: Build composite dictionary
       if: inputs.language != ''
       id: dict
@@ -114,6 +114,12 @@ runs:
         USER_DICTIONARY: ${{ inputs.dictionary }}
         SUPPORT_DIR: ${{ github.action_path }}
     - name: Install pylint
+      if: inputs.language == ''
+      shell: bash
+      run: |
+        python -m pip install pylint
+    - name: Install pylint and hunspell
+      if: inputs.language != ''
       shell: bash
       run: |
         python -m pip install pylint hunspell
