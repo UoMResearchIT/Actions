@@ -99,7 +99,7 @@ runs:
       run: |
         import os
         with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-          print(f"pkg=hunspell-{os.environ['USER_LANG'].lower().replace('_','_')}", file=f)
+          print(f"pkg=hunspell-{os.environ['USER_LANG'].lower().replace('_','-')}", file=f)
       shell: python
       env:
         USER_LANG: ${{ inputs.language }}
