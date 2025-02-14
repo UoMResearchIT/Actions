@@ -17,6 +17,8 @@
 dict=/tmp/dict.txt
 
 cat "$BASE_DICTIONARY" >$dict
-if test -r $DICTIONARY; then
-	cat "$DICTIONARY" >>$dict
+if test -r "$USER_DICTIONARY"; then
+	cat "$USER_DICTIONARY" >>$dict
 fi
+
+echo "dict=$dict" >> $GITHUB_OUTPUT

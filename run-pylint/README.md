@@ -12,7 +12,7 @@ Example usage:
   - uses: UoMResearchIT/actions/run-pylint@main
     with:
       package: mycode.pkg
-      language: en
+      language: en_GB
 ```
 
 ## Inputs
@@ -42,9 +42,7 @@ Example usage:
   Default value: `global_relaxed`
 
   `global_relaxed` and `global_strict` will use files in support scripts.
-  Any other value will be looked for in the calling repository.
-
-  <!-- TODO: Check what's going on here! -->
+  Any other value is interpreted as the name of a file in the job workspace.
 
 * `exitcheck`
 
@@ -67,9 +65,9 @@ Example usage:
 
 * `language`
 
-  The (human) language to use for spell checking. Omit to disable the spell check. **Optional.**
+  The (human) language to use for spell checking. Omit to disable the spell check (default). **Optional.**
 
-  default: ""
+  Example: `en_GB` (use a UK English dictionary)
 
 * `dictionary`
 
@@ -79,7 +77,12 @@ Example usage:
 
 ## Outputs
 
-None.
+* `result`
+
+  The decoded set of summary issues found in the pylint call,
+  including ones not otherwise deemed fatal. Empty on complete success.
+
+  Example: `refactor convention `
 
 ## Permissions
 
