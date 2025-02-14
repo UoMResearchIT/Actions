@@ -1,6 +1,6 @@
 # Run a Basic Style Check on C and C++ Code
 
-This runs a simple style checker on a directory containing C and/or C++ code.
+This runs a [simple style checker](https://github.com/verateam/vera) on a directory containing C and/or C++ code.
 
 > [!NOTE]
 > This is not a complex style check; it only catches basic issues _by design._
