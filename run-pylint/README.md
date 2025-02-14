@@ -2,9 +2,8 @@
 Runs pylint on a Python package. 
 
 > [!NOTE]
-> Installing pylint in the environment before this action is up to the caller.
-
-<!--# TODO: Add step to install pylint and other dictionary bits if it isn't already present. -->
+> If not already installed, this action will set up Python and install pylint.
+> If you want control over the versions of these, install them prior to running this action. 
 
 Example usage:
 
@@ -65,7 +64,8 @@ Example usage:
 
 * `language`
 
-  The (human) language to use for spell checking. Omit to disable the spell check (default). **Optional.**
+  The (human) language to use for spell checking of docstrings.
+  Omit to disable the spell check (default). **Optional.**
 
   Example: `en_GB` (use a UK English dictionary)
 

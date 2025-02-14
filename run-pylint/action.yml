@@ -76,7 +76,23 @@ outputs:
     value: ${{ steps.pylint.outputs.result }}
 runs:
   using: composite
+
   steps:
+    - name: Set up python if not already done
+      id: python
+      if: env.pythonLocation == ''
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - name: Ensure critical Python packages are set up right
+      if: steps.python.outcome == 'success'
+      shell: bash
+      run: |
+        python -m pip install -U pip setuptools wheel
+    - name: Install pylint
+      shell: bash
+      run: |
+        python -m pip install pylint
     - name: Determine main dictionary language
       id: lang
       if: inputs.langugage != ''
