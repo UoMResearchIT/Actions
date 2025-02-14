@@ -15,3 +15,7 @@ This is a collection of Github Actions, mainly for University of Manchester use.
 
 ## `run-c-style-check`
 [This](run-c-style-check) runs a simple style checker against your C or C++ code.
+
+## `run-pylint`
+
+[This](run-pylint) runs the Python code style checker [`pylint`](https://github.com/pylint-dev/pylint) over some code. It includes support for spell-checking documentation strings.

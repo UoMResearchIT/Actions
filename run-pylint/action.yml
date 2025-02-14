@@ -1,0 +1,143 @@
+# Copyright (c) 2020-2025 The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: "Run Pylint"
+author: Donal Fellows
+description: |
+  Runs pylint on a Python package. 
+  Note that installing pylint in the environment before this action is up to the caller.
+# TODO: Add step to install pylint if it isn't already present.
+inputs:
+  package:
+    description: The name of the Python package (or packages) to analyse.
+    required: true
+  disable:
+    description: The messages/categories to disable.
+    required: false
+    default: "R"
+  jobs:
+    description: The number of Python processes to use.
+    required: false
+    default: "1"
+  rcfile:
+    description: >
+      The name of the pylint rc file.
+      "global_relaxed" and "global_strict" will use configurations built into this action.
+      Any other value is a file in the job workspace.
+    required: false
+    default: global_relaxed
+  exitcheck:
+    description: >
+      The combined results code to fail on.
+      The default makes anything of severity WARNING and above into a failure; this is normally
+      sufficient.
+    required: false
+    default: "6"  # Action fails on ERROR or WARNING
+    # Pylint should leave with following status code:
+    #    0 if everything went fine
+    #    1 if a fatal message was issued
+    #    2 if an error message was issued
+    #    4 if a warning message was issued
+    #    8 if a refactor message was issued
+    #   16 if a convention message was issued
+    #   32 on usage error
+    # to die on fatal, error or usage the recommended way is
+    #   exit $(($? & 35))
+    # We handle that internally.
+    #
+    # Also note that we ALWAYS die on Fatal or Usage problems; others are 
+    # selectable.
+  language:
+    description: The (human) language to use for spell checking.
+    required: false
+    default: ""
+  dictionary:
+    description: >
+      The custom dictionary to use for spell checking.
+      Only used if the spelling language is selected.
+    required: false
+    default: .pylint_dict.txt
+outputs:
+  result: 
+    description: >
+      The decoded set of summary issues found in the pylint call,
+      including ones not otherwise deemed fatal. Empty on complete success.
+    value: ${{ steps.pylint.outputs.result }}
+runs:
+  using: composite
+
+  steps:
+    - name: Set up python if not already done
+      id: python
+      if: env.pythonLocation == ''
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - name: Ensure critical Python packages are set up right
+      if: steps.python.outcome == 'success'
+      shell: bash
+      run: |
+        python -m pip install -U pip setuptools wheel
+    - name: Determine main dictionary language
+      id: lang
+      if: inputs.language != ''
+      run: |
+        import os
+        with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+          print(f"pkg=hunspell-{os.environ['USER_LANG'].lower().replace('_','-')}", file=f)
+      shell: python
+      env:
+        USER_LANG: ${{ inputs.language }}
+    - name: Install spell checker
+      if: inputs.language != ''
+      uses: UoMResearchIT/actions/apt-get-install@main
+      with:
+        packages: enchant-2 hunspell libhunspell-dev ${{ steps.lang.outputs.pkg }}
+    - name: Build composite dictionary
+      if: inputs.language != ''
+      id: dict
+      run: source $SUPPORT_DIR/make_dict.bash
+      shell: bash
+      env:
+        BASE_DICTIONARY: ${{ github.action_path }}/default_dict.txt
+        USER_DICTIONARY: ${{ inputs.dictionary }}
+        SUPPORT_DIR: ${{ github.action_path }}
+    - name: Install pylint
+      if: inputs.language == ''
+      shell: bash
+      run: |
+        python -m pip install pylint
+    - name: Install pylint and hunspell
+      if: inputs.language != ''
+      shell: bash
+      run: |
+        python -m pip install pylint hunspell pyenchant
+    - name: Run pylint
+      id: pylint
+      run: source $SUPPORT_DIR/run_pylint.bash
+      shell: bash
+      env:
+        PACKAGES: ${{ inputs.package }}
+        DISABLE_CATS: ${{ inputs.disable }}
+        RC: ${{ inputs.rcfile }}
+        STRICT_RC: ${{ github.action_path }}/strict_rcfile
+        RELAXED_RC: ${{ github.action_path }}/relaxed_rcfile
+        JOBS: ${{ inputs.jobs }}
+        SPELL_LANG: ${{ inputs.language }}
+        FAIL_CODE: ${{ inputs.exitcheck }}
+        SUPPORT_DIR: ${{ github.action_path }}
+        DICTIONARY: ${{ steps.dict.outputs.dict }}
+branding:
+  color: green
+  icon: eye
