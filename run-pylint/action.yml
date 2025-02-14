@@ -122,7 +122,7 @@ runs:
       if: inputs.language != ''
       shell: bash
       run: |
-        python -m pip install pylint hunspell
+        python -m pip install pylint hunspell pyenchant
     - name: Run pylint
       id: pylint
       run: source $SUPPORT_DIR/run_pylint.bash
