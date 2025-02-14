@@ -1,0 +1,86 @@
+# Copyright (c) 2020 The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: "Run Pylint"
+description: |
+  Runs pylint on a Python package. 
+  Note that installing pylint in the environment before this action is up to the caller.
+# TODO: Add step to install pylint if it isn't already present.
+inputs:
+  package:
+    description: The name of the Python package (or packages) to analyse.
+    required: true
+  disable:
+    description: The messages/categories to disable.
+    required: false
+    default: "R"
+  jobs:
+    description: The number of Python processes to use.
+    required: false
+    default: "1"
+  rcfile:
+    description: The name of the pylint rc file.
+    required: false
+    default: global_relaxed
+    # global_relaxed and global_strict will use files in support scripts
+    # Any other value will be looked for in the calling repository
+  exitcheck:
+    description: The combined results code to fail on.
+    required: false
+    default: "6"  # Action fails on ERROR or WARNING
+    # Pylint should leave with following status code:
+    #    0 if everything went fine
+    #    1 if a fatal message was issued
+    #    2 if an error message was issued
+    #    4 if a warning message was issued
+    #    8 if a refactor message was issued
+    #   16 if a convention message was issued
+    #   32 on usage error
+    # to die on fatal, error or usage the recommended way is
+    #   exit $(($? & 35))
+    # We handle that internally.
+    #
+    # Also note that we ALWAYS die on Fatal or Usage problems; others are 
+    # selectable.
+  language:
+    description: The (human) language to use for spell checking.
+    required: false
+    default: ""
+  dictionary:
+    description: The custom dictionary to use for spell checking.
+    required: false
+    default: .pylint_dict.txt
+runs:
+  using: composite
+  steps:
+    - name: Build composite dictionary
+      run: source $SUPPORT_DIR/make_dict.bash
+      shell: bash
+      env:
+        BASE_DICTIONARY: ${{ github.action_path }}/default_dict.txt
+        DICTIONARY: ${{ inputs.dictionary }}
+        SUPPORT_DIR: ${{ github.action_path }}
+    - name: Run pylint
+      run: source $SUPPORT_DIR/run_pylint.bash
+      shell: bash
+      env:
+        PACKAGES: ${{ inputs.package }}
+        DISABLE_CATS: ${{ inputs.disable }}
+        RC: ${{ inputs.rcfile }}
+        STRICT_RC: ${{ github.action_path }}/strict_rcfile
+        RELAXED_RC: ${{ github.action_path }}/relaxed_rcfile
+        JOBS: ${{ inputs.jobs }}
+        SPELL_LANG: ${{ inputs.language }}
+        FAIL_CODE: ${{ inputs.exitcheck }}
+        SUPPORT_DIR: ${{ github.action_path }}
