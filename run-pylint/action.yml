@@ -103,7 +103,7 @@ runs:
       if: inputs.language != ''
       uses: UoMResearchIT/actions/apt-get-install@main
       with:
-        packages: enchant-2 hunspell ${{ steps.lang.outputs.pkg }}
+        packages: enchant-2 hunspell libhunspell-dev ${{ steps.lang.outputs.pkg }}
     - name: Build composite dictionary
       if: inputs.language != ''
       id: dict
