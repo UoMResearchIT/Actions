@@ -2,7 +2,6 @@
 Checks: 'bugprone-*,performance-*,readability-*,portability-*,modernize-*,clang-analyzer-cplusplus-*,clang-analyzer-*,cppcoreguidelines-*,-modernize-use-trailing-return-type,-readability-identifier-length,-readability-convert-member-functions-to-static,-readability-else-after-return,-cppcoreguidelines-owning-memory'
 WarningsAsErrors: true
 HeaderFilterRegex: ''
-AnalyzeTemporaryDtors: false
 UseColor: true
 CheckOptions:
   - key: cert-dcl16-c.NewSuffixes
