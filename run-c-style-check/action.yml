@@ -30,6 +30,10 @@ inputs:
     description: The name of a directory to skip.
     required: false
     default: .git
+  file-pattern:
+    description: What files to process. Regular expression for `egrep`.
+    required: false
+    default: ".c$|.h$|.cpp$|.hpp$"
 runs:
   using: composite
   steps:
@@ -38,12 +42,12 @@ runs:
       with:
         packages: vera++
     - name: analyse code
-      run: >
-        find "$BASE_DIR" -name "$SKIP" -prune -o -name '*.[ch]' -print -o -name '*.cpp' -o -name '*.hpp' -print 
-        | vera++ --root "$VERA_ROOT" --profile "$VERA_PROFILE.tcl" --error ${{ inputs.options }}
+      run: exec bash ${{ github.action_path }}/runvera.bash
       shell: bash
       env:
         BASE_DIR: ${{ inputs.base-dir }}
-        VERA_ROOT: ${{ github.action_path }}
-        VERA_PROFILE: ${{ inputs.profile }}
+        FILE_PAT: ${{ inputs.file-pattern }}
         SKIP: ${{ inputs.skip-dir }}
+        VERA_OPTIONS: ${{ inputs.options }}
+        VERA_PROFILE: ${{ inputs.profile }}
+        VERA_ROOT: ${{ github.action_path }}
