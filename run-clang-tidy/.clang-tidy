@@ -1,6 +1,6 @@
 ---
-Checks: 'bugprone-*,performance-*,readability-*,portability-*,modernize-*,clang-analyzer-cplusplus-*,clang-analyzer-*,cppcoreguidelines-*,-modernize-use-trailing-return-type,-readability-identifier-length,-readability-convert-member-functions-to-static,-readability-else-after-return,-cppcoreguidelines-owning-memory'
-WarningsAsErrors: true
+Checks: 'bugprone-*,cert-*,performance-*,readability-*,portability-*,modernize-*,clang-analyzer-cplusplus-*,clang-analyzer-*,cppcoreguidelines-*,-modernize-use-trailing-return-type,-readability-identifier-length,-readability-convert-member-functions-to-static,-readability-else-after-return,-cppcoreguidelines-owning-memory'
+WarningsAsErrors: 'bugprone-*,cert-*,performance-*,readability-*,portability-*,clang-analyzer-cplusplus-*,clang-analyzer-*,cppcoreguidelines-*'
 HeaderFilterRegex: ''
 UseColor: true
 CheckOptions:
