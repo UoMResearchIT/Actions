@@ -1,0 +1,23 @@
+name: Commit ID
+description: >
+  Generate a commit ID in a file.
+  It's up to the caller to make and check in the file with the pattern to
+  replace in it; it is recommended that the pattern string only appear once.
+inputs:
+  file:
+    description: What file to process.
+    required: true
+  pattern:
+    description: What substring to replace.
+    required: false
+    default: undefined (dev build)
+runs:
+  using: composite
+  steps:
+    - name: Run script
+      run: ${{ github.action_path }}/build-id.ps1
+      shell: pwsh
+      env:
+        BUILD_ID: ${{ inputs.file }}
+        PATTERN: ${{ inputs.pattern }}
+        REPLACEMENT: ${{ github.sha }}
