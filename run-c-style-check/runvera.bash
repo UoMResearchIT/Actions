@@ -5,7 +5,7 @@ file_list=$(find "$BASE_DIR" -name "$SKIP" -prune -o -type f -print | egrep "$FI
 
 # Check to see if anything was found
 if [ -z "$file_list" ]; then
-    echo -e '\033[0;33mNo files found in $BASE_DIR matching pattern.\033[0m' >&2
+    printf '\e[0;33mNo files found in %s matching pattern.\e[0m\n' "$BASE_DIR" >&2
     exit 1
 fi
 
