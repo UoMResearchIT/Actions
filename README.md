@@ -9,10 +9,18 @@ This is a collection of Github Actions, mainly for University of Manchester use.
 
 [This](check-copyrights) ensures that all files in your repository have an "acceptable" copyright notice near their top.
 
+## `commit-id`
+
+[This](commit-id) helps generate a file containing the ID of the commit within it. 
+
 ## `compare-output`
 
 [This](compare-output) compares the output of a program to a string. Great for testing!
 
 ## `run-clang-tidy`
 
-[This](run-clang-tidy) does static analysis of C or C++ codebases to find likely problems.
+[This](run-clang-tidy) does static analysis of C or C++ codebases with [`clang-tidy`](https://clang.llvm.org/extra/clang-tidy/) to find likely problems.
+
+## `run-pylint`
+
+[This](run-pylint) runs the Python code style checker [`pylint`](https://github.com/pylint-dev/pylint) over some code. It includes support for spell-checking documentation strings.
