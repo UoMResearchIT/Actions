@@ -24,6 +24,12 @@ Example usage:
 
   Example: `src`
 
+* `file-pattern`
+
+  What files to process. This is a regular expression to pass to `egrep`. **Optional.**
+
+  Default: `.c$|.h$|.cpp$|.hpp$` (C and C++ files following ordinary conventions)
+
 * `profile`
 
   Which profile to use. **Optional.**
