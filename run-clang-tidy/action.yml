@@ -1,0 +1,43 @@
+name: Run clang-tidy
+description: >
+  Runs clang-tidy against a C or C++ codebase in a given directory.
+  Comes with a predefined profile of detected issues to try to keep the
+  number of false positives relatively small.
+
+inputs:
+  working-directory:
+    description: The working directory to run in.
+    required: false
+    default: .
+  file-glob:
+    description: >
+      What files to match for testing.
+      Note that headers typically require additional configuration options to check.
+    required: false
+    default: "*.cpp"
+  options:
+    description: Extra options to pass to clang-tidy.
+    required: false
+    default: ""
+  config-file:
+    description: The path to the configuration file, if not using the predefined profile.
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Install clang-tidy
+      uses: UoMResearchIT/actions/apt-get-install@main
+      with:
+        packages: clang-tidy
+    - name: Run clang-tidy
+      run: |
+        [ -f "$USER_CFG" -a -r "$USER_CFG" ] && CFG=$USER_CFG
+        exec clang-tidy ${{ inputs.file-glob }} "--config-file=$CFG" $OPTIONS
+      env:
+        USER_CFG: ${{ inputs.config-file }}
+        CFG: ${{ github.action_path }}/.clang-tidy
+        OPTIONS: ${{ inputs.options }}
+      working-directory: ${{ inputs.working-directory }}
+      shell: bash
