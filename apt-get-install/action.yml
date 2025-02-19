@@ -21,6 +21,11 @@ inputs:
 runs:
   using: composite
   steps:
+  - name: issue warning on wrong platform
+    if: runner.os != 'Linux'
+    shell: bash
+    run: |
+      echo "::warning title=Wrong Platform::Cannot run apt-get on non-Linux platforms."
   - name: update
     if: runner.os == 'Linux'
     shell: bash
