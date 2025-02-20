@@ -14,27 +14,31 @@ BEGIN {
 BEGINFILE {
     filename = FILENAME
     sub(/^\.\//, "", filename)
+    printf "Scanning %s...\n", filename
 }
 {
-    if (match($0, /(TODO.*)/, m)) {
+    if (match($0, /(TODO.*|NotImplementedException)/, m)) {
         printf "::warning file=%s,line=%s::%s\n", filename, FNR, m[0];
-        printf "%s:%s: \033[0;33m%s\033[0m\n", filename, FNR, m[0];
         todocounter++;
     }
     if (match($0, /(FIXME.*|Auto-generated method stub)/, m)) {
         printf "::error file=%s,line=%s::%s\n", filename, FNR, m[0];
-        printf "%s:%s: \033[0;31m%s\033[0m\n", filename, FNR, m[0];
         fixmecounter++;
     }
 }
 END {
+    if (fixmecounter > 0) {
+        printf "\033[0;31mFound %s FIXMEs\033[0m\n", fixmecounter
+    }
     if (todocounter > 0) {
         printf "\033[0;33mFound %s TODOs\033[0m\n", todocounter
     }
     if (fixmecounter > 0) {
-        printf "\033[0;31mFound %s FIXMEs\033[0m\n", fixmecounter
         exit 1
     }
-    exit
+    # No FIXMEs were found if at this point.
+    if (todocounter < 1) {
+        printf "No problems found.\n"
+    }
 }
 '
