@@ -17,6 +17,10 @@ This is a collection of Github Actions, mainly for University of Manchester use.
 
 [This](compare-output) compares the output of a program to a string. Great for testing!
 
+## `docker-publish`
+
+[This](docker-publish) publishes a workflow-local Docker image to the Github container registry.
+
 ## `run-c-style-check`
 [This](run-c-style-check) runs a [simple style checker](https://github.com/verateam/vera) against your C or C++ code.
 

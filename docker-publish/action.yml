@@ -1,0 +1,89 @@
+name: "Publish Image to Docker Repository"
+description: >
+  Publishes the current Docker image to the container registry run by Github.
+branding:
+  color: green
+  icon: package
+
+inputs:
+  version:
+    description: >
+      The ID of the version to publish. Defaults to `latest` if not specified.
+    default: latest
+    required: false
+  container-name:
+    description: The name of the container. Defaults to the nanme of the repository.
+    required: false
+    default: ""
+  organisation-name:
+    description: >
+      The name of the organisation.
+      Defaults to the name of the organisation that owns the repository running this action.
+    required: false
+    default: ${{ github.repository_owner }}
+  token:
+    description: An alternate security token. Leave blank to use the `GITHUB_TOKEN`.
+    required: false
+    default: ${{ secrets.GITHUB_TOKEN }}
+  actor:
+    description: Who is publishing. Defaults to who initiated the workflow run.
+    required: false
+    default: ${{ github.actor }}
+  registry:
+    description: Address of the container registry.
+    required: false
+    default: ghcr.io
+  source-tag:
+    description: The source tag of the local repository. Defaults to `testing`
+    required: false
+    default: testing
+outputs:
+  name:
+    description: The name of the pushed image.
+    value: ${{ steps.push.outputs.name }}
+
+runs:
+  using: composite
+  steps:
+    - name: Log in to the Container registry
+      id: login
+      if: env.uomRIT_docker_login != inputs.actor
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ inputs.registry }}
+        username: ${{ inputs.actor }}
+        password: ${{ inputs.token }}
+    - name: Record that we've logged in
+      if: steps.login.outcome == 'success'
+      shell: bash
+      run: echo "uomRIT_docker_login=$ACTOR" >> $GITHUB_OUTPUT
+      env:
+        ACTOR: ${{ inputs.actor }}
+
+    - name: Determine container name
+      id: derive-name
+      shell: python
+      run: |
+        import os, re
+        container = os.environ.get("CONTAINER", "")
+        if container == "":
+          container = re.sub(r".*/", "", os.environ["GITHUB_REPOSITORY"])
+        with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+          f.write(f"container={container}\n")
+      env:
+        CONTAINER: ${{ inputs.container }}
+
+    - name: Push versioned
+      id: push
+      run: |
+        handle="${REGISTRY}/${ORG}/${CONTAINER}:${VERSION}"
+        docker image tag ${CONTAINER}:${SRCTAG} $handle
+        docker image push $handle
+        echo "name=$handle" >> $GITHUB_OUTPUT
+      shell: bash
+      env:
+        REGISTRY: ${{ steps.derive-name.outputs.container }}
+        CONTAINER: ${{ inputs.container-name }}
+        ORG: ${{ inputs.organisation-name }}
+        VERSION: ${{ inputs.version }}
+        SRCTAG: ${{ inputs.source-tag }}
