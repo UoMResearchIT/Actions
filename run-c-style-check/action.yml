@@ -38,7 +38,7 @@ runs:
   using: composite
   steps:
     - name: install vera
-      uses: UoMResearchIT/actions/apt-get-install@main
+      uses: UoMResearchIT/actions/apt-get-install@0.2
       with:
         packages: vera++
     - name: analyse code
