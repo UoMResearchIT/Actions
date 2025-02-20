@@ -1,0 +1,13 @@
+name: "Find FIXMEs and TODOs"
+description: >
+  Finds code lines with `FIXME` and `TODO` comments.
+  `FIXME`s become errors. `TODO`s become warnings.
+  The warnings are surfaced in the summary.
+branding:
+  color: red
+  icon: alert-triangle
+runs:
+  using: composite
+  steps:
+  - shell: bash
+    run: exec bash $GITHUB_ACTION_PATH/detect-todo.bash
