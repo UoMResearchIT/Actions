@@ -1,0 +1,61 @@
+name: Download File
+author: Donal Fellows
+description: >
+  Downloads a file from a URL, using a cached version if possible.
+branding:
+  color: green
+  icon: link
+inputs:
+  url:
+    description: The URL to download from.
+    required: true
+  local-name:
+    description: The local file name. Derived from the URL if not given.
+    required: false
+    default: ""
+  wget-options:
+    description: Additional options to pass to `wget`.
+  test:
+    description: suppress download
+    required: false
+    default: "0"
+outputs:
+  filename:
+    description: The full path to the file.
+    value: ${{ steps.filename.outputs.file }}
+runs:
+  using: composite
+
+  steps:
+    - name: Generate target filename
+      id: filename
+      shell: bash
+      run: |
+        file="${LOCALNAME:-$(sed 's/#.*$//;s!^.*/!!' <<< "$URL")}"
+        if [ -z "$file" ]; then
+          echo "::error title=Empty file::Target file name is empty. Aborting."
+          exit 1
+        fi
+        if (( $(tr -cd ' ' <<< "$file" | wc -c) > 0 )); then
+          echo "::warning title=Space in filename::Space found in filename '$file'; results may be unpredictable."
+        fi
+        echo "file=$file" >> $GITHUB_OUTPUT
+      env:
+        URL: ${{ inputs.url }}
+        LOCALNAME: ${{ inputs.local-name }}
+    - name: Check cache
+      id: cache
+      uses: actions/cache@v4
+      with:
+        key: download-${{ inputs.url }}
+        path: ${{ steps.filename.outputs.file }}
+    - name: Do download
+      id: wget
+      if: steps.cache.outputs.cache-hit != 'true' && inputs.test != '1'
+      shell: bash
+      run: |
+        wget --no-config -nd -nc -T 15 -O $OPTIONS - "$URL" > "$FILE"
+      env:
+        URL: ${{ inputs.url }}
+        FILE: ${{ steps.filename.outputs.file }}
+        OPTIONS: ${{ inputs.wget-options }}
