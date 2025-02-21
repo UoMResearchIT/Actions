@@ -50,11 +50,19 @@ runs:
         key: download-${{ inputs.url }}
         path: ${{ steps.filename.outputs.file }}
     - name: Do download
-      id: wget
-      if: steps.cache.outputs.cache-hit != 'true' && inputs.test != '1'
+      if: steps.cache.outputs.cache-hit != 'true' && inputs.test != '1' && runner.os != 'Windows'
       shell: bash
       run: |
-        wget --no-config -nd -nc -T 15 -O $OPTIONS - "$URL" > "$FILE"
+        wget --no-config -nd -nc -T 15 -O - $OPTIONS -- "$URL" > "$FILE"
+      env:
+        URL: ${{ inputs.url }}
+        FILE: ${{ steps.filename.outputs.file }}
+        OPTIONS: ${{ inputs.wget-options }}
+    - name: Do download
+      if: steps.cache.outputs.cache-hit != 'true' && inputs.test != '1' && runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        & "C:\msys64\usr\bin\wget.exe" --no-config -nd -nc -T 15 -O - @(-split $env:OPTIONS) -- $env:URL | Out-File $env:FILE
       env:
         URL: ${{ inputs.url }}
         FILE: ${{ steps.filename.outputs.file }}
