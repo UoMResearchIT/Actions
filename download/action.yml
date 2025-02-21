@@ -54,7 +54,7 @@ runs:
       if: steps.cache.outputs.cache-hit != 'true' && inputs.test != '1' && runner.os != 'Windows'
       shell: bash
       run: |
-        wget --config=$GITHUB_ACTIONS_PATH/wgetrc -O "$FILE" $OPTIONS -- "$URL" 
+        wget --config=$GITHUB_ACTION_PATH/wgetrc -O "$FILE" $OPTIONS -- "$URL" 
       env:
         URL: ${{ inputs.url }}
         FILE: ${{ steps.filename.outputs.file }}
@@ -65,7 +65,7 @@ runs:
       run: |
         $wget = 'C:\msys64\usr\bin\wget.exe'
         $opts = (Select-String \S+ -input $env:OPTIONS -allmatches | %{$_.matches.value})
-        & $wget --config=$env:GITHUB_ACTIONS_PATH\wgetrc -O $env:FILE @opts -- $env:URL
+        & $wget --config=$env:GITHUB_ACTION_PATH\wgetrc -O $env:FILE @opts -- $env:URL
       env:
         URL: ${{ inputs.url }}
         FILE: ${{ steps.filename.outputs.file }}
