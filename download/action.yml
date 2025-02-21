@@ -64,7 +64,7 @@ runs:
       shell: pwsh
       run: |
         $wget = 'C:\msys64\usr\bin\wget.exe'
-        $opts = (-split $env:OPTIONS)
+        $opts = (Select-String \S+ -input $env:OPTIONS -allmatches | %{$_.matches.value})
         & $wget --config=$env:GITHUB_ACTIONS_PATH\wgetrc -O $env:FILE @opts -- $env:URL
       env:
         URL: ${{ inputs.url }}
