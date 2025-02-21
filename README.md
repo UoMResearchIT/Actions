@@ -5,13 +5,13 @@ This is a collection of Github Actions, mainly for University of Manchester use.
 
 These are intended for use in many types of project, wherever relevant.
 
-* [`download`](download) does cached downloads of files from the web.
-
 ## Multi-platform
 
 * [`commit-id`](commit-id) helps generate a file containing the ID of the commit within it. 
 
 * [`compare-output`](compare-output) compares the output of a program to a string. Great for testing!
+
+* [`download`](download) does cached downloads of files from the web.
 
 ## Linux runners only
 
