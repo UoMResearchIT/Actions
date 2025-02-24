@@ -27,13 +27,14 @@ runs:
     run: |
       echo "::warning title=Wrong Platform::Cannot run apt-get on non-Linux platforms."
   - name: update
-    if: runner.os == 'Linux'
+    if: runner.os == 'Linux' && env.uomRIT_aptget_update != 'done'
     shell: bash
     env:
       CFGFILE: ${{ github.action_path }}/apt.conf
     run: |
       echo ::group::Update base system
       sudo apt-get -c "$CFGFILE" update
+      echo "uomRIT_aptget_update=done" >> $GITHUB_ENV
       echo ::endgroup::
   - name: install packages
     if: runner.os == 'Linux'

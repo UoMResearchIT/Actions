@@ -1,29 +1,36 @@
 # UoM Resarch IT Github Actions
 This is a collection of Github Actions, mainly for University of Manchester use. It is the intention to make this into a _public_ repository once we are happy with the name, have a suitable agreed license, etc.
 
-## `apt-get-install`
+# General Tools
 
-[This](apt-get-install) installs packages into Ubuntu runners, allowing for subtleties of installation that have been found to come up with some packages "in the wild".
+These are intended for use in many types of project, wherever relevant.
 
-## `check-copyrights`
+## Multi-platform
 
-[This](check-copyrights) ensures that all files in your repository have an "acceptable" copyright notice near their top.
+* [`commit-id`](commit-id) helps generate a file containing the ID of the commit within it. 
 
-## `commit-id`
+* [`compare-output`](compare-output) compares the output of a program to a string. Great for testing!
 
-[This](commit-id) helps generate a file containing the ID of the commit within it. 
+* [`download`](download) does cached downloads of files from the web.
 
-## `compare-output`
+## Linux runners only
 
-[This](compare-output) compares the output of a program to a string. Great for testing!
+* [`apt-get-install`](apt-get-install) installs packages into Ubuntu runners, allowing for subtleties of installation that have been found to come up with some packages "in the wild".
 
-## `run-c-style-check`
-[This](run-c-style-check) runs a [simple style checker](https://github.com/verateam/vera) against your C or C++ code.
+* [`check-copyrights`](check-copyrights) ensures that all files in your repository have an "acceptable" copyright notice near their top.
 
-## `run-clang-tidy`
+* [`todo`](todo) finds `FIXME` and `TODO` comments in code.
 
-[This](run-clang-tidy) does static analysis of C or C++ codebases with [`clang-tidy`](https://clang.llvm.org/extra/clang-tidy/) to find likely problems.
+# Language-Specific Tools
 
-## `run-pylint`
+These often have platform requirements for their runners. You can always have several jobs in a workflow to allow the use of Linux runners in an otherwise Windows-specific build scheme.
 
-[This](run-pylint) runs the Python code style checker [`pylint`](https://github.com/pylint-dev/pylint) over some code. It includes support for spell-checking documentation strings.
+## C and C++
+
+* [`run-c-style-check`](run-c-style-check) runs a [simple style checker](https://github.com/verateam/vera) against your C or C++ code.
+
+* [`run-clang-tidy`](run-clang-tidy) does static analysis of C or C++ codebases with [`clang-tidy`](https://clang.llvm.org/extra/clang-tidy/) to find likely problems.
+
+## Python
+
+* [`run-pylint`](run-pylint) runs the Python code style checker [`pylint`](https://github.com/pylint-dev/pylint) over some code. It includes support for spell-checking documentation strings.
