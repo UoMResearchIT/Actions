@@ -1,3 +1,4 @@
+$ErrorActionPreference = 'Stop'
 if ($Env:INIT) {
     Invoke-Expression $Env:INIT
 }

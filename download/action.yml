@@ -48,9 +48,7 @@ runs:
       if: steps.cache.outputs.cache-hit != 'true' && runner.os == 'Windows'
       shell: pwsh
       run: |
-        $wget = 'C:\msys64\usr\bin\wget.exe'
-        $opts = (Select-String \S+ -input $env:OPTIONS -allmatches | %{$_.matches.value})
-        & $wget --config=$env:GITHUB_ACTION_PATH\wgetrc -O $env:FILE @opts -- $env:URL
+        & $env:GITHUB_ACTION_PATH/runwget.ps1
       env:
         URL: ${{ inputs.url }}
         FILE: ${{ steps.filename.outputs.file }}
