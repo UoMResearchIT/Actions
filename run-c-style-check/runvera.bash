@@ -1,4 +1,4 @@
-#! /usr/bin/bash
+#!/usr/bin/env bash
 
 # List the files
 file_list=$(find "$BASE_DIR" -name "$SKIP" -prune -o -type f -print | egrep "$FILE_PAT")

@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 eval $INIT
 
 actual=`$COMMAND`
