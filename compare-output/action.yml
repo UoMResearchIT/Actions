@@ -35,8 +35,7 @@ runs:
     - shell: bash
       if: inputs.shell == 'bash' || (inputs.shell == 'auto' && runner.os != 'Windows')
       id: bash
-      run: |
-        bash $GITHUB_ACTION_PATH/compare.bash
+      run: $GITHUB_ACTION_PATH/compare.bash
       env:
         COMMAND: ${{ inputs.command }}
         EXPECTED: ${{ inputs.expected }}

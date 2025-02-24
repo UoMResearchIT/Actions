@@ -46,7 +46,7 @@ runs:
       with:
         packages: vera++
     - name: analyse code
-      run: exec bash ${{ github.action_path }}/runvera.bash
+      run: $GITHUB_ACTION_PATH/runvera.bash
       shell: bash
       env:
         BASE_DIR: ${{ inputs.base-dir }}
@@ -54,4 +54,3 @@ runs:
         SKIP: ${{ inputs.skip-dir }}
         VERA_OPTIONS: ${{ inputs.options }}
         VERA_PROFILE: ${{ inputs.profile }}
-        VERA_ROOT: ${{ github.action_path }}

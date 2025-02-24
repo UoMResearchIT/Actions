@@ -11,4 +11,4 @@ if [ -z "$file_list" ]; then
 fi
 
 # Pass the file list to vera++
-exec vera++ --root "$VERA_ROOT" --profile "$VERA_PROFILE.tcl" --error $VERA_OPTIONS <<< "$file_list"
+exec vera++ --root "$GITHUB_ACTION_PATH" --profile "$VERA_PROFILE.tcl" --error $VERA_OPTIONS <<< "$file_list"

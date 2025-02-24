@@ -57,12 +57,11 @@ runs:
         key: apache-rat-${{ inputs.version }}
     - name: Download RAT
       if: steps.cache.outputs.cache-hit != 'true'
-      run: bash $SUPPORT_DIR/download.bash
+      run: $GITHUB_ACTION_PATH/download.bash
       shell: bash
       env:
         RAT_VERSION: ${{ inputs.version }}
         RAT_MIRROR: ${{ inputs.mirror }}
-        SUPPORT_DIR: ${{ github.action_path }}
     - name: Locate excludes file
       id: excludes
       run: |
@@ -75,7 +74,6 @@ runs:
       run: ant -e -q -f "$CFG" -lib "$LIB" rat
       shell: bash
       env:
-        SUPPORT_DIR: ${{ github.action_path }}
         CFG: ${{ github.action_path }}/${{ inputs.config-file }}
         LIB: ${{ github.action_path }}/apache-rat-${{ inputs.version }}
         EXCLUDES: ${{ steps.excludes.outputs.excludes }}

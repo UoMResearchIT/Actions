@@ -26,7 +26,7 @@ runs:
     - name: Generate target filename
       id: filename
       shell: bash
-      run: exec bash $GITHUB_ACTION_PATH/generate.bash
+      run: $GITHUB_ACTION_PATH/generate.bash
       env:
         URL: ${{ inputs.url }}
         LOCALNAME: ${{ inputs.local-name }}

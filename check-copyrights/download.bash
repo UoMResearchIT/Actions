@@ -17,11 +17,7 @@
 # This workflow will install Python dependencies, run tests, lint and rat with a variety of Python versions
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
-if [ -z "$SUPPORT_DIR" -o ! -d "$SUPPORT_DIR" ]; then
-    echo "::error title=No Directory::Undetermined support directory! ($SUPPORT_DIR)"
-    exit 1
-fi
-cd "$SUPPORT_DIR" || exit 2
+cd "$GITHUB_ACTION_PATH" || exit 2
 
 dir=apache-rat-${RAT_VERSION}
 raturl="${RAT_MIRROR}creadur/$dir/$dir-bin.tar.gz"

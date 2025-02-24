@@ -34,7 +34,7 @@ runs:
     shell: bash
     env:
       CFGFILE: ${{ github.action_path }}/apt.conf
-    run: exec bash $GITHUB_ACTION_PATH/update.bash
+    run: $GITHUB_ACTION_PATH/update.bash
   - name: install packages
     if: runner.os == 'Linux'
     shell: bash

@@ -11,4 +11,4 @@ runs:
   using: composite
   steps:
   - shell: bash
-    run: exec bash $GITHUB_ACTION_PATH/detect-todo.bash
+    run: $GITHUB_ACTION_PATH/detect-todo.bash
