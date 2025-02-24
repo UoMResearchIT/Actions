@@ -6,4 +6,4 @@
 # ----------------------------------------------------------------------------
 
 # Find files and apply a little awk script
-find . -type d \( -name ".git*" \) -prune -o -type f -print0 | xargs -0 awk $GITHUB_ACTION_PATH/detect-todo.awk
+find . -type d \( -name ".git*" \) -prune -o -type f -print0 | xargs -0 awk -f $GITHUB_ACTION_PATH/detect-todo.awk
