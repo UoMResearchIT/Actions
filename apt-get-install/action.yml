@@ -13,7 +13,11 @@
 # limitations under the License.
 
 name: "Install Debian/Ubuntu packages"
+author: Donal Fellows
 description: Runs apt-get to install Debian/Ubuntu packages.
+branding:
+  color: gray-dark
+  icon: download
 inputs:
   packages:
     description: The names of the packages to install.
@@ -21,21 +25,20 @@ inputs:
 runs:
   using: composite
   steps:
+  - name: issue warning on wrong platform
+    if: runner.os != 'Linux'
+    shell: bash
+    run: echo "::warning title=Wrong Platform::Cannot run apt-get on non-Linux platforms."
   - name: update
     if: runner.os == 'Linux' && env.uomRIT_aptget_update != 'done'
     shell: bash
     env:
       CFGFILE: ${{ github.action_path }}/apt.conf
-    run: |
-      echo ::group::Update base system
-      sudo apt-get -c "$CFGFILE" update
-      echo "uomRIT_aptget_update=done" >> $GITHUB_ENV
-      echo ::endgroup::
+    run: $GITHUB_ACTION_PATH/update.bash
   - name: install packages
     if: runner.os == 'Linux'
     shell: bash
     env:
       PACKAGES: ${{ inputs.packages }}
       CFGFILE: ${{ github.action_path }}/apt.conf
-    run: |
-      sudo apt-get -c "$CFGFILE" install $PACKAGES
+    run: sudo apt-get -c "$CFGFILE" install $PACKAGES

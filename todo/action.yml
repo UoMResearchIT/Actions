@@ -1,4 +1,5 @@
 name: "Find FIXMEs and TODOs"
+author: Donal Fellows
 description: >
   Finds code lines with `FIXME` and `TODO` comments.
   `FIXME`s become errors. `TODO`s become warnings.
@@ -10,4 +11,4 @@ runs:
   using: composite
   steps:
   - shell: bash
-    run: exec bash $GITHUB_ACTION_PATH/detect-todo.bash
+    run: $GITHUB_ACTION_PATH/detect-todo.bash

@@ -7,7 +7,7 @@
             <fileset dir="${user.dir}" defaultexcludes="yes">
             	<exclude name="RAT_report.txt" />
             	<excludesfile name="${env.EXCLUDES}" />
-            	<excludesfile name="${env.SUPPORT_DIR}/rat.excludes" />
+            	<excludesfile name="${env.GITHUB_ACTION_PATH}/rat.excludes" />
             </fileset>
             <rat:asl20/>
         </rat:report>

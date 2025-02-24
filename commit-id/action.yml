@@ -1,8 +1,12 @@
 name: Commit ID
+author: Donal Fellows
 description: >
   Generate a commit ID in a file.
   It's up to the caller to make and check in the file with the pattern to
   replace in it; it is recommended that the pattern string only appear once.
+branding:
+  color: gray-dark
+  icon: git-commit
 inputs:
   file:
     description: What file to process.

@@ -1,8 +1,12 @@
 name: Run clang-tidy
+author: Donal Fellows
 description: >
   Runs clang-tidy against a C or C++ codebase in a given directory.
   Comes with a predefined profile of detected issues to try to keep the
   number of false positives relatively small.
+branding:
+  color: green
+  icon: eye
 
 inputs:
   working-directory:
