@@ -13,6 +13,7 @@
 # limitations under the License.
 
 name: Check Copyrights
+author: Donal Fellows
 description: >
   Uses Apache RAT to check for files without license declarations.
 inputs:
@@ -71,8 +72,7 @@ runs:
       env:
         EXCLUDES: ${{ inputs.excludes-file }}
     - name: Check
-      run: |
-        ant -e -q -f "$CFG" -lib "$LIB" rat
+      run: ant -e -q -f "$CFG" -lib "$LIB" rat
       shell: bash
       env:
         SUPPORT_DIR: ${{ github.action_path }}

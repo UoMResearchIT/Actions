@@ -1,4 +1,5 @@
 name: Compare program output to a string
+author: Donal Fellows
 description: >
   Compare the output of a program to a string given as a parameter.
   A single trailing newline will be ignored.
@@ -24,6 +25,9 @@ inputs:
       Defaults to the job's main working directory.
     required: false
     default: .
+branding:
+  color: green
+  icon: file-text
 
 runs:
   using: composite
