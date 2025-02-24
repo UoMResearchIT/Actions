@@ -41,8 +41,7 @@ runs:
     - shell: pwsh
       if: inputs.shell == 'pwsh' || (inputs.shell == 'auto' && runner.os == 'Windows')
       id: pwsh
-      run: |
-        & $env:GITHUB_ACTION_PATH/compare.ps1
+      run: ${{ github.action_path }}/compare.ps1
       env:
         COMMAND: ${{ inputs.command }}
         EXPECTED: ${{ inputs.expected }}

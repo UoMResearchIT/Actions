@@ -47,8 +47,7 @@ runs:
     - name: Do download
       if: steps.cache.outputs.cache-hit != 'true' && runner.os == 'Windows'
       shell: pwsh
-      run: |
-        & $env:GITHUB_ACTION_PATH/runwget.ps1
+      run: ${{ github.action_path }}/runwget.ps1
       env:
         URL: ${{ inputs.url }}
         FILE: ${{ steps.filename.outputs.file }}
