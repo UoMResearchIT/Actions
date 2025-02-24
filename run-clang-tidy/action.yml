@@ -1,8 +1,12 @@
 name: Run clang-tidy
+author: Donal Fellows
 description: >
   Runs clang-tidy against a C or C++ codebase in a given directory.
   Comes with a predefined profile of detected issues to try to keep the
   number of false positives relatively small.
+branding:
+  color: green
+  icon: eye
 
 inputs:
   working-directory:
@@ -28,7 +32,7 @@ runs:
   using: composite
   steps:
     - name: Install clang-tidy
-      uses: UoMResearchIT/actions/apt-get-install@main
+      uses: UoMResearchIT/actions/apt-get-install@0.2
       with:
         packages: clang-tidy
     - name: Run clang-tidy

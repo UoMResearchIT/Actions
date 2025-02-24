@@ -13,7 +13,11 @@
 # limitations under the License.
 
 name: "Run vera++"
+author: Donal Fellows
 description: Runs vera++ on C and C++ code.
+branding:
+  color: green
+  icon: eye
 inputs:
   base-dir:
     description: The name of the base directory containing the sources to check.
@@ -38,11 +42,11 @@ runs:
   using: composite
   steps:
     - name: install vera
-      uses: UoMResearchIT/actions/apt-get-install@main
+      uses: UoMResearchIT/actions/apt-get-install@0.2
       with:
         packages: vera++
     - name: analyse code
-      run: exec bash ${{ github.action_path }}/runvera.bash
+      run: $GITHUB_ACTION_PATH/runvera.bash
       shell: bash
       env:
         BASE_DIR: ${{ inputs.base-dir }}
@@ -50,4 +54,3 @@ runs:
         SKIP: ${{ inputs.skip-dir }}
         VERA_OPTIONS: ${{ inputs.options }}
         VERA_PROFILE: ${{ inputs.profile }}
-        VERA_ROOT: ${{ github.action_path }}

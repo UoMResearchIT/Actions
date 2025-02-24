@@ -56,7 +56,7 @@ inputs:
     #   exit $(($? & 35))
     # We handle that internally.
     #
-    # Also note that we ALWAYS die on Fatal or Usage problems; others are 
+    # Also note that we ALWAYS die on Fatal or Usage problems; others are
     # selectable.
   language:
     description: The (human) language to use for spell checking.
@@ -74,6 +74,9 @@ outputs:
       The decoded set of summary issues found in the pylint call,
       including ones not otherwise deemed fatal. Empty on complete success.
     value: ${{ steps.pylint.outputs.result }}
+branding:
+  color: green
+  icon: eye
 runs:
   using: composite
 
@@ -101,18 +104,17 @@ runs:
         USER_LANG: ${{ inputs.language }}
     - name: Install spell checker
       if: inputs.language != ''
-      uses: UoMResearchIT/actions/apt-get-install@main
+      uses: UoMResearchIT/actions/apt-get-install@0.2
       with:
         packages: enchant-2 hunspell libhunspell-dev ${{ steps.lang.outputs.pkg }}
     - name: Build composite dictionary
       if: inputs.language != ''
       id: dict
-      run: source $SUPPORT_DIR/make_dict.bash
+      run: $GITHUB_ACTION_PATH/make_dict.bash
       shell: bash
       env:
         BASE_DICTIONARY: ${{ github.action_path }}/default_dict.txt
         USER_DICTIONARY: ${{ inputs.dictionary }}
-        SUPPORT_DIR: ${{ github.action_path }}
     - name: Install pylint
       if: inputs.language == ''
       shell: bash
@@ -125,7 +127,7 @@ runs:
         python -m pip install pylint hunspell pyenchant
     - name: Run pylint
       id: pylint
-      run: source $SUPPORT_DIR/run_pylint.bash
+      run: $GITHUB_ACTION_PATH/run_pylint.bash
       shell: bash
       env:
         PACKAGES: ${{ inputs.package }}
@@ -136,8 +138,4 @@ runs:
         JOBS: ${{ inputs.jobs }}
         SPELL_LANG: ${{ inputs.language }}
         FAIL_CODE: ${{ inputs.exitcheck }}
-        SUPPORT_DIR: ${{ github.action_path }}
         DICTIONARY: ${{ steps.dict.outputs.dict }}
-branding:
-  color: green
-  icon: eye
