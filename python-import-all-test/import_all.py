@@ -96,7 +96,7 @@ def _print_import_exception(module: str, exc: Exception) -> None:
 
 def _load_modules(
         directory: str, prefix: str, remove_pyc_files: bool,
-        exclusions: frozenset[str]) -> None:
+        exclusions: frozenset[str]) -> int:
     """
     Loads all the python files found in this directory, giving them the
     specified prefix.
@@ -108,6 +108,7 @@ def _load_modules(
     :param prefix: package prefix top add to the file name
     :param remove_pyc_files: True if ``.pyc`` files should be deleted
     :param exclusions: a set of modules to exclude
+    :return: number of errors found
     """
     modules: set[str] = set()
     _all_modules(directory, prefix, remove_pyc_files, modules)
@@ -122,11 +123,12 @@ def _load_modules(
         except Exception as e:  # pylint: disable=broad-except
             print_error(f"Error with {module}")
             errors.append((module, e))
+        else:
+            print_note(f"checked {module}")
 
     for module, exc in errors:
         _print_import_exception(module, exc)
-    if errors:
-        raise ImportError(f"Error when importing, starting at {prefix}")
+    return len(errors)
 
 
 def load_module(
@@ -148,8 +150,10 @@ def load_module(
     if path is None:
         print_error(f"cannot determine path to module {name}")
         sys.exit(2)
-    _load_modules(os.path.dirname(path), name, remove_pyc_files,
-                  frozenset(exclusions))
+    if _load_modules(os.path.dirname(path), name, remove_pyc_files,
+                     frozenset(exclusions)):
+        print_error(f"Error when importing, starting at {name}")
+        sys.exit(1)
 
 
 if __name__ == '__main__':
