@@ -41,9 +41,16 @@ def print_error(msg: str) -> None:
     print(f"\033[0;31m{msg}\033[0m")
 
 
+def print_good(msg: str) -> None:
+    """
+    Write a good message to stdout.
+    """
+    print(f"\033[0;32m{msg}\033[0m")
+
+
 def _all_modules(directory: str, prefix: str,
                  remove_pyc_files: bool,
-                 results: set[str]):
+                 results: set[str]) -> None:
     """
     List all the python files found in this directory giving then the prefix.
 
@@ -133,31 +140,36 @@ def _load_modules(
 
 def load_module(
         name: str, remove_pyc_files: bool = False,
-        exclusions: Sequence[str] = ()) -> None:
+        exclusions: Sequence[str] = ()) -> int:
     """
     Loads this module and all its children.
 
     :param name: name of the module
     :param remove_pyc_files: True if ``.pyc`` files should be deleted
     :param exclusions: a list of modules to exclude
+    :return: suggested exit code
     """
     try:
         module = importlib.import_module(name)
     except Exception as e:
         _print_import_exception(name, e)
-        sys.exit(2)
+        return 2
     path = module.__file__
     if path is None:
         print_error(f"cannot determine path to module {name}")
-        sys.exit(2)
+        return 2
+
     if _load_modules(os.path.dirname(path), name, remove_pyc_files,
                      frozenset(exclusions)):
         print_error(f"Error when importing, starting at {name}")
-        sys.exit(1)
+        return 1
+    else:
+        print_good(f"module {name} and descendents are importable")
+        return 0
 
 
 if __name__ == '__main__':
-    load_module(
+    sys.exit(load_module(
         os.environ["BASE_MODULE"],
         os.environ.get("REMOVE_PYC", "false").lower() == "true",
-        map(str.strip, os.environ.get("EXCLUSIONS", "").split(",")))
+        map(str.strip, os.environ.get("EXCLUSIONS", "").split(","))))
