@@ -1,0 +1,34 @@
+name: Python Import All Test
+author: Christian Brenninkmeier, Donal Fellows
+description: >
+  Runs a simple test to import all the Python files beneath a particular module.
+  Useful for smoke-testing whether there are import loops;
+  a common failing of Python IDEs is that they're poor at finding import loops.
+
+  Assumes that Python has already been set up.
+branding:
+  color: red
+  icon: list
+
+inputs:
+  module:
+    description: The name of the module to start the search at.
+    required: true
+  remove-pyc-files:
+    description: Whether to remove any `.pyc` files present. Not normally required.
+    required: false
+    default: "false"
+  exclusions:
+    description: Comma-separated list of modules to ignore.
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: invoke test case
+      shell: bash
+      run: python $GITHUB_ACTION_PATH/import_all.py
+      env:
+        BASE_MODULE: ${{ inputs.module }}
+        REMOVE_PYC: ${{ inputs.remove-pyc-files }}
+        EXCLUSIONS: ${{ inputs.exclusions }}

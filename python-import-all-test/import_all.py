@@ -1,4 +1,4 @@
-# Copyright (c) 2017 The University of Manchester
+# Copyright (c) 2017-2025 The University of Manchester
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,6 +18,27 @@ from collections.abc import Sequence
 
 #: Matches names that are legal components of a Python identifier.
 NAME_RE = re.compile("^[a-zA-Z_][a-zA-Z0-9_]*$")
+
+
+def print_note(msg: str) -> None:
+    """
+    Write a note to stdout.
+    """
+    print(msg)
+
+
+def print_warning(msg: str) -> None:
+    """
+    Write a warning to stdout.
+    """
+    print(f"\033[0;33m{msg}\033[0m")
+
+
+def print_error(msg: str) -> None:
+    """
+    Write an error to stdout.
+    """
+    print(f"\033[0;31m{msg}\033[0m")
 
 
 def _all_modules(directory: str, prefix: str,
@@ -41,7 +62,7 @@ def _all_modules(directory: str, prefix: str,
             results.add(prefix)
             if remove_pyc_files:  # pragma: no cover
                 full_path = os.path.join(directory, file_name)
-                print("Deleting: " + full_path)
+                print_note(f"Deleting: {full_path}")
                 os.remove(full_path)
         elif file_name[-3:] == ".py":
             local_name = file_name[:-3]
@@ -53,7 +74,7 @@ def _all_modules(directory: str, prefix: str,
                 results.add(f"{prefix}.{local_name}")
             if remove_pyc_files:  # pragma: no cover
                 full_path = os.path.join(directory, file_name)
-                print("Deleting: " + full_path)
+                print_note(f"Deleting: {full_path}")
                 os.remove(full_path)
         elif file_name != "__pycache__" and NAME_RE.match(file_name):
             full_path = os.path.join(directory, file_name)
@@ -62,7 +83,18 @@ def _all_modules(directory: str, prefix: str,
                              results)
 
 
-def load_modules(
+def _print_import_exception(module: str, exc: Exception) -> None:
+    """
+    Write an exception to stdout, formatted in standard form for this code.
+    """
+    print_error(f"Error importing module {module}:")
+    for line in (
+            line for tb_msgs in traceback.format_exception(exc)
+            for line in tb_msgs.splitlines()):
+        print_warning(f"  {line}")
+
+
+def _load_modules(
         directory: str, prefix: str, remove_pyc_files: bool,
         exclusions: frozenset[str]) -> None:
     """
@@ -83,20 +115,16 @@ def load_modules(
     errors: list[tuple[str, Exception]] = list()
     for module in modules:
         if module in exclusions:
-            print("SKIPPING " + module)
+            print_warning(f"SKIPPING {module}")
             continue
         try:
-            importlib.import_module(module)
+            __import__(module)
         except Exception as e:  # pylint: disable=broad-except
-            print(f"Error with {module}")
+            print_error(f"Error with {module}")
             errors.append((module, e))
 
-    for module, e in errors:
-        print(f"Error importing {module}:")
-        for line in traceback.format_exception(e):
-            for line_line in line.split("\n"):
-                if line_line:
-                    print("  ", line_line.rstrip())
+    for module, exc in errors:
+        _print_import_exception(module, exc)
     if errors:
         raise ImportError(f"Error when importing, starting at {prefix}")
 
@@ -111,17 +139,21 @@ def load_module(
     :param remove_pyc_files: True if ``.pyc`` files should be deleted
     :param exclusions: a list of modules to exclude
     """
-    path = importlib.import_module(name).__file__
-    assert path is not None
-    directory = os.path.dirname(path)
-    assert directory is not None
-    load_modules(directory, name, remove_pyc_files, frozenset(exclusions))
+    try:
+        module = importlib.import_module(name)
+    except Exception as e:
+        _print_import_exception(name, e)
+        sys.exit(2)
+    path = module.__file__
+    if path is None:
+        print_error(f"cannot determine path to module {name}")
+        sys.exit(2)
+    _load_modules(os.path.dirname(path), name, remove_pyc_files,
+                  frozenset(exclusions))
 
 
-# TODO: Better arg parsing...
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print(f'wrong # args: should be "python {sys.argv[0]} baseModule',
-              file=sys.stderr)
-        exit(1)
-    load_module(sys.argv[1])
+    load_module(
+        os.environ["BASE_MODULE"],
+        os.environ.get("REMOVE_PYC", "false").lower() == "true",
+        map(str.strip, os.environ.get("EXCLUSIONS", "").split(",")))
