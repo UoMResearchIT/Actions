@@ -21,14 +21,27 @@ inputs:
   exclusions:
     description: Comma-separated list of modules to ignore.
     required: false
+  python-root:
+    description: >
+      Root of where to find Python packages.
+      Only needed if the code has not already been installed locally.
+    required: false
+    default: .
 
 runs:
   using: composite
   steps:
     - name: invoke test case
       shell: bash
-      run: python $GITHUB_ACTION_PATH/import_all.py
+      run: |
+        if [ "x$PYTHONPATH" = "x" ]; then
+          export PYTHONPATH="${PyRoot:?no python-root supplied}"
+        else
+          PYTHONPATH+=${PyRoot:+:$PyRoot}
+        fi
+        python $GITHUB_ACTION_PATH/import_all.py
       env:
         BASE_MODULE: ${{ inputs.module }}
         REMOVE_PYC: ${{ inputs.remove-pyc-files }}
         EXCLUSIONS: ${{ inputs.exclusions }}
+        PyRoot: ${{ inputs.python-root }}

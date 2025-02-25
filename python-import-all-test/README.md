@@ -21,17 +21,24 @@ Example usage:
 
   Example: `foo.gorp`
 
+* `exclusions`
+
+  Comma-separated list of names of modules to ignore. **Optional.**
+
+  Example: `foo.bar, foo.grill`
+
 * `remove-pyc-files`
 
   Whether to remove any `.pyc` files present. Not normally required by CI. **Optional.**
 
   Defaults to `false`.
 
-* `exclusions`
+* `python-root`
 
-  Comma-separated list of names of modules to ignore. **Optional.**
+  Root of where to find Python packages.
+  Only needed if the code has not already been installed locally. **Optional.**
 
-  Example: `foo.bar, foo.grill`
+  Defaults to `.`
 
 ## Outputs
 None.
