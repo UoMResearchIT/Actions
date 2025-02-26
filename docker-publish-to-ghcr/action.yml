@@ -1,4 +1,4 @@
-name: "Publish Image to Docker Repository"
+name: "Publish Image to Github Container Repository"
 description: >
   Publishes the current Docker image to the container registry run by Github.
 branding:

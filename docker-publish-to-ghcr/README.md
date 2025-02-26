@@ -1,4 +1,4 @@
-# Publish Image to Docker Repository
+# Publish Image to Github Container Repository
 
 Publishes the current Docker image to the container registry run by Github.
 This action does _not_ create the local image.
@@ -17,6 +17,14 @@ Example usage:
 
 ## Inputs
 
+### Commonly Needed
+
+* `version`
+
+  The ID of the version to publish. Defaults to `latest` if not specified. **Optional.**
+
+### Less Commonly Needed
+
 * `actor`
 
   Who is publishing. Defaults to who initiated the workflow run. **Optional.**
@@ -24,6 +32,10 @@ Example usage:
 * `container-name`
 
   The name of the container. Defaults to the nanme of the repository. **Optional.**
+
+* `imageid`
+
+  The ID of the build to publish. If specified, this takes precedence over local image discovery. **Optional.**
 
 * `namespace-name`
 
@@ -39,14 +51,6 @@ Example usage:
 
   An alternate security token. Leave blank to use the `GITHUB_TOKEN`. **Optional.**
 
-* `version`
-
-  The ID of the version to publish. Defaults to `latest` if not specified. **Optional.**
-
-* `imageid`
-
-  The ID of the build to publish. If specified, this takes precedence over local image discovery. **Optional.**
-
 ## Outputs
 
 * `name`
@@ -59,4 +63,4 @@ Pushing to the Github container registry using the `GITHUB_TOKEN` requires the p
 ```yml
 packages: write
 ```
-If you are using a PAT or publishing to another registry, no special workflow permissions are otherwise required (but you have to override the `token` in these cases anyway).
+If you are using a PAT, no special workflow permissions are otherwise required (but you have to override the `token` in that case anyway).
