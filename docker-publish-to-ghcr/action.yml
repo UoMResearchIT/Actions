@@ -42,7 +42,7 @@ inputs:
 outputs:
   name:
     description: The name of the pushed image.
-    value: ${{ steps.push.outputs.name }}
+    value: ${{ steps.derive-names.outputs.handle }}
 
 runs:
   using: composite
@@ -63,20 +63,19 @@ runs:
         ACTOR: ${{ inputs.actor }}
 
     - name: Determine container name
-      id: derive-name
+      id: derive-names
       shell: bash
       run: python $GITHUB_ACTIONS_PATH/container-name.py
       env:
         CONTAINER: ${{ inputs.container-name }}
+        NAMESPACE: ${{ inputs.namespace-name }}
+        VERSION: ${{ inputs.version }}
 
     - name: Push versioned
-      id: push
       run: $GITHUB_ACTIONS_PATH/push.bash
       shell: bash
       env:
-        REGISTRY: ghcr.io
-        CONTAINER: ${{ steps.derive-name.outputs.container }}
-        NAMESPACE: ${{ inputs.namespace-name }}
-        VERSION: ${{ inputs.version }}
-        SRCTAG: ${{ inputs.source-tag }}
+        CONTAINER: ${{ steps.derive-names.outputs.container }}
+        HANDLE: ${{ steps.derive-names.outputs.handle }}
         IMAGEID: ${{ inputs.imageid }}
+        SRCTAG: ${{ inputs.source-tag }}

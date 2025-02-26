@@ -64,3 +64,9 @@ Pushing to the Github container registry using the `GITHUB_TOKEN` requires the p
 packages: write
 ```
 If you are using a PAT, no special workflow permissions are otherwise required (but you have to override the `token` in that case anyway).
+
+# See Also
+
+* https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry (general guidance)
+* https://github.com/docker/login-action (if you need to log into Docker repositories other than the GHCR)
+* https://github.com/docker/build-push-action (a potential source for the `imageid` input)
