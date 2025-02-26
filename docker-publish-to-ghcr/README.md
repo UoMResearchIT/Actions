@@ -25,9 +25,9 @@ Example usage:
 
   The name of the container. Defaults to the nanme of the repository. **Optional.**
 
-* `organisation-name`
+* `namespace-name`
 
-  The name of the organisation.
+  The name of the namespace.
   Defaults to the name of the organisation that owns the repository running this action.
   **Optional.**
 
