@@ -35,4 +35,6 @@ These often have platform requirements for their runners. You can always have se
 
 ## Python
 
+* [`python-import-all-test`](python-import-all-test) runs a simple test to import all the Python files beneath a particular module.
+
 * [`run-pylint`](run-pylint) runs the Python code style checker [`pylint`](https://github.com/pylint-dev/pylint) over some code. It includes support for spell-checking documentation strings.
