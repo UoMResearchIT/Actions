@@ -15,9 +15,9 @@ inputs:
     description: The name of the container. Defaults to the nanme of the repository.
     required: false
     default: ""
-  organisation-name:
+  namespace-name:
     description: >
-      The name of the organisation.
+      The name of the container namespace.
       Defaults to the name of the organisation that owns the repository running this action.
     required: false
     default: ${{ github.repository_owner }}
@@ -29,14 +29,16 @@ inputs:
     description: Who is publishing. Defaults to who initiated the workflow run.
     required: false
     default: ${{ github.actor }}
-  registry:
-    description: Address of the container registry.
-    required: false
-    default: ghcr.io
   source-tag:
     description: The source tag of the local repository. Defaults to `testing`
     required: false
     default: testing
+  imageid:
+    description: >
+      The ID of the build to publish.
+      If specified, this takes precedence over local image discovery.
+    required: false
+    default: ""
 outputs:
   name:
     description: The name of the pushed image.
@@ -50,7 +52,7 @@ runs:
       if: env.uomRIT_docker_login != inputs.actor
       uses: docker/login-action@v3
       with:
-        registry: ${{ inputs.registry }}
+        registry: ghcr.io
         username: ${{ inputs.actor }}
         password: ${{ inputs.token }}
     - name: Record that we've logged in
@@ -62,28 +64,19 @@ runs:
 
     - name: Determine container name
       id: derive-name
-      shell: python
-      run: |
-        import os, re
-        container = os.environ.get("CONTAINER", "")
-        if container == "":
-          container = re.sub(r".*/", "", os.environ["GITHUB_REPOSITORY"])
-        with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-          f.write(f"container={container}\n")
+      shell: bash
+      run: python $GITHUB_ACTIONS_PATH/container-name.py
       env:
-        CONTAINER: ${{ inputs.container }}
+        CONTAINER: ${{ inputs.container-name }}
 
     - name: Push versioned
       id: push
-      run: |
-        handle="${REGISTRY}/${ORG}/${CONTAINER}:${VERSION}"
-        docker image tag ${CONTAINER}:${SRCTAG} $handle
-        docker image push $handle
-        echo "name=$handle" >> $GITHUB_OUTPUT
+      run: $GITHUB_ACTIONS_PATH/push.bash
       shell: bash
       env:
-        REGISTRY: ${{ steps.derive-name.outputs.container }}
-        CONTAINER: ${{ inputs.container-name }}
-        ORG: ${{ inputs.organisation-name }}
+        REGISTRY: ghcr.io
+        CONTAINER: ${{ steps.derive-name.outputs.container }}
+        NAMESPACE: ${{ inputs.namespace-name }}
         VERSION: ${{ inputs.version }}
         SRCTAG: ${{ inputs.source-tag }}
+        IMAGEID: ${{ inputs.imageid }}

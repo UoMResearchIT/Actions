@@ -31,10 +31,6 @@ Example usage:
   Defaults to the name of the organisation that owns the repository running this action.
   **Optional.**
 
-* `registry`
-
-  Address of the container registry. Defaults to `ghcr.io`. **Optional.**
-
 * `source-tag`
 
   The source tag of the local repository. Defaults to `testing`. **Optional.**
@@ -46,6 +42,10 @@ Example usage:
 * `version`
 
   The ID of the version to publish. Defaults to `latest` if not specified. **Optional.**
+
+* `imageid`
+
+  The ID of the build to publish. If specified, this takes precedence over local image discovery. **Optional.**
 
 ## Outputs
 
