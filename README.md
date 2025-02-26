@@ -17,7 +17,7 @@ These are intended for use in many types of project, wherever relevant.
 
 * [`apt-get-install`](apt-get-install) installs packages into Ubuntu runners, allowing for subtleties of installation that have been found to come up with some packages "in the wild".
 
-* [`docker-publish`](docker-publish) publishes a workflow-local Docker image to the Github container registry.
+* [`docker-publish-to-ghcr`](docker-publish-to-ghcr) publishes a workflow-local Docker image to the Github container registry.
 
 * [`check-copyrights`](check-copyrights) ensures that all files in your repository have an "acceptable" copyright notice near their top.
 
