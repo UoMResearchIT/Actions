@@ -13,6 +13,8 @@ These are intended for use in many types of project, wherever relevant.
 
 * [`download`](download) does cached downloads of files from the web.
 
+* [`instantiate-file`](instantiate-file) creates a file with a value provided by your workflow.
+
 ## Linux runners only
 
 * [`apt-get-install`](apt-get-install) installs packages into Ubuntu runners, allowing for subtleties of installation that have been found to come up with some packages "in the wild".

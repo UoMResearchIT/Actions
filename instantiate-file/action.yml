@@ -1,5 +1,7 @@
-name: Instantiate Value as file
-description: Instantiates a value (presumably a secret) as a temporary file.
+name: Instantiate value as file
+description: >
+  Instantiates a value (presumably a secret) as a temporary file.
+  This action is careful to delete the file later in the workflow (after it shouldn't be required any more).
 author: Donal Fellows
 branding:
   icon: file-plus
