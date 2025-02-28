@@ -58,21 +58,21 @@ runs:
     - name: Record that we've logged in
       if: steps.login.outcome == 'success'
       shell: bash
-      run: echo "uomRIT_docker_login=$ACTOR" >> $GITHUB_OUTPUT
+      run: echo "uomRIT_docker_login=$ACTOR" >> $GITHUB_ENV
       env:
         ACTOR: ${{ inputs.actor }}
 
     - name: Determine container name
       id: derive-names
       shell: bash
-      run: python $GITHUB_ACTIONS_PATH/container-name.py
+      run: python $GITHUB_ACTION_PATH/container-name.py
       env:
         CONTAINER: ${{ inputs.container-name }}
         NAMESPACE: ${{ inputs.namespace-name }}
         VERSION: ${{ inputs.version }}
 
     - name: Push versioned
-      run: $GITHUB_ACTIONS_PATH/push.bash
+      run: $GITHUB_ACTION_PATH/push.bash
       shell: bash
       env:
         CONTAINER: ${{ steps.derive-names.outputs.container }}
