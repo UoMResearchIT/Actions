@@ -54,7 +54,7 @@ runs:
       with:
         registry: ghcr.io
         username: ${{ inputs.actor }}
-        password: ${{ inputs.token || secrets.GITHUB_TOKEN }}
+        password: ${{ inputs.token || github.token }}
     - name: Record that we've logged in
       if: steps.login.outcome == 'success'
       shell: bash
