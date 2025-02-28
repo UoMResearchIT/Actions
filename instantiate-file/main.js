@@ -11,7 +11,7 @@ function mainStep(key) {
     const b64 = process.env.INPUT_BASE64;
     let filename = process.env.INPUT_FILENAME;
     if (filename === undefined || filename == "") {
-        const d = mkdtempSync("instantiate-");
+        const d = mkdtempSync(process.env.RUNNER_TEMP, "instantiate-");
         filename = join(d, "datum");
     }
     if (b64 == 'true') {
@@ -35,7 +35,7 @@ function postStep(key) {
     process.stdout.write(`deleted ${filename}${EOL}`);
 }
 
-const key = process.env.INPUT_KEY.toUpperCase();
+const key = process.env.GITHUB_ACTION.toUpperCase();
 if (process.env[`STATE_${key}`] === undefined) {
     mainStep(key);
 } else {

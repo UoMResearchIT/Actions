@@ -15,10 +15,6 @@ inputs:
     description: If `true`, the value should be base64-decoded before being written to the file.
     required: false
     default: "false"
-  key:
-    description: Unique ID.
-    required: false
-    default: ${{ github.action }}
 outputs:
   filename:
     description: The full name of the file that the value was written to.
