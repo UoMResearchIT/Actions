@@ -14,7 +14,7 @@ function mainStep(key) {
         filename = join(mkdtempSync(join(process.env.RUNNER_TEMP, "instantiate-")), "datum");
     }
     if (b64 == 'true') {
-        const decoded = new Buffer(value, "base64");
+        const decoded = Buffer.from(value, "base64");
         writeFileSync(filename, decoded);
     } else {
         writeFileSync(filename, value);
