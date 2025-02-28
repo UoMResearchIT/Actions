@@ -24,7 +24,7 @@ inputs:
   token:
     description: An alternate security token. Leave blank to use the `GITHUB_TOKEN`.
     required: false
-    default: ${{ secrets.GITHUB_TOKEN }}
+    default: ""
   actor:
     description: Who is publishing. Defaults to who initiated the workflow run.
     required: false
@@ -54,7 +54,7 @@ runs:
       with:
         registry: ghcr.io
         username: ${{ inputs.actor }}
-        password: ${{ inputs.token }}
+        password: ${{ inputs.token || secrets.GITHUB_TOKEN }}
     - name: Record that we've logged in
       if: steps.login.outcome == 'success'
       shell: bash
