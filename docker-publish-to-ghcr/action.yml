@@ -1,0 +1,81 @@
+name: "Publish Image to Github Container Repository"
+description: >
+  Publishes the current Docker image to the container registry run by Github.
+branding:
+  color: green
+  icon: package
+
+inputs:
+  version:
+    description: >
+      The ID of the version to publish. Defaults to `latest` if not specified.
+    default: latest
+    required: false
+  container-name:
+    description: The name of the container. Defaults to the nanme of the repository.
+    required: false
+    default: ""
+  namespace-name:
+    description: >
+      The name of the container namespace.
+      Defaults to the name of the organisation that owns the repository running this action.
+    required: false
+    default: ${{ github.repository_owner }}
+  token:
+    description: An alternate security token. Leave blank to use the `GITHUB_TOKEN`.
+    required: false
+    default: ""
+  actor:
+    description: Who is publishing. Defaults to who initiated the workflow run.
+    required: false
+    default: ${{ github.actor }}
+  source-tag:
+    description: The source tag of the local repository. Defaults to `testing`
+    required: false
+    default: testing
+  imageid:
+    description: >
+      The ID of the build to publish.
+      If specified, this takes precedence over local image discovery.
+    required: false
+    default: ""
+outputs:
+  name:
+    description: The name of the pushed image.
+    value: ${{ steps.derive-names.outputs.handle }}
+
+runs:
+  using: composite
+  steps:
+    - name: Log in to the Container registry
+      id: login
+      if: env.uomRIT_docker_login != inputs.actor
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ inputs.actor }}
+        password: ${{ inputs.token || github.token }}
+    - name: Record that we've logged in
+      if: steps.login.outcome == 'success'
+      shell: bash
+      run: echo "uomRIT_docker_login=$ACTOR" >> $GITHUB_ENV
+      env:
+        ACTOR: ${{ inputs.actor }}
+
+    - name: Determine container name
+      id: derive-names
+      shell: bash
+      run: python $GITHUB_ACTION_PATH/container-name.py
+      env:
+        CONTAINER: ${{ inputs.container-name }}
+        NAMESPACE: ${{ inputs.namespace-name }}
+        VERSION: ${{ inputs.version }}
+
+    - name: Push versioned
+      run: $GITHUB_ACTION_PATH/push.bash
+      shell: bash
+      env:
+        CONTAINER: ${{ steps.derive-names.outputs.container }}
+        HANDLE: ${{ steps.derive-names.outputs.handle }}
+        IMAGEID: ${{ inputs.imageid }}
+        SRCTAG: ${{ inputs.source-tag }}
