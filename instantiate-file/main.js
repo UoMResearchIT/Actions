@@ -11,8 +11,7 @@ function mainStep(key) {
     const b64 = process.env.INPUT_BASE64;
     let filename = process.env.INPUT_FILENAME;
     if (filename === undefined || filename == "") {
-        const d = mkdtempSync(process.env.RUNNER_TEMP, "instantiate-");
-        filename = join(d, "datum");
+        filename = join(mkdtempSync(join(process.env.RUNNER_TEMP, "instantiate-")), "datum");
     }
     if (b64 == 'true') {
         const decoded = new Buffer(value, "base64");
