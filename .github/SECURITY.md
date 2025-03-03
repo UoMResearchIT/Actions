@@ -8,11 +8,14 @@ We aim to fix security problems as rapidly as possible. _In extremis,_ if faults
 
 You may either:
 * [Submit an Issue](https://github.com/UoMResearchIT/actions/issues/new), or
-* email the Team.
+* [Report via Connect](https://www.itservices.manchester.ac.uk/help/connect/) (see that page for details of how to report issues to the Research IT Application Support channel without a University account).
 
-The latter is preferred for anything that needs confidentiality.
+The latter is preferred for any report that needs confidentiality.
 
 ## UoM Reporting
 
-Members of the University of Manchester may also use Connect to report problems with this repository; see our [Application Support](https://research-it.manchester.ac.uk/services/application-support/) page for details.  
+Non-confidential reports should be made via [issues](https://github.com/UoMResearchIT/actions/issues/new).
+
+Members of the University of Manchester should use Connect to report problems with this repository if confidentiality is required; see our [Application Support](https://research-it.manchester.ac.uk/services/application-support/) page for details, including a direct link to the reporting form.
+
 Members of Research IT may contact the Automation Working Group directly on Teams to report problems.
