@@ -1,0 +1,16 @@
+name: Enforce License Rules
+description: >
+  Enforces our own license rules.
+run-name: License Check
+on: push
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Enforce
+        uses: UoMResearchIT/actions/check-copyrights@0.2
+        with:
+          config-file: rat_asl20.xml
