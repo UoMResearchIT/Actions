@@ -72,6 +72,12 @@ Here's a few things to think about when writing a PR:
   * your name in the `author` field, and
   * suitable `branding` metadata.
 
+- [ ] Consider whether your action interacts with itself and other actions.
+  * Does it cache things? If so, is there a suitable cache key?
+    (Sometimes it is a good idea to let users specify this; other times, that's a bad idea.)
+  * Does it need to interact with future calls of itself? Environment variables can help.
+  * Do later actions want information from this action? Outputs are perfect for producing that.
+
 - [ ] It helps a lot if you can link to a build log that shows that your action works.
   This is particularly helpful for any action intended to be used across many runner
   platforms.
