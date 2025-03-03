@@ -20,12 +20,13 @@ Here's a few things to think about when writing a PR:
 
 - [ ] Do you have new bash scripts in your PR? Did you remember to mark them as executable?
 
-    > [!NOTE]
-    > On Windows, this needs:
-    > 
-    > ```bash
-    > git update-index --chmod=+x path/to/file.bash
-    > ```
+    On Windows, this needs:
+
+    ```bash
+    git update-index --chmod=+x path/to/file.bash
+    ```
+
+    On Linux and macOS, just `chmod +x path/to/file.bash` before doing `git add`.
 
 - [ ] If you're making a new action, don't forget to give it a `README.md` and to link to the
     action folder from the main `README.md`.
@@ -72,3 +73,5 @@ Here's a few things to think about when writing a PR:
   * suitable `branding` metadata.
 
 - [ ] It helps a lot if you can link to a build log that shows that your action works.
+  This is particularly helpful for any action intended to be used across many runner
+  platforms.
