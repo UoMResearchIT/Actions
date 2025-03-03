@@ -14,5 +14,5 @@ The latter is preferred for anything that needs confidentiality.
 
 ## UoM Reporting
 
-Members of the University of Manchester may also use Connect to report problems with this repository.  
+Members of the University of Manchester may also use Connect to report problems with this repository; see our [Application Support](https://research-it.manchester.ac.uk/services/application-support/) page for details.  
 Members of Research IT may contact the Automation Working Group directly on Teams to report problems.
