@@ -1,0 +1,28 @@
+name: Configure NuGet for Github
+# Based on a snippet in the packages documentation
+author: Donal Fellows
+description: >
+  This configures NuGet so that it can access the organisation namespace for packages.
+branding:
+  icon: package
+  color: green
+inputs:
+  namespace:
+    description: The namespace to access or publish into.
+    required: false
+    default: ${{ github.repository_owner }}
+  short-handle:
+    description: The name of the short handle to associated with the Github-hosted repository
+    required: false
+    default: github
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        dotnet nuget add source --username "${NGUSER}" --password "${NGPASS}" --store-password-in-clear-text --name "${NGHNDL}" "${NGURL}"
+      env:
+        NGUSER: ${{ github.actor }}
+        NGPASS: ${{ secrets.GITHUB_TOKEN }}
+        NGURL: "https://nuget.pkg.github.com/${{ inputs.namespace }}/index.json"
+        NGHNDL: ${{ inputs.short-handle }}
