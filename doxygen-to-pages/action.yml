@@ -1,0 +1,31 @@
+name: Doxygen to Pages
+description: >
+  Runs Doxygen and uploads the result as an artifact ready to be deployed to
+  Github Pages (see actions/deploy-pages).
+inputs:
+  working-directory:
+    description: >
+      The working directory to run Doxygen in.
+      Where the `Doxyfile` is located.
+    default: .
+outputs:
+  artifact_id:
+    description: The ID of the artifact that was uploaded.
+    value: ${{ steps.upload.outputs.artifact_id }}
+runs:
+  using: composite
+  steps:
+    - name: Setup Pages
+      id: setup
+      uses: actions/configure-pages@v5
+    - name: Run Doxygen
+      uses: mattnotmitt/doxygen-action@1.9.8
+      with:
+        working-directory: ${{ inputs.working-directory }}
+      env:
+        SITE_URL: ${{ steps.setup.outputs.base_url }}
+    - name: Upload Artifact
+      id: upload
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: html
