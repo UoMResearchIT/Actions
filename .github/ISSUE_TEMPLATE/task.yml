@@ -16,6 +16,7 @@ name: New Task
 description: A request for something to be done that isn't really a bug fix or a new feature.
 type: Task
 title: "[TSK]: "
+# See https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-githubs-form-schema
 body:
   - type: markdown
     attributes:

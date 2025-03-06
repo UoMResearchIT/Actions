@@ -13,10 +13,10 @@
 # limitations under the License.
 
 name: Bug Report
-description: Report something not working with the project's code.
+description: Report something not working with the actions.
 title: "[Bug]: "
 type: Bug
-labels: [bug]
+labels: ["bug 🐛"]
 # See https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-githubs-form-schema
 body:
   - type: markdown
@@ -32,25 +32,32 @@ body:
       placeholder: Tell us what you see!
     validations:
       required: true
-  - type: input
+  - type: dropdown
     id: version
     attributes:
-      label: What version of our software are you running?
-      placeholder: "I don't know..."
+      label: What version of our actions are you running?
       description: >
-        It can really help if you let us know what version of our software you are using.
+        It can really help if you let us know what version of our actions you are using.
         Sometimes the fix to the bug has already been implemented and all that is needed is an update, but this will let us know for sure.
-  - type: textarea
+        If you choose `other`, please state the branch or tag name in the main description above.
+      options:
+        - "main"
+        - "0.1"
+        - "0.2"
+        - "other"
+  - type: input
     id: environment
     attributes:
-      label: Where were you running our software?
+      label: Which runner were you using?
       description: >
-        Operating system, browser, shell, anything to help us know what environment our software is (not) working within.
-        Sometimes, this is vital.
+        Which of the many runners are you using?
+        This is particularly important if you are using a custom runner!
+      placeholder: ubuntu-latest
   - type: textarea
     id: logs
     attributes:
       label: Relevant log output
       description: >
         Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+        Also, don't include any secrets.
       render: shell
