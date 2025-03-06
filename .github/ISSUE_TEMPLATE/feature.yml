@@ -14,15 +14,19 @@
 
 name: Feature Request
 description: >
-  A request for a new feature to be added, for the software to do something that it did not previously do.
+  A request for a new action to be added.
 title: "[FRQ]: "
+labels: ["enhancement ⭐"]
 type: Feature
+# See https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-githubs-form-schema
 body:
   - type: markdown
     attributes:
       value: >
-        Thank you for making a suggestion of something new we should do.
+        Thank you for making a suggestion of some new action we should do.
         Usually, the more detail you can provide about what you think we should do, the easier it is to implement.
+
+        If you know how, make a pull request as well; that will accelerate getting this feature in.
   - type: textarea
     id: requested-feature
     attributes:
@@ -32,11 +36,20 @@ body:
       placeholder: More information usually helps here.
     validations:
       required: true
-  - type: input
-    id: version
+  - type: dropdown
+    id: target-platform
     attributes:
-      label: What version of our software are you running?
-      placeholder: "I don't know..."
+      label: Target Runner Platfom
       description: >
-        It can really help if you let us know what version of our software you are using.
-        Sometimes, features may already exist in later versions and all that is needed is an update, but this will let us know for sure.
+        What runner platforms do you want to support?
+        Cross-platform actions are often more complex to develop and test, yet tend to be more useful.
+        The Ubuntu runners tend to be fastest; they're recommended as default choices.
+      options:
+        - All
+        - Ubuntu Linux
+        - macOS
+        - Windows
+        - Custom
+      default: 0
+    validations:
+      required: true
