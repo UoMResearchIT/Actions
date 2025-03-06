@@ -1,0 +1,28 @@
+name: Feature Request
+description: >
+  A request for a new feature to be added, for the software to do something that it did not previously do.
+title: "[FRQ]: "
+type: Feature
+body:
+  - type: markdown
+    attributes:
+      value: >
+        Thank you for making a suggestion of something new we should do.
+        Usually, the more detail you can provide about what you think we should do, the easier it is to implement.
+  - type: textarea
+    id: requested-feature
+    attributes:
+      label: What are you asking for
+      description: >
+        Please describe what it is you want.
+      placeholder: More information usually helps here.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: What version of our software are you running?
+      placeholder: "I don't know..."
+      description: >
+        It can really help if you let us know what version of our software you are using.
+        Sometimes, features may already exist in later versions and all that is needed is an update, but this will let us know for sure.
