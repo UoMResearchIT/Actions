@@ -1,0 +1,42 @@
+# Copyright (c) 2025 The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Feature Request
+description: >
+  A request for a new feature to be added, for the software to do something that it did not previously do.
+title: "[FRQ]: "
+type: Feature
+body:
+  - type: markdown
+    attributes:
+      value: >
+        Thank you for making a suggestion of something new we should do.
+        Usually, the more detail you can provide about what you think we should do, the easier it is to implement.
+  - type: textarea
+    id: requested-feature
+    attributes:
+      label: What are you asking for
+      description: >
+        Please describe what it is you want.
+      placeholder: More information usually helps here.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: What version of our software are you running?
+      placeholder: "I don't know..."
+      description: >
+        It can really help if you let us know what version of our software you are using.
+        Sometimes, features may already exist in later versions and all that is needed is an update, but this will let us know for sure.
