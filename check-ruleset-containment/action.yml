@@ -1,0 +1,40 @@
+# Copyright (c) 2025 The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Check Whether Ruleset Contains Other Ruleset
+description: >
+  Checks whether a ruleset (the "current" ruleset) contains all the rules
+  from a standard model ruleset (the "expected" ruleset).
+author: Donal Fellows, Adina Rahim
+branding:
+  color: green
+  icon: check
+inputs:
+  current:
+    description: >
+      The name of the file containing the "current" ruleset to check.
+    required: true
+  expected:
+    description: >
+      The name of the file containing the "expected" ruleset to check against.
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: compare rulesets
+      shell: bash
+      run: $GITHUB_ACTION_PATH/check.bash
+      env:
+        CURRENT_FILE: ${{ inputs.current }}
+        EXPECTED_FILE: ${{ inputs.expected }}

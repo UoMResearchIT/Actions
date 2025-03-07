@@ -1,0 +1,56 @@
+# Copyright (c) 2025 The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Get Repository Branch Ruleset
+description: >
+  Gets the ruleset applied to a particular branch of a repository.
+author: Donal Fellows, Adina Rahim
+branding:
+  color: gray-dark
+  icon: list
+inputs:
+  repository:
+    description: >
+      Which repository to fetch the ruleset from.
+      Defaults to the repository that the workflow is running in.
+    default: ${{ github.repository }}
+  token:
+    description: >
+      Access token used for reading the repository metadata.
+      Required if the repository is not the current once.
+    default: ${{ github.token }}
+  branch:
+    description: >
+      Which branch to get the ruleset of.
+      If not specified, uses the default branch of the repository.
+outputs:
+  filename:
+    description: >
+      The name of the file containing the ruleset.
+    value: ${{ steps.fetch.outputs.file }}
+  ruleset:
+    description: >
+      The ruleset as JSON data.
+    value: ${{ steps.fetch.outputs.ruleset }}
+runs:
+  using: composite
+  steps:
+    - name: fetch ruleset
+      id: fetch
+      run: $GITHUB_ACTION_PATH/fetch.bash
+      shell: bash
+      env:
+        BRANCH: ${{ inputs.branch }}
+        GH_TOKEN: ${{ inputs.token }}
+        REPO_NAME: ${{ inputs.repository }}
