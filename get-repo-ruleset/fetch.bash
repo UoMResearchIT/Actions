@@ -41,7 +41,7 @@ echo "::endgroup::"
 echo "file=$OUTPUT_FILE" >> $GITHUB_OUTPUT
 echo "ruleset<<EOF" >> $GITHUB_OUTPUT
 jq . < $OUTPUT_FILE >> $GITHUB_OUTPUT
-echo '\nEOF' >> $GITHUB_OUTPUT
+echo 'EOF' >> $GITHUB_OUTPUT
 
 # Check if the response is empty or not an array
 RULESET_COUNT=$(jq length < $OUTPUT_FILE)
