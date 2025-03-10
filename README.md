@@ -48,3 +48,5 @@ These are intended to support particular other repositories and working practice
 * [`check-ruleset-containment](check-ruleset-containment) checks whether a ruleset minimally conforms to another ruleset.
 
 * [`get-repo-ruleset`](get-repo-ruleset) gets the ruleset applied to a particular branch of a repository.
+
+* ['reuse'](reuse) checks that the licenses of all files conform to the REUSE standard.
