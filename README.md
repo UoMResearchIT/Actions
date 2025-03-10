@@ -31,6 +31,8 @@ These often have platform requirements for their runners. You can always have se
 
 ## C and C++
 
+* [`doxygen-to-pages`](doxygen-to-pages) runs [Doxygen](https://doxygen.nl/) to generate a simple deployable documentation site.
+
 * [`run-c-style-check`](run-c-style-check) runs a [simple style checker](https://github.com/verateam/vera) against your C or C++ code.
 
 * [`run-clang-tidy`](run-clang-tidy) does static analysis of C or C++ codebases with [`clang-tidy`](https://clang.llvm.org/extra/clang-tidy/) to find likely problems.

@@ -1,6 +1,6 @@
 # Doxygen to Pages
 
-Runs Doxygen and uploads the result as an artifact ready to be deployed to
+Runs [Doxygen](https://doxygen.nl/) and uploads the result as an artifact ready to be deployed to
 Github Pages (see [actions/deploy-pages](https://github.com/actions/deploy-pages)).
 
 Example:
