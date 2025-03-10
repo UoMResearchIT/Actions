@@ -1,3 +1,11 @@
+---
+name: ⭐ New Action
+about: File a bug/issue
+title: '[FRQ]: '
+labels: enhancement ⭐
+type: Feature
+---
+
 <!--
 Hi there!
 
@@ -11,12 +19,15 @@ Donal Fellows (@dkfellows) on behalf of University of Manchester Research Softwa
 Here's a few things to think about when writing a PR:
 -->
 
-- [ ] Is this fixing an issue? If so, please `#ref` its ID. This helps a lot!
+- [ ] Is this fixing an issue? If so, please `#ref` its ID. This helps a lot! (Note that an issue is _not_ required for submitting a new action.)
 
-- [ ] What do you think this PR does? We can see what it _actually_ does by reading the code,
-      but it's very helpful to have a short description of what you _intend_ it to do. 
+- [ ] What do you think this action does? We can see what it _actually_ does by reading the code,
+      but it's very helpful to have a short description of what you _intend_ it to do.
+
+- [ ] Have you considered whether there is an existing action by some other reasonably-trusted party to do this?
 
 - [ ] If you can, `@` mention someone to review the code at least in the first instance.
+      Or, if you have permission, just directly request a review from them.
 
 - [ ] Do you have new bash scripts in your PR? Did you remember to mark them as executable?
 
@@ -28,10 +39,9 @@ Here's a few things to think about when writing a PR:
 
     On Linux and macOS, just `chmod +x path/to/file.bash` before doing `git add`.
 
-- [ ] If you're making a new action, don't forget to give it a `README.md` and to link to the
-    action folder from the main `README.md`.
+- [ ] Don't forget to give your action a `README.md`.
 
-    Action `README`s should typically follow a simple pattern:
+    Action `README`s should typically follow a simple pattern (see our existing actions for real instances):
 
     ```markdown
     # Title
@@ -65,11 +75,15 @@ Here's a few things to think about when writing a PR:
     put them towards the end. For simple actions, you can probably omit this.
     ```
 
-- [ ] If you're making a new action, your action descriptor (`action.yml`) should include
+    You can add more sections if you need them; please try to keep them towards the end.
+
+- [ ] Link to your action folder from the main `README.md`.
+
+- [ ] Your action descriptor (`action.yml`) should include
   (as well as the technical data required to implement the action):
-  * a `name`,
-  * a `description`,
-  * your name in the `author` field, and
+  * a `name` (mandatory),
+  * a `description` (mandatory),
+  * your name(s) in the `author` field, and
   * suitable `branding` metadata.
 
 - [ ] Consider whether your action interacts with itself and other actions.
@@ -78,6 +92,10 @@ Here's a few things to think about when writing a PR:
   * Does it need to interact with future calls of itself? Environment variables can help.
   * Do later actions want information from this action? Outputs are perfect for producing that.
 
+  Remember, you can ask for help with these.
+
 - [ ] It helps a lot if you can link to a build log that shows that your action works.
   This is particularly helpful for any action intended to be used across many runner
   platforms.
+
+  Or suggest some other way we can test (such as within our [testing](/actions-test) repo).
