@@ -45,7 +45,7 @@ These often have platform requirements for their runners. You can always have se
 
 These are intended to support particular other repositories and working practices. They may be non-applicable more widely.
 
-* [`check-ruleset-containment](check-ruleset-containment) checks whether a ruleset minimally conforms to another ruleset.
+* [`check-ruleset-containment`](check-ruleset-containment) checks whether a ruleset minimally conforms to another ruleset.
 
 * [`get-repo-ruleset`](get-repo-ruleset) gets the ruleset applied to a particular branch of a repository.
 
