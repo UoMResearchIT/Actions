@@ -12,9 +12,8 @@ Do you struggle with copyright and licensing in your project? REUSE helps you in
 
 This action allows users to check for compliance with the REUSE best practices. It is one of many options for projects to include REUSE in their workflows. Please see the [help for developers](https://reuse.software/dev/) to get an overview.
 
-## Note
-
-This is a duplicate of the original ReUse action that we have made so that we can change the tool.  Unfortunately our needs are more than the tool developers are willing to accept (e.g. ignoring files is just not allowed in their action). So we copied it.
+> [!NOTE]
+> This is a duplicate of the [original ReUse action](/fsfe/reuse-action) that we have made so that we can change the tool.  Unfortunately our needs are more than the tool developers are willing to accept (e.g. ignoring files is just not allowed in their action). So we copied it.
 
 ## Features
 
@@ -47,7 +46,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: REUSE Compliance Check
-      uses: fsfe/reuse-action@v5
+      uses: UoMResearchIT/reuse@main
 ```
 
 If you would like to run other subcommands, you could use the following snippet which outputs a the SPDX bill of materials:
@@ -56,7 +55,7 @@ If you would like to run other subcommands, you could use the following snippet 
     - name: Checkout
       uses: actions/checkout@v4
     - name: REUSE SPDX SBOM
-      uses: fsfe/reuse-action@v5
+      uses: UoMResearchIT/reuse@main
       with:
         args: spdx
 ```
@@ -67,22 +66,31 @@ In the same fashion, it is possible to add optional arguments like `--include-su
     - name: Checkout
       uses: actions/checkout@v4
     - name: REUSE Compliance Check
-      uses: fsfe/reuse-action@v5
+      uses: UoMResearchIT/reuse@main
       with:
         args: --include-submodules lint
 ```
 
+## Inputs
+* `args`
 
-## Inputs Description
+  The subcommand for the REUSE helper tool. Read the [tool's documentation](https://reuse.readthedocs.io/) for all available subcommands.
+  **Optional.**
 
-| Name   | Requirement | Default | Description |
-| ------ | ----------- | ------- | ----------- |
-| `args` | _required_  | `lint`  | The subcommand for the REUSE helper tool. Read the [tool's documentation](https://reuse.readthedocs.io/) for all available subcommands. |
+  Defaults to `lint`.
+
+## Outputs
+None
+
+## Permissions
+No special permissions required.
+
+> [!NOTE]
+> If committing changes made by the tool back, the workflow may need commit permission, though _this_ action doesn't need that.
 
 ## Versions
 
 The major version of this action follows the major version of the [REUSE helper tool](https://github.com/fsfe/reuse-tool). Make sure to keep up with the latest major version to benefit from the latest features and be able to spot licensing and copyright issues that we detect with newer versions.
-
 
 ## License
 
