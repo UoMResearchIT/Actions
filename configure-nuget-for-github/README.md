@@ -4,10 +4,7 @@ This configures NuGet so that it can access the organisation namespace for packa
 
 Example:
 ```yml
-  - uses: UoMResearchIT/actions/download@main
-    with:
-      url: https://research-it.manchester.ac.uk/
-      local-name: homepage.html
+  - uses: UoMResearchIT/actions/configure-nuget-for-github@main
 ```
 
 # inputs
