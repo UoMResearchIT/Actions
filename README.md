@@ -35,6 +35,10 @@ These often have platform requirements for their runners. You can always have se
 
 * [`run-clang-tidy`](run-clang-tidy) does static analysis of C or C++ codebases with [`clang-tidy`](https://clang.llvm.org/extra/clang-tidy/) to find likely problems.
 
+## C#
+
+* [`configure-nuget-for-github`](configure-nuget-for-github) sets up NuGet to access GitHub packages.
+
 ## Python
 
 * [`python-import-all-test`](python-import-all-test) runs a simple test to import all the Python files beneath a particular module.
