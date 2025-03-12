@@ -9,7 +9,7 @@ Note that, in general, all public files with a suitable human-readable comment f
 Example usage:
 
 ```yml
-    - uses: UoMResearchIT/actions/check-copyrights@0.2
+    - uses: UoMResearchIT/actions/check-copyrights@v0.3
       with:
         config-file: rat_asl20.xml
 ```

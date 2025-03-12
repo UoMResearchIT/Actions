@@ -11,7 +11,7 @@ The expected and actual outputs are written to the log to aid debugging of failu
 Example usage:
 
 ```yml
-  - uses: UoMResearchIT/actions/compare-output@0.2
+  - uses: UoMResearchIT/actions/compare-output@v0.3
     with:
       command: echo foo
       expected: foo

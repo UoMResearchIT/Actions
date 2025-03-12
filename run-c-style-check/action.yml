@@ -42,7 +42,7 @@ runs:
   using: composite
   steps:
     - name: install vera
-      uses: UoMResearchIT/actions/apt-get-install@0.2
+      uses: UoMResearchIT/actions/apt-get-install@v0.3
       with:
         packages: vera++
     - name: analyse code

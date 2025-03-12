@@ -6,7 +6,7 @@ This action does _not_ create the local image.
 Example usage:
 
 ```yml
-  - uses: UoMResearchIT/actions/docker-publish-to-ghcr@main
+  - uses: UoMResearchIT/actions/docker-publish-to-ghcr@v0.3
     with:
       source-tag: testing
       version: latest

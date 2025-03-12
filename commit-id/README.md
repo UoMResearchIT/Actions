@@ -10,7 +10,7 @@ It's assumed that updated file will not be committed back to the repository; thi
 ### C and C++
 
 ```yml
-  - uses: UoMResearchIT/actions/commit-id@0.2
+  - uses: UoMResearchIT/actions/commit-id@v0.3
     with:
       file: src/build_id.h
 ```
@@ -22,7 +22,7 @@ Which might be paired with a source file (in `src/build_id.h` for example) like 
 ```
 ### Python
 ```yml
-  - uses: UoMResearchIT/actions/commit-id@0.2
+  - uses: UoMResearchIT/actions/commit-id@v0.3
     with:
       file: src/version.py
 ```
