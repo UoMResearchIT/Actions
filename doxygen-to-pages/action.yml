@@ -36,12 +36,13 @@ runs:
     - name: Setup Pages
       id: setup
       uses: actions/configure-pages@v5
+      continue-on-error: true
     - name: Run Doxygen
       uses: mattnotmitt/doxygen-action@1.9.8
       with:
         working-directory: ${{ inputs.working-directory }}
       env:
-        SITE_URL: ${{ steps.setup.outputs.base_url }}
+        SITE_URL: ${{ steps.setup.outputs.base_url || 'https://example.org/' }}
     - name: Upload Artifact
       id: upload
       uses: actions/upload-pages-artifact@v3
