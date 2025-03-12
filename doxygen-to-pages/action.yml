@@ -1,0 +1,50 @@
+# Copyright (c) 2024-2025 The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Doxygen to Pages
+author: Donal Fellows
+description: >
+  Runs Doxygen and uploads the result as an artifact ready to be deployed to
+  Github Pages (see actions/deploy-pages).
+branding:
+  icon: file-text
+  color: blue
+inputs:
+  working-directory:
+    description: >
+      The working directory to run Doxygen in.
+      Where the `Doxyfile` is located.
+    default: .
+outputs:
+  artifact_id:
+    description: The ID of the artifact that was uploaded.
+    value: ${{ steps.upload.outputs.artifact_id }}
+runs:
+  using: composite
+  steps:
+    - name: Setup Pages
+      id: setup
+      uses: actions/configure-pages@v5
+      continue-on-error: true
+    - name: Run Doxygen
+      uses: mattnotmitt/doxygen-action@1.9.8
+      with:
+        working-directory: ${{ inputs.working-directory }}
+      env:
+        SITE_URL: ${{ steps.setup.outputs.base_url || 'https://example.org/' }}
+    - name: Upload Artifact
+      id: upload
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: ${{ inputs.working-directory }}/html
