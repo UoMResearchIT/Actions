@@ -11,7 +11,7 @@ Runs pylint on a Python package.
 Example basic usage:
 
 ```yml
-  - uses: UoMResearchIT/actions/run-pylint@0.2
+  - uses: UoMResearchIT/actions/run-pylint@v0.3
     with:
       package: mycode.pkg_name
 ```
@@ -19,7 +19,7 @@ Example basic usage:
 Example usage with spell checking:
 
 ```yml
-  - uses: UoMResearchIT/actions/run-pylint@0.2
+  - uses: UoMResearchIT/actions/run-pylint@v0.3
     with:
       package: mycode.pkg_name
       language: en_GB

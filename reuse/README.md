@@ -46,7 +46,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: REUSE Compliance Check
-      uses: UoMResearchIT/reuse@main
+      uses: UoMResearchIT/reuse@v0.3
 ```
 
 If you would like to run other subcommands, you could use the following snippet which outputs a the SPDX bill of materials:
@@ -55,7 +55,7 @@ If you would like to run other subcommands, you could use the following snippet 
     - name: Checkout
       uses: actions/checkout@v4
     - name: REUSE SPDX SBOM
-      uses: UoMResearchIT/reuse@main
+      uses: UoMResearchIT/reuse@v0.3
       with:
         args: spdx
 ```
@@ -66,7 +66,7 @@ In the same fashion, it is possible to add optional arguments like `--include-su
     - name: Checkout
       uses: actions/checkout@v4
     - name: REUSE Compliance Check
-      uses: UoMResearchIT/reuse@main
+      uses: UoMResearchIT/reuse@v0.3
       with:
         args: --include-submodules lint
 ```

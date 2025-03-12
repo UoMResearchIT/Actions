@@ -104,7 +104,7 @@ runs:
         USER_LANG: ${{ inputs.language }}
     - name: Install spell checker
       if: inputs.language != ''
-      uses: UoMResearchIT/actions/apt-get-install@0.2
+      uses: UoMResearchIT/actions/apt-get-install@v0.3
       with:
         packages: enchant-2 hunspell libhunspell-dev ${{ steps.lang.outputs.pkg }}
     - name: Build composite dictionary

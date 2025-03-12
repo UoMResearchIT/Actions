@@ -5,7 +5,7 @@ Installs packages on a Debian or Ubuntu runner. Does not support any other OS, b
 Example usage:
 
 ```yml
-  - uses: UoMResearchIT/actions/apt-get-install@0.2
+  - uses: UoMResearchIT/actions/apt-get-install@v0.3
     with:
       packages: vera++
 ```

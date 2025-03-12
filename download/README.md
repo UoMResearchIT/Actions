@@ -4,7 +4,7 @@ Downloads a file from a URL, using a cached version if possible.
 
 Example:
 ```yml
-  - uses: UoMResearchIT/actions/download@main
+  - uses: UoMResearchIT/actions/download@v0.3
     with:
       url: https://research-it.manchester.ac.uk/
       local-name: homepage.html
