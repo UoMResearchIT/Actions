@@ -58,7 +58,7 @@ runs:
     - name: Do download
       if: steps.cache.outputs.cache-hit != 'true' && runner.os != 'Windows'
       shell: bash
-      run: wget --config=$GITHUB_ACTION_PATH/wgetrc -O "$FILE" $OPTIONS -- "$URL" 
+      run: ${{ github.action_path }}/runwget.bash
       env:
         URL: ${{ inputs.url }}
         FILE: ${{ steps.filename.outputs.file }}
