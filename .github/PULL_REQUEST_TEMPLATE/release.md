@@ -19,7 +19,7 @@ Release checklist:
 
 - [ ] Make a `release` branch
 - [ ] Make a PR for it <!-- using this template... -->
-- [ ] Update version numbers, checking `README.md`s and `action.yml`s
+- [ ] Update version numbers, checking `README.md`s, `action.yml`s, and `bug.yml` in the issue templates
 - [ ] Tag the release
 - [ ] Rerun known tests after pointing them at the tag
 - [ ] Fill in the release description data ("drafting" a release)

@@ -44,7 +44,9 @@ body:
         - "main"
         - "0.1"
         - "0.2"
+        - "v0.3"
         - "other"
+      default: 0
   - type: input
     id: environment
     attributes:
@@ -52,7 +54,7 @@ body:
       description: >
         Which of the many runners are you using?
         This is particularly important if you are using a custom runner!
-      placeholder: ubuntu-latest
+      placeholder: e.g., ubuntu-latest
   - type: textarea
     id: logs
     attributes:
