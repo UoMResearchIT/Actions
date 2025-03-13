@@ -10,7 +10,11 @@ Example:
       local-name: homepage.html
 ```
 
-# inputs
+> [!WARNING]
+> If using the `token` input, you almost certainly ought to be getting its value from the
+> [GitHub `secrets` context](https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions).
+
+# Inputs
 * `url`
 
   The URL to download from. **Required.**
@@ -20,11 +24,18 @@ Example:
   The local file name. Derived from the URL if not given.
   _Must_ be supplied if the guessed name would be empty. **Optional.**
 
+* `token`
+
+  A bearer token to present to authorise the download.
+  If not supplied, only public resources may be accessed. **Optional.**
+
+  Example: `${{ secrets.GITHUB_TOKEN }}`
+
 * `wget-options`
 
   Additional options to pass to `wget`. **Optional.**
 
-# outputs
+# Outputs
 * `filename`
 
   The full path to the file.
