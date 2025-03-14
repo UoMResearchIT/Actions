@@ -16,8 +16,9 @@
 
 set -e
 
+read -a opts <<< "$OPTIONS"
 if [ -n "$TOKEN" ]; then
-    OPTIONS+=" --header 'Authorization: token $TOKEN'"
+    opts+=("--header" "Authorization: token $TOKEN")
 fi
 
-wget --config=$GITHUB_ACTION_PATH/wgetrc -O "$FILE" $OPTIONS -- "$URL"
+wget --config=$GITHUB_ACTION_PATH/wgetrc -O "$FILE" "${opts[@]}" -- "$URL"
