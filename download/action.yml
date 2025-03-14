@@ -31,6 +31,11 @@ inputs:
       A bearer token to present to authorise the download.
       If not supplied, only public resources may be accessed.
     required: false
+  content-type:
+    description: >
+      The content type to try to download.
+      Defaults to whatever the server chooses by default.
+    required: false
   wget-options:
     description: Additional options to pass to `wget`.
     required: false
@@ -63,6 +68,7 @@ runs:
         URL: ${{ inputs.url }}
         FILE: ${{ steps.filename.outputs.file }}
         TOKEN: ${{ inputs.token }}
+        CTY: ${{ inputs.content-type }}
         OPTIONS: ${{ inputs.wget-options }}
     - name: Do download
       if: steps.cache.outputs.cache-hit != 'true' && runner.os == 'Windows'
@@ -72,4 +78,5 @@ runs:
         URL: ${{ inputs.url }}
         FILE: ${{ steps.filename.outputs.file }}
         TOKEN: ${{ inputs.token }}
+        CTY: ${{ inputs.content-type }}
         OPTIONS: ${{ inputs.wget-options }}

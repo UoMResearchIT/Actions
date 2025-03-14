@@ -20,5 +20,8 @@ read -a opts <<< "$OPTIONS"
 if [ -n "$TOKEN" ]; then
     opts+=("--header" "Authorization: token $TOKEN")
 fi
+if [ -n "$CTY" ]; then
+    opts+=("--header" "Accept: $CTY")
+fi
 
 wget --config=$GITHUB_ACTION_PATH/wgetrc -O "$FILE" "${opts[@]}" -- "$URL"

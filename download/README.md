@@ -14,8 +14,9 @@ Example of accessing a protected resource:
 ```yml
   - uses: UoMResearchIT/actions/download@main
     with:
-      url: https://github.com/UoMResearchIT/actions-test/
-      local-name: test-repo-page.html
+      url: https://api.github.com/repo/UoMResearchIT/actions=test/contents/README.md
+      local-name: read-me.md
+      content-type: application/vnd.github.raw+json
       token: ${{ secrets.MY_ACCESS_TOKEN }}
 ```
 
@@ -36,6 +37,13 @@ Example of accessing a protected resource:
 
   The local file name. Derived from the URL if not given.
   _Must_ be supplied if the guessed name would be empty. **Optional.**
+
+* `content-type`
+
+  The content type to try to download.
+  Defaults to whatever the server chooses by default. **Optional.**
+
+  Example: `text/html`
 
 * `token`
 

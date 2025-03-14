@@ -19,5 +19,8 @@ $opts = (Select-String \S+ -input $env:OPTIONS -allmatches | ForEach-Object {$_.
 if ($env:TOKEN) {
     $opts += "--header","Authorization: token $env:TOKEN"
 }
+if ($env:CTY) {
+    $opts += "--header","Accept: $env:CTY"
+}
 
 & $wget --config=$env:GITHUB_ACTION_PATH\wgetrc -O $env:FILE @opts -- $env:URL
