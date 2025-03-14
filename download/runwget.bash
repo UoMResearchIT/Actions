@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Copyright (c) 2025 The University of Manchester
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,15 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-$ErrorActionPreference = 'Stop'
-$wget = 'C:\msys64\usr\bin\wget.exe'
-$opts = (Select-String \S+ -input $env:OPTIONS -allmatches | ForEach-Object {$_.matches.value})
+set -e
 
-if ($env:TOKEN) {
-    $opts += "--header","Authorization: token $env:TOKEN"
-}
-if ($env:CTY) {
-    $opts += "--header","Accept: $env:CTY"
-}
+read -a opts <<< "$OPTIONS"
+if [ -n "$TOKEN" ]; then
+    opts+=("--header" "Authorization: token $TOKEN")
+fi
+if [ -n "$CTY" ]; then
+    opts+=("--header" "Accept: $CTY")
+fi
 
-& $wget --config=$env:GITHUB_ACTION_PATH\wgetrc -O $env:FILE @opts -- $env:URL
+wget --config=$GITHUB_ACTION_PATH/wgetrc -O "$FILE" "${opts[@]}" -- "$URL"

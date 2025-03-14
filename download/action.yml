@@ -26,6 +26,16 @@ inputs:
   local-name:
     description: The local file name. Derived from the URL if not given.
     required: false
+  token:
+    description: >
+      A bearer token to present to authorise the download.
+      If not supplied, only public resources may be accessed.
+    required: false
+  content-type:
+    description: >
+      The content type to try to download.
+      Defaults to whatever the server chooses by default.
+    required: false
   wget-options:
     description: Additional options to pass to `wget`.
     required: false
@@ -53,10 +63,12 @@ runs:
     - name: Do download
       if: steps.cache.outputs.cache-hit != 'true' && runner.os != 'Windows'
       shell: bash
-      run: wget --config=$GITHUB_ACTION_PATH/wgetrc -O "$FILE" $OPTIONS -- "$URL" 
+      run: ${{ github.action_path }}/runwget.bash
       env:
         URL: ${{ inputs.url }}
         FILE: ${{ steps.filename.outputs.file }}
+        TOKEN: ${{ inputs.token }}
+        CTY: ${{ inputs.content-type }}
         OPTIONS: ${{ inputs.wget-options }}
     - name: Do download
       if: steps.cache.outputs.cache-hit != 'true' && runner.os == 'Windows'
@@ -65,4 +77,6 @@ runs:
       env:
         URL: ${{ inputs.url }}
         FILE: ${{ steps.filename.outputs.file }}
+        TOKEN: ${{ inputs.token }}
+        CTY: ${{ inputs.content-type }}
         OPTIONS: ${{ inputs.wget-options }}
