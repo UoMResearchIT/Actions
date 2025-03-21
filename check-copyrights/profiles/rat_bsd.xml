@@ -18,13 +18,13 @@ limitations under the License.
         xmlns:if="ant:if" xmlns="antlib:org.apache.tools.ant">
     <property environment="env" />
     <target name="rat">
-        <rat:report reportFile="${user.dir}/RAT_report.txt" addDefaultLicenseMatchers="false">
+        <rat:report reportFile="${user.dir}/RAT_report.txt">
             <fileset dir="${user.dir}" defaultexcludes="yes">
             	<exclude name="RAT_report.txt" />
             	<excludesfile name="${env.EXCLUDES}" />
             	<excludesfile name="${env.GITHUB_ACTION_PATH}/rat.excludes" />
             </fileset>
-            <rat:modified-bsd/>
+            <rat:approvedLicense familyName="Modified BSD License" />
         </rat:report>
         <fail message="RAT_report.txt not generated">
             <condition>
