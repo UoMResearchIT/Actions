@@ -16,7 +16,7 @@ limitations under the License.
 -->
 <project name="rat" xmlns:rat="antlib:org.apache.rat.anttasks"
         xmlns:if="ant:if" xmlns="antlib:org.apache.tools.ant">
-	<property environment="env" />
+    <property environment="env" />
     <target name="rat">
         <rat:report reportFile="${user.dir}/RAT_report.txt" addDefaultLicenseMatchers="false">
             <fileset dir="${user.dir}" defaultexcludes="yes">
@@ -24,7 +24,7 @@ limitations under the License.
             	<excludesfile name="${env.EXCLUDES}" />
             	<excludesfile name="${env.GITHUB_ACTION_PATH}/rat.excludes" />
             </fileset>
-            <rat:gpl3-family/>
+            <rat:modified-bsd/>
         </rat:report>
         <fail message="RAT_report.txt not generated">
             <condition>

@@ -24,7 +24,7 @@ limitations under the License.
             	<excludesfile name="${env.EXCLUDES}" />
             	<excludesfile name="${env.GITHUB_ACTION_PATH}/rat.excludes" />
             </fileset>
-            <rat:asl20/>
+            <rat:apache20-license/>
         </rat:report>
         <fail message="RAT_report.txt not generated">
             <condition>

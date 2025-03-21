@@ -20,7 +20,7 @@ inputs:
   version:
     description: The version of Apache RAT to use.
     required: false
-    default: "0.14"
+    default: "0.15"
   mirror:
     description: >
       The mirror of the Apache download site to get the library from.
@@ -36,7 +36,9 @@ inputs:
 
       Known profiles:
         `ASL` - Apache Software License 2.0
+        `BSD` - Apache Software License 2.0
         `GPL3` - GNU General Public License version 3
+        `MIT` - Apache Software License 2.0
     required: false
   config-file:
     description: |
@@ -44,8 +46,8 @@ inputs:
 
       Supported options are:
         `rat.xml` - All licenses acceptable to RAT (default)
-        `rat_asl20.xml` - Only the AppliedApacheSoftwareLicense20
-        `rat_gpl3.xml` - Only the GNU General Public License version 3
+        `rat_asl20.xml` - Only the AppliedApacheSoftwareLicense20 (prefer `profile: ASL`)
+        `rat_gpl3.xml` - Only the GNU General Public License version 3 (prefer `profile: GPL3`)
       
       You may also specify an ANT config file yourself.
       This is only useful when developing a new profile. 
