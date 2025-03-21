@@ -81,4 +81,4 @@ Creates a cache in the overall workflow context with the key `apache-rat-${versi
 
 # See Also
 
-* [`UoMResearchIT/actions/reuse`](/UoMResearchIT/actions/reuse) for an alternate license enforcement scheme.
+* [`UoMResearchIT/actions/reuse`](../reuse) for an alternate license enforcement scheme.
