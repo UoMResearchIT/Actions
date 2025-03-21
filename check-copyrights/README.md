@@ -44,7 +44,6 @@ Example usage:
     Known profiles:
 
     * `ASL` &mdash; Apache Software License 2.0
-    * `BSD` &mdash; Modified BSD 3-clause License
     * `GPL3` &mdash; GNU General Public License version 3
     * `MIT` &mdash; MIT License
 

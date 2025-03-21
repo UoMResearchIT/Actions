@@ -36,9 +36,8 @@ inputs:
 
       Known profiles:
         `ASL` - Apache Software License 2.0
-        `BSD` - Apache Software License 2.0
         `GPL3` - GNU General Public License version 3
-        `MIT` - Apache Software License 2.0
+        `MIT` - MIT License
     required: false
   config-file:
     description: |

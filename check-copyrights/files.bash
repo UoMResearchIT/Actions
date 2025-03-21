@@ -20,8 +20,6 @@ echo "excludes=$(cd "$(dirname "$EXCLUDES")" && pwd)/$(basename "$EXCLUDES")" >>
 case "$THE_PROFILE" in
     "ASL")
         echo "config=$GITHUB_ACTION_PATH/profiles/rat_asl20.xml" >>$GITHUB_OUTPUT ;;
-    "BSD")
-        echo "config=$GITHUB_ACTION_PATH/profiles/rat_bsd.xml" >>$GITHUB_OUTPUT ;;
     "GPL3")
         echo "config=$GITHUB_ACTION_PATH/profiles/rat_gpl3.xml" >>$GITHUB_OUTPUT ;;
     "MIT")
