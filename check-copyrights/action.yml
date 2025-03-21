@@ -20,7 +20,7 @@ inputs:
   version:
     description: The version of Apache RAT to use.
     required: false
-    default: "0.14"
+    default: "0.15"
   mirror:
     description: >
       The mirror of the Apache download site to get the library from.
@@ -28,15 +28,28 @@ inputs:
     required: false
     default: https://www.apache.org/dyn/closer.cgi?action=download&filename=
     # Another alternative: https://www.mirrorservice.org/sites/ftp.apache.org/
+  profile:
+    description: |
+      Which profile to use. Leave blank to allow any standard license
+      (or your own configuration file).
+      The profile decides which license(s) are acceptable.
+
+      Known profiles:
+        `ASL` - Apache Software License 2.0
+        `GPL3` - GNU General Public License version 3
+        `MIT` - MIT License
+    required: false
   config-file:
     description: |
       Which xml config file to use.
+
       Supported options are:
         `rat.xml` - All licenses acceptable to RAT (default)
-        `rat_asl20.xml` - Only the AppliedApacheSoftwareLicense20
-        `rat_gpl3.xml` - Only the GNU General Public License version 3
-    # The file is expected to be in the same directory as this file
-    # Want another license setup? Submit a PR!
+        `rat_asl20.xml` - Only the AppliedApacheSoftwareLicense20 (prefer `profile: ASL`)
+        `rat_gpl3.xml` - Only the GNU General Public License version 3 (prefer `profile: GPL3`)
+      
+      You may also specify an ANT config file yourself.
+      This is only useful when developing a new profile. 
     required: false
     default: "rat.xml"
   excludes-file:
@@ -45,7 +58,10 @@ inputs:
       Defaults to the `.ratexcludes` file in the root of your project.
     required: false
     default: ".ratexcludes"
-    
+branding:
+  icon: search
+  color: red
+
 runs:
   using: composite
   steps:
@@ -62,21 +78,18 @@ runs:
       env:
         RAT_VERSION: ${{ inputs.version }}
         RAT_MIRROR: ${{ inputs.mirror }}
-    - name: Locate excludes file
-      id: excludes
-      run: |
-        [ -f "$EXCLUDES" ] || touch "$EXCLUDES"
-        echo "excludes=$(cd "$(dirname "$EXCLUDES")" && pwd)/$(basename "$EXCLUDES")" >>$GITHUB_OUTPUT
+    - name: Locate files
+      id: files
+      run: $GITHUB_ACTION_PATH/files.bash
       shell: bash
       env:
         EXCLUDES: ${{ inputs.excludes-file }}
+        THE_PROFILE: ${{ inputs.profile }}
+        CFG: ${{ inputs.config-file }}
     - name: Check
       run: ant -e -q -f "$CFG" -lib "$LIB" rat
       shell: bash
       env:
-        CFG: ${{ github.action_path }}/${{ inputs.config-file }}
+        CFG: ${{ steps.files.outputs.config }}
         LIB: ${{ github.action_path }}/apache-rat-${{ inputs.version }}
-        EXCLUDES: ${{ steps.excludes.outputs.excludes }}
-branding:
-  icon: search
-  color: red
+        EXCLUDES: ${{ steps.files.outputs.excludes }}

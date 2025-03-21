@@ -11,8 +11,14 @@ Example usage:
 ```yml
     - uses: UoMResearchIT/actions/check-copyrights@v0.3
       with:
-        config-file: rat_asl20.xml
+        profile: ASL
 ```
+
+> [!TIP]
+> It's easiest to either supply no configuration options, or the `profile`.
+
+> [!WARNING]
+> License choices can have legal implications. Consult with your project and/or line management, _especially_ if not using a standard profile.
 
 ## Inputs
 
@@ -20,7 +26,7 @@ Example usage:
 
     The version of Apache RAT to use. **Optional.**
 
-    Example: `0.14`
+    Example: `0.15`
 
 * `mirror`
 
@@ -29,16 +35,29 @@ Example usage:
     Examples: `https://www.apache.org/dyn/closer.cgi?action=download&filename=`,
     `https://www.mirrorservice.org/sites/ftp.apache.org/`
 
+* `profile`
+
+    Which profile to use. The profile decides which license(s) are acceptable. **Optional.**
+
+    If omitted, the `config-file` option is used, or a default that accepts any standard license is used.
+
+    Known profiles:
+
+    * `ASL` &mdash; Apache Software License 2.0
+    * `GPL3` &mdash; GNU General Public License version 3
+    * `MIT` &mdash; MIT License
+
 * `config-file`
 
-    Which configuration file to use. This is _actually_ the name of an ANT build file in the same directory as this README that runs RAT. **Optional.**
+    Which configuration file to use. This is _actually_ the name of an ANT build file that calls RAT. **Optional.**
 
-    Supported options are:
+    Supported legacy options are:
     * `rat.xml` &mdash; All license acceptable to RAT. This is default.
     * `rat_asl20.xml` &mdash; Only the Apache Software License 2.0.
     * `rat_gpl3.xml` &mdash; Only the GNU General Public License version 3.
 
-    When writing a new file to use in this option (PRs accepted), please copy the `rat.xml` or `rat_asl20.xml` file and modify the contents of the `<rat:report>` element to adjust how the matching is done. You should consult [the RAT documentation](https://creadur.apache.org/rat/apache-rat-tasks/types.html) for how to do it, especially when matching a non-standard license.
+    If supplying your own, you are _recommended_ to make it explicitly absolute by prefixing
+    with the `GITHUB_WORKSPACE` environment variable.
 
 * `excludes-file`
 
@@ -58,3 +77,7 @@ No special permissions required.
 ## Caches
 
 Creates a cache in the overall workflow context with the key `apache-rat-${version}` to avoid hammering selected rate-limited services. This may be safely deleted if desired, but the cache is notably faster than a fresh download.
+
+# See Also
+
+* [`UoMResearchIT/actions/reuse`](../reuse) for an alternate license enforcement scheme.
