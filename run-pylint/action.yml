@@ -121,7 +121,7 @@ runs:
     - name: Install pylint
       shell: bash
       run: |
-        uv pip install pylint $PACKAGES
+        uv pip install --system pylint $PACKAGES
       env:
         PACKAGES: ${{ inputs.language != '' && 'hunspell pyenchant' }}
     # The main event
