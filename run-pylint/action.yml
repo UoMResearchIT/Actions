@@ -16,8 +16,6 @@ name: "Run Pylint"
 author: Donal Fellows
 description: |
   Runs pylint on a Python package. 
-  Note that installing pylint in the environment before this action is up to the caller.
-# TODO: Add step to install pylint if it isn't already present.
 inputs:
   package:
     description: The name of the Python package (or packages) to analyse.
@@ -68,6 +66,10 @@ inputs:
       Only used if the spelling language is selected.
     required: false
     default: .pylint_dict.txt
+  uv-version:
+    description: The version of uv to use. Defaults to `latest`
+    required: false
+    default: latest
 outputs:
   result: 
     description: >
@@ -81,17 +83,17 @@ runs:
   using: composite
 
   steps:
+    # Critical baseline tools
     - name: Set up python if not already done
-      id: python
       if: env.pythonLocation == ''
       uses: actions/setup-python@v5
       with:
-        python-version: '3.12'
-    - name: Ensure critical Python packages are set up right
-      if: steps.python.outcome == 'success'
-      shell: bash
-      run: |
-        python -m pip install -U pip setuptools wheel
+        python-version: "3.12"
+    - name: Install the latest version of uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        version: ${{ inputs.uv-version }}
+    # Next, we set up spell-checking, which is a bit involved
     - name: Determine main dictionary language
       id: lang
       if: inputs.language != ''
@@ -115,16 +117,14 @@ runs:
       env:
         BASE_DICTIONARY: ${{ github.action_path }}/default_dict.txt
         USER_DICTIONARY: ${{ inputs.dictionary }}
+    # Now we install the main pylint package and any necessary supporters for spell-checking
     - name: Install pylint
-      if: inputs.language == ''
       shell: bash
       run: |
-        python -m pip install pylint
-    - name: Install pylint and hunspell
-      if: inputs.language != ''
-      shell: bash
-      run: |
-        python -m pip install pylint hunspell pyenchant
+        uv pip install pylint $PACKAGES
+      env:
+        PACKAGES: ${{ inputs.language != '' && 'hunspell pyenchant' }}
+    # The main event
     - name: Run pylint
       id: pylint
       run: $GITHUB_ACTION_PATH/run_pylint.bash

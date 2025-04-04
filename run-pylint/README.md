@@ -4,6 +4,7 @@ Runs pylint on a Python package.
 > [!NOTE]
 > If not already installed, this action will set up Python and install pylint.
 > If you want control over the versions of these, install them prior to running this action. 
+> Python 2.7 is _not supported at all._
 
 > [!IMPORTANT]
 > Spell checking of docstrings is only supported on Ubuntu runners.
@@ -51,7 +52,7 @@ Example usage with spell checking:
 
   Default value: `global_relaxed`
 
-  `global_relaxed` and `global_strict` will use files in support scripts.
+  `global_relaxed` and `global_strict` will use internal configurations in this action.
   Any other value is interpreted as the name of a file in the job workspace.
 
 * `exitcheck`
@@ -85,6 +86,12 @@ Example usage with spell checking:
   The custom dictionary to use for spell checking. **Optional.**
 
   Default: `.pylint_dict.txt`
+
+* `uv-version`
+
+  The version of uv to use for installing Python packages. **Optional.**
+
+  Default: `latest`
 
 ## Outputs
 
