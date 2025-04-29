@@ -20,9 +20,7 @@ Release checklist:
 - [ ] Make a `release` branch
 - [ ] Make a PR for it <!-- using this template... -->
 - [ ] Update version numbers, checking `README.md`s, `action.yml`s, and `bug.yml` in the issue templates
-- [ ] Tag the release
-- [ ] Rerun known tests after pointing them at the tag
-- [ ] Fill in the release description data ("drafting" a release)
-- [ ] Double-check you've done nothing silly!
-- [ ] Make the GitHub release
+- [ ] Draft the release (filling in release description data, prepping the tag to be set on the `release` branch)
+- [ ] Rerun known tests after pointing them at the version to be tagged
+- [ ] Make the GitHub release draft into a release
 - [ ] Merge the PR and delete the branch

@@ -5,7 +5,7 @@ Github Pages (see [actions/deploy-pages](https://github.com/actions/deploy-pages
 
 Example:
 ```yml
-  - uses: UoMResearchIT/actions/doxygen-to-pages@v0.3
+  - uses: UoMResearchIT/actions/doxygen-to-pages@v1.0
 ```
 
 The `Doxyfile` should have these set (these are default values):
