@@ -25,6 +25,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Enforce
-        uses: UoMResearchIT/actions/check-copyrights@v0.3
+        uses: UoMResearchIT/actions/check-copyrights@v1.0
         with:
           config-file: rat_asl20.xml
