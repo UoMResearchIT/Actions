@@ -27,4 +27,4 @@ jobs:
       - name: Enforce
         uses: UoMResearchIT/actions/check-copyrights@v1.0
         with:
-          config-file: rat_asl20.xml
+          profile: ASL
