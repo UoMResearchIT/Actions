@@ -34,7 +34,7 @@ runs:
       ref: ${{ inputs.branch }}
 
   - name: Setup Environment
-    uses: getsentry/action-setup-venv@v2.1.1
+    uses: getsentry/action-setup-venv@v2.2.0
     with:
       python-version: 3.12
       cache-dependency-path: |
