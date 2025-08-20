@@ -23,7 +23,7 @@ jobs:
     timeout-minutes: 2
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Enforce
         uses: UoMResearchIT/actions/check-copyrights@v1.0
         with:
