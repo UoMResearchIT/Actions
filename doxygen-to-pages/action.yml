@@ -45,6 +45,6 @@ runs:
         SITE_URL: ${{ steps.setup.outputs.base_url || 'https://example.org/' }}
     - name: Upload Artifact
       id: upload
-      uses: actions/upload-pages-artifact@v3
+      uses: actions/upload-pages-artifact@v4
       with:
         path: ${{ inputs.working-directory }}/html
