@@ -84,8 +84,8 @@ runs:
     - name: configure git
       if: steps.detect.outputs.changed == 1
       run: |
-        git config --global user.email $USER_EMAIL
-        git config --global user.name $USER_NAME
+        git config --global user.email "$USER_EMAIL"
+        git config --global user.name "$USER_NAME"
       shell: bash
       env:
         USER_NAME: ${{ inputs.commit-user-name }}
@@ -94,10 +94,10 @@ runs:
       if: steps.detect.outputs.changed == 1
       working-directory: ${{ inputs.working-directory }}
       run: |
-        git checkout -b $NEW_BRANCH
+        git checkout -b "$NEW_BRANCH"
         git add -A
-        git commit -a -m $MESSAGE
-        git push origin $NEW_BRANCH
+        git commit -a -m "$MESSAGE"
+        git push origin "$NEW_BRANCH"
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.token }}
