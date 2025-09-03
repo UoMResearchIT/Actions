@@ -17,8 +17,6 @@ These are intended for use in many types of project, wherever relevant.
 
 * [`instantiate-file`](instantiate-file) creates a file with a value provided by your workflow.
 
-* ['add_prs_to_project (reusable workflow)](.github/workflows/add_prs_to_project.yml) is a reusable workflow that you can use in your repository to add any PRs assigned to a user to a Project and set the Status in the project to a value of your choosing.
-
 ## Linux runners only
 
 * [`apt-get-install`](apt-get-install) installs packages into Ubuntu runners, allowing for subtleties of installation that have been found to come up with some packages "in the wild".
@@ -28,6 +26,12 @@ These are intended for use in many types of project, wherever relevant.
 * [`check-copyrights`](check-copyrights) ensures that all files in your repository have an "acceptable" copyright notice near their top.
 
 * [`todo`](todo) finds `FIXME` and `TODO` comments in code.
+
+## Reusable Workflows
+
+* [`add_prs_to_project` (reusable workflow)](.github/workflows/add_prs_to_project.yml) is a reusable workflow that you can use in your repository to add any PRs assigned to a user to a Project and set the Status in the project to a value of your choosing.
+
+* [`scan-for-secrets` (reusable workflow)](.github/workflows/scan-for-secrets.yml) is a reusable workflow that you can use in your repository to scan for API keys (e.g., for AWS) that your code accidentally exposes.
 
 # Language-Specific Tools
 
