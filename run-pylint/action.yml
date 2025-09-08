@@ -84,7 +84,7 @@ runs:
     - name: Set up python if not already done
       id: python
       if: env.pythonLocation == ''
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: '3.12'
     - name: Ensure critical Python packages are set up right
