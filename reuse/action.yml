@@ -49,12 +49,12 @@ runs:
       path: reuse-tool-venv
       key: setup-venv-${{ runner.os }}-py-${{ steps.setup-python.outputs.python-version }}-${{ steps.setup-python.outputs.python-path }}-reuse-${{ inputs.branch }}-${{ hashFiles(reuse-tool) }}
 
-  - name: Setup Environment; Phase 1
+  - name: Create reuse-tool Environment
     run: python -m venv reuse-tool-venv
     if: steps.cache-venv.outputs.cache-hit != 'true'
     shell: bash
 
-  - name: Setup Environment; Phase 2
+  - name: Enable reuse-tool Environment
     run: |
       SCRIPT_DIR="${{ runner.os == 'Windows' && 'Scripts' || 'bin' }}"
       source reuse-tool-venv/${SCRIPT_DIR}/activate
@@ -62,7 +62,7 @@ runs:
       echo "${VIRTUAL_ENV}/${SCRIPT_DIR}" >> $GITHUB_PATH
     shell: bash
 
-  - name: Setup Environment; Phase 3
+  - name: Setup reuse-tool Environment
     run: |
       pip install poetry~=1.3.0
       cd reuse-tool
