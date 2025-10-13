@@ -34,7 +34,7 @@ runs:
       ref: ${{ inputs.branch }}
 
   - name: Setup Python
-    uses: actions/setup-python@0v5.0.0
+    uses: actions/setup-python@v5.0.0
     id: setup-python
     with:
       python-version: "3.12"
