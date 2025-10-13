@@ -33,19 +33,51 @@ runs:
       repository: UoMResearchIT/reuse-tool
       ref: ${{ inputs.branch }}
 
-  - name: Setup Environment
-    uses: getsentry/action-setup-venv@v2.2.0
+  - name: Setup Python
+    uses: actions/setup-python@v5.0.0
+    id: setup-python
     with:
-      python-version: 3.12
-      cache-dependency-path: |
-        reuse-tool
-      venv-dir: reuse-tool-venv
-      install-cmd: |
-        pip install poetry~=1.3.0
-        cd reuse-tool
-        poetry install --no-interaction --only main
-        poetry build --no-interaction
-        pip install dist/*.whl
+      python-version: "3.12"
+
+  - run: echo '::remove-matcher owner=python::'
+    shell: bash
+
+  - name: Restore Cache
+    uses: actions/cache/restore@v4.2.0
+    id: cache-venv
+    with:
+      path: reuse-tool-venv
+      key: setup-venv-${{ runner.os }}-py-${{ steps.setup-python.outputs.python-version }}-${{ steps.setup-python.outputs.python-path }}-reuse-${{ inputs.branch }}-${{ hashFiles('reuse-tool/pyproject.toml', 'reuse-tool/src/**/*.py') }}
+
+  - name: Create reuse-tool Environment
+    run: python -m venv reuse-tool-venv
+    if: steps.cache-venv.outputs.cache-hit != 'true'
+    shell: bash
+
+  - name: Enable reuse-tool Environment
+    run: |
+      SCRIPT_DIR="${{ runner.os == 'Windows' && 'Scripts' || 'bin' }}"
+      source reuse-tool-venv/${SCRIPT_DIR}/activate
+      echo "VIRTUAL_ENV=${VIRTUAL_ENV}" >> $GITHUB_ENV
+      echo "${VIRTUAL_ENV}/${SCRIPT_DIR}" >> $GITHUB_PATH
+    shell: bash
+
+  - name: Setup reuse-tool Environment
+    run: |
+      pip install poetry~=1.3.0
+      cd reuse-tool
+      poetry install --no-interaction --only main
+      poetry build --no-interaction
+      pip install dist/*.whl
+    if: steps.cache-venv.outputs.cache-hit != 'true'
+    shell: bash
+
+  - name: Save Cache
+    uses: actions/cache/save@v4.2.0
+    with:
+      path: reuse-tool-venv
+      key: ${{ steps.cache-venv.outputs.cache-primary-key }}
+    if: steps.cache-venv.outputs.cache-hit != 'true'
 
   - name: Run reuse
     shell: bash
