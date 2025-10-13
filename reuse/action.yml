@@ -47,7 +47,7 @@ runs:
     id: cache-venv
     with:
       path: reuse-tool-venv
-      key: setup-venv-${{ runner.os }}-py-${{ steps.setup-python.outputs.python-version }}-${{ steps.setup-python.outputs.python-path }}-reuse-${{ inputs.branch }}-${{ hashFiles('reuse-tool') }}
+      key: setup-venv-${{ runner.os }}-py-${{ steps.setup-python.outputs.python-version }}-${{ steps.setup-python.outputs.python-path }}-reuse-${{ inputs.branch }}-${{ hashFiles('reuse-tool/pyproject.toml', 'reuse-tool/src/**/*.py') }}
 
   - name: Create reuse-tool Environment
     run: python -m venv reuse-tool-venv
