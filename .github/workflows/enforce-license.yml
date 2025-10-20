@@ -25,6 +25,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
       - name: Enforce
-        uses: UoMResearchIT/actions/check-copyrights@v1.0
+        uses: UoMResearchIT/actions/check-copyrights@v1.1
         with:
           profile: ASL
