@@ -43,7 +43,7 @@ runs:
     shell: bash
 
   - name: Restore Cache
-    uses: actions/cache/restore@v4.2.0
+    uses: actions/cache/restore@v4.3.0
     id: cache-venv
     with:
       path: reuse-tool-venv
@@ -73,7 +73,7 @@ runs:
     shell: bash
 
   - name: Save Cache
-    uses: actions/cache/save@v4.2.0
+    uses: actions/cache/save@v4.3.0
     with:
       path: reuse-tool-venv
       key: ${{ steps.cache-venv.outputs.cache-primary-key }}
