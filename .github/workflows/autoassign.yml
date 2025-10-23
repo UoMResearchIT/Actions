@@ -13,8 +13,9 @@
 # limitations under the License.
 
 name: Auto-Assign
-description: >
-  Automatically assign issues to one of the people registered for that.
+run-name: "Assign issue #${{ github.event.issue.id }} to default assignee"
+# description: >
+#  Automatically assign issues to one of the people registered for that.
 on:
   issues:
     types: [opened]

@@ -27,6 +27,7 @@
 #
 
 name: Add PR to project
+run-name: "Add PR #${{ github.event.pull_request.id }} to Project #${{ inputs.project_number }}"
 on:
   workflow_call:
     inputs:
@@ -34,7 +35,7 @@ on:
         type: number
         required: true
         description: >
-          The identifier of the project to add the PR to in the organisation being run in
+          The identifier of the project to add the PR to in the organisation being run in.
       status_to_change_to:
         type: string
         required: false
