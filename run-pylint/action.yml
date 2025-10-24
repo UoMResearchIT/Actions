@@ -15,7 +15,7 @@
 name: "Run Pylint"
 author: Donal Fellows
 description: |
-  Runs pylint on a Python package. 
+  Runs pylint on a Python package.
   Note that installing pylint in the environment before this action is up to the caller.
 # TODO: Add step to install pylint if it isn't already present.
 inputs:
@@ -69,7 +69,7 @@ inputs:
     required: false
     default: .pylint_dict.txt
 outputs:
-  result: 
+  result:
     description: >
       The decoded set of summary issues found in the pylint call,
       including ones not otherwise deemed fatal. Empty on complete success.

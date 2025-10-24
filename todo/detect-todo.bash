@@ -25,4 +25,3 @@
 find . \
     -type d \( -name ".git" -o -name ".github" \) -prune \
     -o -type f -print0 | xargs -0 awk -f $GITHUB_ACTION_PATH/detect-todo.awk
-    

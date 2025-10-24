@@ -13,8 +13,8 @@
 # limitations under the License.
 
 name: Enforce License Rules
-description: >
-  Enforces our own license rules.
+# description: >
+#   Enforces our own license rules.
 run-name: License Check
 on: push
 jobs:
