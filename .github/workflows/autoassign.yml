@@ -13,8 +13,7 @@
 # limitations under the License.
 
 name: Auto-Assign
-description: >
-  Automatically assign issues to one of the people registered for that.
+# Automatically assign issues to one of the people registered for that.
 on:
   issues:
     types: [opened]
