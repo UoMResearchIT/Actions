@@ -23,6 +23,34 @@ inputs:
     description: "The branch to check out the reuse-tool from"
     required: false
     default: "main"
+  copyright-holder:
+    description: "The name of the copyright holder"
+    required: false
+    default: "University of Manchester"
+  license:
+    description: "The name of the license to apply"
+    required: false
+    default: "apache-2.0"
+  merge:
+    description: "Whether to merge copyrights"
+    required: false
+    default: "true"
+  fallback-dot-license:
+    description: "Whether to create a .license file as a fallback"
+    required: false
+    default: "true"
+  extra-formats-file:
+    description: "The name of the extra formats file"
+    required: false
+    default: ".extraformats"
+  ignore-file:
+    description: "The name of the ignore file"
+    required: false
+    default: ".licenseignore"
+  base-dir:
+    description: "The base directory to analyse and annotate"
+    required: false
+    default: "."
 runs:
   using: composite
   steps:
@@ -79,8 +107,23 @@ runs:
       key: ${{ steps.cache-venv.outputs.cache-primary-key }}
     if: steps.cache-venv.outputs.cache-hit != 'true'
 
+  - name: Set Up Arguments
+    id: args
+    shell: bash
+    env:
+      Arguments: ${{ inputs.args }}
+      Who: ${{ inputs.copyright-holder }}
+      License: ${{ inputs.license }}
+      Merge: ${{ inputs.merge }}
+      Fallback: ${{ inputs.fallback-dot-license }}
+      Extra: ${{ inputs.extra-formats-file }}
+      Ignore: ${{ inputs.ignore-file }}
+      Dir: ${{ inputs.base-dir }}
+    run: |
+      $GITHUB_ACTION_PATH/compose-args.bash
+
   - name: Run reuse
     shell: bash
     run: |
       source reuse-tool-venv/bin/activate
-      reuse ${{ inputs.args }}
+      reuse ${{ steps.args.outputs.args }}
