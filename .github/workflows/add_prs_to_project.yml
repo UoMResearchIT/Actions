@@ -76,6 +76,11 @@ jobs:
         # Uses [GitHub CLI](https://cli.github.com/manual/) to query the API for the ID of the project and return the name and ID of the first 20 fields in the project.
         # `fields` returns a union and the query uses inline fragments (`... on`) to return information about any `ProjectV2Field` and `ProjectV2SingleSelectField` fields.
         # The response is stored in a file called `project_data.json` that is parsed to get the relevant IDs that are stored as environment variables.
+        #
+        # Extracted values are written to $GITHUB_ENV so *future* steps will have these environment variables:
+        #   PROJECT_ID: The GraphQL ID for the project.
+        #   STATUS_FIELD_ID: The GraphQL ID for the status field to change.
+        #   STATUS_OPTION_ID: The GraphQL ID for the value to set the status field to.
         run: |
           gh api graphql -f query='
             query($org: String!, $number: Int!) {
@@ -111,6 +116,9 @@ jobs:
           PR_ID: ${{ github.event.pull_request.node_id }}
         # Uses [GitHub CLI](https://cli.github.com/manual/) and the API to add the pull request that triggered this workflow to the project.
         # The `jq` flag parses the response to get the ID of the created item.
+        #
+        # Future steps gain this environment variable:
+        #   ITEM_ID: The GraphQL ID for the project item (i.e., the PR's entry in the project).
         run: |
           item_id="$( gh api graphql -f query='
             mutation($project:ID!, $pr:ID!) {
@@ -142,10 +150,10 @@ jobs:
                 fieldId: $status_field
                 value: {
                   singleSelectOptionId: $status_value
-                  }
+                }
               }) {
                 projectV2Item {
                   id
-                  }
+                }
               }
             }' -f project=$PROJECT_ID -f item=$ITEM_ID -f status_field=$STATUS_FIELD_ID -f status_value=$STATUS_OPTION_ID --silent
