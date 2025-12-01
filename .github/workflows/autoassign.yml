@@ -14,8 +14,7 @@
 
 name: Auto-Assign
 run-name: "Assign issue #${{ github.event.issue.id }} to default assignee"
-# description: >
-#  Automatically assign issues to one of the people registered for that.
+# Automatically assign issues to one of the people registered for that.
 on:
   issues:
     types: [opened]
