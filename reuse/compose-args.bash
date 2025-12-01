@@ -33,12 +33,12 @@ if [ -z "$Arguments" ]; then
 
     # Add if file exists
     if [ -f "$Extra" ]; then
-        Arguments="$Arguments --extra-formats '$Extra'"
+        Arguments="--extra-formats '$Extra' $Arguments"
     fi
 
     # Add if file exists
     if [ -f "$Ignore" ]; then
-        Arguments="$Arguments --ignore-file '$Ignore'"
+        Arguments="--ignore-file '$Ignore' $Arguments"
     fi
 
     # Add if directory exists, else use fallback
