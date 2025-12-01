@@ -49,4 +49,4 @@ if [ -z "$Arguments" ]; then
     fi
 fi
 
-echo "args=$Arguments" #>>$GITHUB_OUTPUT
+echo "args=$Arguments" >>$GITHUB_OUTPUT
