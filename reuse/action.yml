@@ -18,7 +18,8 @@ author: 'Free Software Foundation Europe (FSFE)'
 inputs:
   args:
     description: "The arguments to pass to the reuse-tool"
-    required: true
+    required: false
+    default: ""
   branch:
     description: "The branch to check out the reuse-tool from"
     required: false
