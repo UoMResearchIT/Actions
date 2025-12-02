@@ -1,0 +1,94 @@
+# SPDX-FileCopyrightText: 2024 University of Manchester
+#
+# SPDX-License-Identifier: apache-2.0
+
+name: Add License and Copyright Headers
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: "What reference to check. Defaults to the one from the pull request invoking this."
+        type: string
+        required: false
+        default: ${{ github.event.pull_request.head.sha }}
+      work-dir:
+        description: "The working directory to check the code out into. Defaults to 'repo'."
+        type: string
+        required: false
+        default: repo
+      branch:
+        description: "The name of the branch."
+        type: string
+        required: false
+        default: ${{ github.head_ref }}
+      license:
+        description: "The SPDX name of the license to use."
+        type: string
+        required: false
+        default: apache-2.0
+    outputs:
+      check-failed:
+        description: "Whether the check applied by this workflow 'failed'."
+        value: ${{ jobs.add-headers.outputs.made-change == 1 }}
+      branch-created:
+        description: "If a branch was created, the name of that branch."
+        value: ${{ jobs.add-headers.outputs.made-change == 1 && jobs.add-headers.outputs.branch || '' }}
+      branches-deleted:
+        description: "If some branches were delete, what branches were they."
+        value: ${{ jobs.add-headers.outputs.deleted }}
+
+jobs:
+  add-headers:
+    runs-on: ubuntu-latest
+    outputs:
+      made-change: ${{ steps.push.outputs.changed }}
+      branch: ${{ steps.push.outputs.branch }}
+      deleted: ${{ steps.delete.outputs.deleted_branches }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: ${{ inputs.work-dir }}
+          ref: ${{ inputs.ref }}
+
+      - name: Add copyright headers
+        uses: UoMResearchIT/actions/reuse@reuse-usability
+        with:
+          base-dir: ${{ inputs.work-dir }}
+          extra-formats-file: ${{ inputs.work-dir }}/.extraformats
+          ignore-file: ${{ inputs.work-dir }}/.licenseignore
+          license: ${{ inputs.license }}
+
+      - name: Delete existing fix-headers branches
+        uses: phpdocker-io/github-actions-delete-abandoned-branches@v2
+        id: delete
+        with:
+          github_token: ${{ github.token }}
+          last_commit_age_days: -1
+          allowed_prefixes: add-license-headers-to-${{ inputs.branch }}-
+          dry_run: no
+
+      - name: Commit and push changes
+        id: push
+        uses: UoMResearchIT/actions/git-push-changes-to-branch@main
+        with:
+          working-directory: ${{ inputs.work-dir }}
+          branch-prefix: add-license-headers-to
+          commit-message: Add License and Copyright Headers
+
+  annotate:
+    runs-on: ubuntu-latest
+    needs: add-headers
+    if: needs.add-headers.outputs.made-change == 1
+    steps:
+      - name: Commit comment if had to create new branch
+        uses: peter-evans/commit-comment@v3
+        with:
+          body: >
+            Copyright updates at [.../compare/${{ inputs.branch }}...${{ needs.add-headers.outputs.branch }}](${{ github.server_url }}/${{ github.repository }}/compare/${{ inputs.branch }}...${{ needs.add-headers.outputs.branch }}?expand=1), please review and merge.
+
+      - name: Fail if had to create new branch
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.setFailed("Copyright updates at ${{ github.server_url }}/${{ github.repository }}/compare/${{ inputs.branch }}...${{ needs.add-headers.outputs.branch }}?expand=1, please review and merge.")
