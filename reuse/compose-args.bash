@@ -19,7 +19,7 @@ set -e
 # If a full set of args supplied, skip generating them
 if [ -z "$Arguments" ]; then
     # Basic arguments
-    Arguments="annotate --copyright \"$Who\" -license '$License' --recursive"
+    Arguments="annotate --copyright \"$Who\" --license '$License' --recursive"
 
     # Add if flag set
     if [ "$Merge" == 'true' ]; then
