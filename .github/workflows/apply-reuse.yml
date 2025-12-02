@@ -17,7 +17,7 @@ on:
         required: false
         default: repo
       branch:
-        description: "The name of the branch."
+        description: "The name of the branch, used when generating a diff."
         type: string
         required: false
         default: ${{ github.head_ref }}
@@ -40,6 +40,7 @@ on:
 jobs:
   add-headers:
     runs-on: ubuntu-latest
+    concurrency: prune:add-license-headers
     outputs:
       made-change: ${{ steps.push.outputs.changed }}
       branch: ${{ steps.push.outputs.branch }}
