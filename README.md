@@ -7,7 +7,7 @@ These are intended for use in many types of project, wherever relevant.
 
 ## Multi-platform
 
-* [`commit-id`](commit-id) helps generate a file containing the ID of the commit within it. 
+* [`commit-id`](commit-id) helps generate a file containing the ID of the commit within it.
 
 * [`compare-output`](compare-output) compares the output of a program to a string. Great for testing!
 

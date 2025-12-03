@@ -22,7 +22,7 @@ Example usage:
 
 * `file-glob`
 
-    What files to match for testing, as a pattern. **Optional.**  
+    What files to match for testing, as a pattern. **Optional.**
 
     Note that headers typically require additional configuration options to check.
     See the documentation for details.  

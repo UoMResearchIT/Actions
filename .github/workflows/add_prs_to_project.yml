@@ -23,24 +23,39 @@
 #   call-add-prs-to-project:
 #     uses: UoMResearchIT/Actions/.github/workflows/add_prs_to_project.yml@main
 #     with:
+#       organisation: UoMResearchIT
+#       project_number: 123
 #       personal_access_token: ${{ secrets.TOKEN }}
 #
 
 name: Add PR to project
+run-name: "Add PR #${{ github.event.pull_request.id }} to Project #${{ inputs.project_number }}"
 on:
   workflow_call:
     inputs:
+      organisation:
+        type: string
+        required: true
+        description: >
+          The name of the organisation that owns the project.
       project_number:
         type: number
         required: true
         description: >
-          The identifier of the project to add the PR to in the organisation being run in
+          The identifier of the project to add the PR to in the organisation being run in.
+      status_field:
+        type: string
+        required: false
+        default: Status
+        description: >
+          The name of the "status" field, in case that is something other than the default.
       status_to_change_to:
         type: string
         required: false
         default: Ready To Review
         description: >
-          The name of the option to select in as the Status field.  This workflow assumes that the project has a single select field called "Status" that includes an option that this value specifies.
+          The name of the option to select in as the Status field.
+          This workflow assumes that the project has a single select field called "Status" (or whatever the status_field input names it as) that includes an option that this value specifies.
     secrets:
       personal_access_token:
         required: true
@@ -53,11 +68,19 @@ jobs:
     steps:
       - name: Get project data
         env:
-          # Aur
           GH_TOKEN: ${{ secrets.personal_access_token }}
-          ORGANIZATION: SpiNNakerManchester
+          ORGANIZATION: ${{ inputs.organisation }}
           PROJECT_NUMBER: ${{ inputs.project_number }}
-        # Uses [GitHub CLI](https://cli.github.com/manual/) to query the API for the ID of the project and return the name and ID of the first 20 fields in the project. `fields` returns a union and the query uses inline fragments (`... on`) to return information about any `ProjectV2Field` and `ProjectV2SingleSelectField` fields. The response is stored in a file called `project_data.json`.
+          STATUS_FIELD: ${{ inputs.status_field }}
+          STATUS_VALUE: ${{ inputs.status_to_change_to }}
+        # Uses [GitHub CLI](https://cli.github.com/manual/) to query the API for the ID of the project and return the name and ID of the first 20 fields in the project.
+        # `fields` returns a union and the query uses inline fragments (`... on`) to return information about any `ProjectV2Field` and `ProjectV2SingleSelectField` fields.
+        # The response is stored in a file called `project_data.json` that is parsed to get the relevant IDs that are stored as environment variables.
+        #
+        # Extracted values are written to $GITHUB_ENV so *future* steps will have these environment variables:
+        #   PROJECT_ID: The GraphQL ID for the project.
+        #   STATUS_FIELD_ID: The GraphQL ID for the status field to change.
+        #   STATUS_OPTION_ID: The GraphQL ID for the value to set the status field to.
         run: |
           gh api graphql -f query='
             query($org: String!, $number: Int!) {
@@ -83,19 +106,19 @@ jobs:
                 }
               }
             }' -f org=$ORGANIZATION -F number=$PROJECT_NUMBER > project_data.json
-
-          # Parses the response from the API query and stores the relevant IDs as environment variables.
-          # **Note:** This workflow assumes that you have a project with a single select field called "Status" that includes an option specified in inputs.status_to_change_to.
-
           echo 'PROJECT_ID='$(jq '.data.organization.projectV2.id' project_data.json) >> $GITHUB_ENV
-          echo 'STATUS_FIELD_ID='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") | .id' project_data.json) >> $GITHUB_ENV
-          echo 'STATUS_OPTION_ID='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") | .options[] | select(.name=="${{ inputs.status_to_change_to }}") |.id' project_data.json) >> $GITHUB_ENV
+          echo 'STATUS_FIELD_ID='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name==env.STATUS_FIELD) | .id' project_data.json) >> $GITHUB_ENV
+          echo 'STATUS_OPTION_ID='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name==env.STATUS_FIELD) | .options[] | select(.name==env.STATUS_VALUE) |.id' project_data.json) >> $GITHUB_ENV
 
       - name: Add PR to project
         env:
           GH_TOKEN: ${{ secrets.personal_access_token }}
           PR_ID: ${{ github.event.pull_request.node_id }}
-        # Uses [GitHub CLI](https://cli.github.com/manual/) and the API to add the pull request that triggered this workflow to the project. The `jq` flag parses the response to get the ID of the created item.
+        # Uses [GitHub CLI](https://cli.github.com/manual/) and the API to add the pull request that triggered this workflow to the project.
+        # The `jq` flag parses the response to get the ID of the created item.
+        #
+        # Future steps gain this environment variable:
+        #   ITEM_ID: The GraphQL ID for the project item (i.e., the PR's entry in the project).
         run: |
           item_id="$( gh api graphql -f query='
             mutation($project:ID!, $pr:ID!) {
@@ -112,7 +135,7 @@ jobs:
       - name: Set fields
         env:
           GH_TOKEN: ${{ secrets.personal_access_token }}
-        # Sets the value of the `Status` field to `Ready to Review`.
+        # Sets the value of the `Status` field to `Ready to Review`. (Or whatever the field and value are called)
         run: |
           gh api graphql -f query='
             mutation (
@@ -127,10 +150,10 @@ jobs:
                 fieldId: $status_field
                 value: {
                   singleSelectOptionId: $status_value
-                  }
+                }
               }) {
                 projectV2Item {
                   id
-                  }
+                }
               }
-            }' -f project=$PROJECT_ID -f item=$ITEM_ID -f status_field=$STATUS_FIELD_ID -f status_value=${{ env.STATUS_OPTION_ID }} --silent
+            }' -f project=$PROJECT_ID -f item=$ITEM_ID -f status_field=$STATUS_FIELD_ID -f status_value=$STATUS_OPTION_ID --silent

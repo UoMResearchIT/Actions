@@ -19,10 +19,10 @@ Donal Fellows (@dkfellows) on behalf of University of Manchester Research Softwa
 Here's a few things to think about when writing a PR that fixes a bug:
 -->
 
-- [ ] Have you put a `#ref` to the issue that this PR fixes? This helps a lot! 
+- [ ] Have you put a `#ref` to the issue that this PR fixes? This helps a lot!
 
 - [ ] What do you think this bug fix does? We can see what it _actually_ does by reading the code,
-      but it's very helpful to have a short description of what you _intend_ it to do. 
+      but it's very helpful to have a short description of what you _intend_ it to do.
       If that's essentially just fixing the referenced issue, the reference plus a short sentence suffices.
 
 - [ ] If you can, `@` mention someone to review the code at least in the first instance.

@@ -1,9 +1,9 @@
 # Run Pylint
-Runs pylint on a Python package. 
+Runs pylint on a Python package.
 
 > [!NOTE]
 > If not already installed, this action will set up Python and install pylint.
-> If you want control over the versions of these, install them prior to running this action. 
+> If you want control over the versions of these, install them prior to running this action.
 
 > [!IMPORTANT]
 > Spell checking of docstrings is only supported on Ubuntu runners.

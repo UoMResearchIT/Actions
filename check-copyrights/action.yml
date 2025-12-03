@@ -47,9 +47,9 @@ inputs:
         `rat.xml` - All licenses acceptable to RAT (default)
         `rat_asl20.xml` - Only the AppliedApacheSoftwareLicense20 (prefer `profile: ASL`)
         `rat_gpl3.xml` - Only the GNU General Public License version 3 (prefer `profile: GPL3`)
-      
+
       You may also specify an ANT config file yourself.
-      This is only useful when developing a new profile. 
+      This is only useful when developing a new profile.
     required: false
     default: "rat.xml"
   excludes-file:
