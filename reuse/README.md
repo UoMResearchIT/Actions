@@ -27,6 +27,9 @@ This action uses the [REUSE helper tool](https://github.com/fsfe/reuse-tool). Fo
 
 ## Example usage
 
+> [!NOTE]
+> See the `add_prs_to_project.yml` file in our standard workflow set for how to _actually_ use this action. These examples are outdated and incomplete.
+
 You can include the following lines in your workflow .yml file to run the lint subcommand:
 
 ```yml
@@ -72,12 +75,52 @@ In the same fashion, it is possible to add optional arguments like `--include-su
 ```
 
 ## Inputs
+* `copyright-holder`
+
+  The name of the copyright holder.
+  **Optional.** Defaults to `University of Manchester`.
+
+* `license`
+
+  The name of the license to apply.
+  **Optional.** Defaults to `apache-2.0`.
+
+* `merge`
+
+  Whether to merge copyrights.
+  **Optional.** Defaults to `true`.
+
+* `fallback-dot-license`
+
+  Whether to create a `*.license` file as a fallback. If `false`, will cause a failure if annotation isn't possible.
+  **Optional.** Defaults to `true`.
+
+* `extra-formats-file`
+
+  The name of the extra formats file.
+  **Optional.** Defaults to `.extraformats` in the current working directory.
+
+* `ignore-file`
+
+  The name of the ignore file.
+  **Optional.** Defaults to `.licenseignore` in the current working directory.
+
+* `base-dir`
+
+  The base directory to analyse and annotate.
+  **Optional.** Defaults to the current working directory.
+
 * `args`
 
   The subcommand for the REUSE helper tool. Read the [tool's documentation](https://reuse.readthedocs.io/) for all available subcommands.
   **Optional.**
 
-  Defaults to `lint`.
+  Overrides all other options (except `branch`).
+
+* `branch`
+
+  The branch to check out the `reuse-tool` from.
+  **Optional.** _Very_ rarely required.
 
 ## Outputs
 None
