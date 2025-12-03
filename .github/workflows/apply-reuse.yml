@@ -63,7 +63,7 @@ jobs:
           ref: ${{ inputs.ref }}
 
       - name: Add copyright headers
-        uses: UoMResearchIT/actions/reuse@reuse-usability
+        uses: UoMResearchIT/actions/reuse@main
         with:
           base-dir: ${{ inputs.work-dir }}
           extra-formats-file: ${{ inputs.work-dir }}/.extraformats
