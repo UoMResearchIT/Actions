@@ -100,6 +100,7 @@ jobs:
             Copyright updates at [.../compare/${{ inputs.branch }}...${{ needs.add-headers.outputs.branch }}](${{ github.server_url }}/${{ github.repository }}/compare/${{ inputs.branch }}...${{ needs.add-headers.outputs.branch }}?expand=1), please review and merge.
 
       - name: Hide old PR comments
+        if: needs.add-headers.outputs.made-change == 0
         uses: kanga333/comment-hider@v0.4.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -108,6 +109,7 @@ jobs:
         if: needs.add-headers.outputs.made-change == 1
         uses: mshick/add-pr-comment@v2
         with:
+          refresh-message-position: true
           message: |
             ## Changes were made to copyright notices
             There are copyright updates on the (temporary) [${{ needs.add-headers.outputs.branch }} branch](${{ github.server_url }}/${{ github.repository }}/compare/${{ inputs.branch }}...${{ needs.add-headers.outputs.branch }}?expand=1). Please review and merge, or add further commits (this branch will be deleted).
