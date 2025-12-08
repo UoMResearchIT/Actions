@@ -94,7 +94,7 @@ jobs:
     steps:
       - name: Commit comment
         if: needs.add-headers.outputs.made-change == 1
-        uses: peter-evans/commit-comment@v3
+        uses: peter-evans/commit-comment@v4
         with:
           body: >
             Copyright updates at [.../compare/${{ inputs.branch }}...${{ needs.add-headers.outputs.branch }}](${{ github.server_url }}/${{ github.repository }}/compare/${{ inputs.branch }}...${{ needs.add-headers.outputs.branch }}?expand=1), please review and merge.
