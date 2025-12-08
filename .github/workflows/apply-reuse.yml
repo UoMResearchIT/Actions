@@ -57,7 +57,7 @@ jobs:
       deleted: ${{ steps.delete.outputs.deleted_branches }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: ${{ inputs.work-dir }}
           ref: ${{ inputs.ref }}
