@@ -59,7 +59,7 @@ outputs:
   changed:
     description: >
       Whether there were any changes committed.
-    value: ${{ steps.push.outputs.work == 1 }}
+    value: ${{ steps.detect.outputs.changed == 1 && steps.push.outputs.pushed == 1 }}
 runs:
   using: composite
   steps:
@@ -106,11 +106,11 @@ runs:
           git add --all -- "${EXCLUDE/#/:!}"
         fi
         if git diff --cached --exit-code >/dev/null; then
-          echo "work=0" >> $GITHUB_OUTPUT
+          echo "pushed=0" >> $GITHUB_OUTPUT
         else
           git commit -a -m "$MESSAGE"
           git push origin "$NEW_BRANCH"
-          echo "work=1" >> $GITHUB_OUTPUT
+          echo "pushed=1" >> $GITHUB_OUTPUT
         fi
       shell: bash
       env:
