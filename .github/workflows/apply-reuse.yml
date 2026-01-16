@@ -63,7 +63,7 @@ jobs:
           ref: ${{ inputs.ref }}
 
       - name: Add copyright headers
-        uses: UoMResearchIT/actions/reuse@main
+        uses: UoMResearchIT/actions/reuse@v1.2.1
         with:
           base-dir: ${{ inputs.work-dir }}
           extra-formats-file: ${{ inputs.work-dir }}/.extraformats
@@ -81,7 +81,7 @@ jobs:
 
       - name: Commit and push changes
         id: push
-        uses: UoMResearchIT/actions/git-push-changes-to-branch@main
+        uses: UoMResearchIT/actions/git-push-changes-to-branch@v1.2.1
         with:
           working-directory: ${{ inputs.work-dir }}
           branch-prefix: add-license-headers-to

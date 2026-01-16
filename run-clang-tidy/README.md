@@ -5,7 +5,7 @@ Runs [clang-tidy](https://clang.llvm.org/extra/clang-tidy/) against a C or C++ c
 Example usage:
 
 ```yml
-  - uses: UoMResearchIT/actions/run-clang-tidy@v1.0
+  - uses: UoMResearchIT/actions/run-clang-tidy@v1.2.1
 ```
 
 > [!IMPORTANT]

@@ -8,7 +8,7 @@ Assumes that Python has already been set up.
 
 Example usage:
 ```yml
-  - uses: UoMResearchIT/actions/python-import-all-test@v1.0
+  - uses: UoMResearchIT/actions/python-import-all-test@v1.2.1
     with:
       module: mymodule
 ```
