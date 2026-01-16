@@ -63,11 +63,11 @@ Example:
 * `branch`
 
   The name of the branch that may have been created.
-  NB: The branch is only created if the `changed` output is `1`.
+  NB: The branch is only created if the `changed` output is `true`.
 
 * `changed`
 
-  Whether there were any changes committed. (`1` if yes, `0` if no.)
+  Whether there were any changes committed. (`true` if yes, `false` if no.)
 
 ## Permissions
 Required permission:

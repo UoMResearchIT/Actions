@@ -47,6 +47,10 @@ inputs:
     description: >
       The email address of the user to ascribe the commit to.
     default: no-reply@github.com
+  exclude:
+    description: >
+      A pattern to describe what files to omit from the committed.
+    default: ""
 outputs:
   branch:
     description: >
@@ -55,7 +59,7 @@ outputs:
   changed:
     description: >
       Whether there were any changes committed.
-    value: ${{ steps.detect.outputs.changed }}
+    value: ${{ steps.detect.outputs.changed == 1 && steps.push.outputs.pushed == 1 }}
 runs:
   using: composite
   steps:
@@ -92,14 +96,25 @@ runs:
         USER_EMAIL: ${{ inputs.commit-user-email }}
     - name: push changes
       if: steps.detect.outputs.changed == 1
+      id: push
       working-directory: ${{ inputs.working-directory }}
       run: |
         git checkout -b "$NEW_BRANCH"
-        git add -A
-        git commit -a -m "$MESSAGE"
-        git push origin "$NEW_BRANCH"
+        if [ -z "$EXCLUDE" ]; then
+          git add -A
+        else
+          git add --all -- "${EXCLUDE/#/:!}"
+        fi
+        if git diff --cached --exit-code >/dev/null; then
+          echo "pushed=0" >> $GITHUB_OUTPUT
+        else
+          git commit -a -m "$MESSAGE"
+          git push origin "$NEW_BRANCH"
+          echo "pushed=1" >> $GITHUB_OUTPUT
+        fi
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.token }}
         NEW_BRANCH: ${{ steps.name.outputs.branch }}
         MESSAGE: ${{ inputs.commit-message }}
+        EXCLUDE: ${{ inputs.exclude }}
