@@ -7,14 +7,14 @@ It's intended to be used by the `license-copyright-add` workflow in repositories
 Example:
 ```yml
       - name: Detect and push changes
-        uses: UoMResearchIT/actions/git-push-changes-to-branch@main
+        uses: UoMResearchIT/actions/git-push-changes-to-branch@v1.2.1
         id: push
         with:
           working-directory: repo
           branch-prefix: add-license-headers-to
           commit-message: Add License and Copyright Headers
       - name: Commit comment if had to create new branch
-        if: steps.push.outputs.changed == 1
+        if: steps.push.outputs.changed
         uses: peter-evans/commit-comment@v3
         with:
           body: >

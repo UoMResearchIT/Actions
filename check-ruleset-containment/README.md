@@ -5,9 +5,9 @@ from a standard model ruleset (the "expected" ruleset).
 
 Example:
 ```yml
-      - uses: UoMResearchIT/actions/get-repo-ruleset@v1.0
+      - uses: UoMResearchIT/actions/get-repo-ruleset@v1.2.1
         id: get-rules
-      - uses: UoMResearchIT/actions/check-ruleset-containment@v1.0
+      - uses: UoMResearchIT/actions/check-ruleset-containment@v1.2.1
         with:
           current: ${{ steps.get-rules.outputs.filename }}
           expected: project_setup/my_ruleset_file.json
