@@ -81,11 +81,12 @@ jobs:
 
       - name: Commit and push changes
         id: push
-        uses: UoMResearchIT/actions/git-push-changes-to-branch@main
+        uses: UoMResearchIT/actions/git-push-changes-to-branch@omit-workflows-from-commits
         with:
           working-directory: ${{ inputs.work-dir }}
           branch-prefix: add-license-headers-to
           commit-message: Add License and Copyright Headers
+          exclude: .github/workflows/*
 
   annotate:
     runs-on: ubuntu-latest
