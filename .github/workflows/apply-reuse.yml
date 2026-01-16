@@ -88,6 +88,10 @@ jobs:
           commit-message: Add License and Copyright Headers
           exclude: .github/workflows/*
 
+      - run: |
+          echo "changed='${{steps.push.outputs.changed}}', branch='${{steps.push.outputs.branch}}'"
+        shell: bash
+
   annotate:
     runs-on: ubuntu-latest
     concurrency: prune:bot-comments
