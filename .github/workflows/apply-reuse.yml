@@ -93,6 +93,9 @@ jobs:
     concurrency: prune:bot-comments
     needs: add-headers
     steps:
+      - run: echo "::notice::CHANGED=$CHANGED"
+        env:
+          CHANGED: ${{ needs.add-headers.outputs.made-change }}
       - name: Commit comment
         if: needs.add-headers.outputs.made-change
         uses: peter-evans/commit-comment@v4
