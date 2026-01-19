@@ -39,10 +39,10 @@ on:
     outputs:
       check-failed:
         description: "Whether the check applied by this workflow 'failed'."
-        value: ${{ jobs.add-headers.outputs.made-change }}
+        value: ${{ jobs.add-headers.outputs.made-change == 'true' }}
       branch-created:
         description: "If a branch was created, the name of that branch."
-        value: ${{ jobs.add-headers.outputs.made-change && jobs.add-headers.outputs.branch || '' }}
+        value: ${{ jobs.add-headers.outputs.made-change == 'true' && jobs.add-headers.outputs.branch || '' }}
       branches-deleted:
         description: "If some branches were delete, what branches were they."
         value: ${{ jobs.add-headers.outputs.deleted }}
@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-latest
     concurrency: prune:add-license-headers
     outputs:
-      made-change: ${{ steps.push.outputs.changed == 'true' }}
+      made-change: ${{ steps.push.outputs.changed }}
       branch: ${{ steps.push.outputs.branch }}
       deleted: ${{ steps.delete.outputs.deleted_branches }}
     steps:
@@ -94,20 +94,20 @@ jobs:
     needs: add-headers
     steps:
       - name: Commit comment
-        if: needs.add-headers.outputs.made-change
+        if: needs.add-headers.outputs.made-change == 'true'
         uses: peter-evans/commit-comment@v4
         with:
           body: >
             Copyright updates at [.../compare/${{ inputs.branch }}...${{ needs.add-headers.outputs.branch }}](${{ github.server_url }}/${{ github.repository }}/compare/${{ inputs.branch }}...${{ needs.add-headers.outputs.branch }}?expand=1), please review and merge.
 
       - name: Hide old PR comments
-        if: ${{ !needs.add-headers.outputs.made-change }}
+        if: needs.add-headers.outputs.made-change == 'false'
         uses: kanga333/comment-hider@v0.4.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: PR comment
-        if: needs.add-headers.outputs.made-change
+        if: needs.add-headers.outputs.made-change == 'true'
         uses: mshick/add-pr-comment@v2
         with:
           refresh-message-position: true
@@ -116,7 +116,7 @@ jobs:
             There are copyright updates on the (temporary) [${{ needs.add-headers.outputs.branch }} branch](${{ github.server_url }}/${{ github.repository }}/compare/${{ inputs.branch }}...${{ needs.add-headers.outputs.branch }}?expand=1). Please review and merge, or add further commits (this branch will be deleted).
 
       - name: Fail marker
-        if: needs.add-headers.outputs.made-change
+        if: needs.add-headers.outputs.made-change == 'true'
         uses: actions/github-script@v8
         with:
           script: |
