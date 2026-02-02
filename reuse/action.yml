@@ -81,7 +81,7 @@ runs:
     shell: bash
 
   - name: Restore Cache
-    uses: actions/cache/restore@v5.0.2
+    uses: actions/cache/restore@v5.0.3
     id: cache-venv
     with:
       path: reuse-tool-venv
@@ -114,7 +114,7 @@ runs:
       USE_POETRY_VERSION: ${{ inputs.poetry-version }}
 
   - name: Save Cache
-    uses: actions/cache/save@v5.0.2
+    uses: actions/cache/save@v5.0.3
     with:
       path: reuse-tool-venv
       key: ${{ steps.cache-venv.outputs.cache-primary-key }}
