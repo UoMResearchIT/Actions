@@ -101,14 +101,14 @@ runs:
       run: |
         git checkout -b "$NEW_BRANCH"
         if [ -z "$EXCLUDE" ]; then
-          git add -A
+          git add --all
         else
           git add --all -- "${EXCLUDE/#/:!}"
         fi
         if git diff --cached --exit-code >/dev/null; then
           echo "pushed=0" >> $GITHUB_OUTPUT
         else
-          git commit -a -m "$MESSAGE"
+          git commit -m "$MESSAGE"
           git push origin "$NEW_BRANCH"
           echo "pushed=1" >> $GITHUB_OUTPUT
         fi
