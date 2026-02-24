@@ -20,7 +20,7 @@ inputs:
   version:
     description: The version of Apache RAT to use.
     required: false
-    default: "0.15"
+    default: "0.17"
   mirror:
     description: >
       The mirror of the Apache download site to get the library from.
