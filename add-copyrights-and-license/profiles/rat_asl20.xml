@@ -23,7 +23,7 @@ limitations under the License.
                 <excludesfile name="${env.EXCLUDES}" />
                 <excludesfile name="${env.GITHUB_ACTION_PATH}/rat.excludes" />
             </fileset>
-            <licensesApproved>AL2.0</licensesApproved>
+            <licensesApproved><lst>AL2.0</lst></licensesApproved>
         </rat:report>
     </target>
 </project>
