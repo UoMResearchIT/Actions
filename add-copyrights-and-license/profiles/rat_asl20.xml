@@ -19,47 +19,11 @@ limitations under the License.
     <property environment="env" />
     <target name="rat">
         <rat:report editLicense="y" editCopyright="${env.COPYRIGHT}" editOverwrite="Y" configurationNoDefaults="true">
-            <config>
-                <fileset dir="${user.dir}" defaultexcludes="yes">
-                    <exclude name="RAT_report.txt" />
-                    <excludesfile name="${env.EXCLUDES}" />
-                    <excludesfile name="${env.GITHUB_ACTION_PATH}/rat.excludes" />
-                </fileset>
-                <rat:asl20/>
-            </config>
+            <fileset dir="${user.dir}" defaultexcludes="yes">
+                <excludesfile name="${env.EXCLUDES}" />
+                <excludesfile name="${env.GITHUB_ACTION_PATH}/rat.excludes" />
+            </fileset>
+            <licensesApproved>AL2.0</licensesApproved>
         </rat:report>
-        <fail message="RAT_report.txt not generated">
-            <condition>
-                <not>
-                    <resourcecount count="1">
-                        <fileset dir="${user.dir}" includes="RAT_report.txt" />
-                    </resourcecount>
-                </not>
-            </condition>
-        </fail>
-        <loadfile property="report" srcfile="${user.dir}/RAT_report.txt">
-            <filterchain>
-                <tokenfilter>
-                    <filetokenizer />
-                    <replaceregex replace="" flags="s"
-                        pattern="\s*Printing headers for text files without a valid license header.*" />
-                </tokenfilter>
-            </filterchain>
-        </loadfile>
-        <condition property="problems">
-            <not>
-                <contains string="${report}"
-                    substring="&#10;0 Unknown Licenses" />
-            </not>
-        </condition>
-        <echo if:set="problems" message="${report}" />
-        <fail message="Unknown Licenses found">
-            <condition>
-                <not>
-                    <contains string="${report}"
-                        substring="&#10;0 Unknown Licenses" />
-                </not>
-            </condition>
-        </fail>
     </target>
 </project>

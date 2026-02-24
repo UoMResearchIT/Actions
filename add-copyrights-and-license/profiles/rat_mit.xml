@@ -18,7 +18,7 @@ limitations under the License.
         xmlns:if="ant:if" xmlns="antlib:org.apache.tools.ant">
     <property environment="env" />
     <target name="rat">
-        <rat:report editLicense="y" editCopyright="${env.COPYRIGHT}" editOverwrite="Y" configurationNoDefaults="true">
+        <rat:report editLicense="y" editCopyright="${env.COPYRIGHT}" editOverwrite="Y" addDefaultLicenseMatchers="false">
             <fileset dir="${user.dir}" defaultexcludes="yes">
                 <exclude name="RAT_report.txt" />
                 <excludesfile name="${env.EXCLUDES}" />
