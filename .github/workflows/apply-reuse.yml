@@ -35,7 +35,7 @@ on:
         description: "The SPDX name of the license to use."
         type: string
         required: false
-        default: apache-2.0
+        default: LicenseRef-NONE
     outputs:
       check-failed:
         description: "Whether the check applied by this workflow 'failed'."
