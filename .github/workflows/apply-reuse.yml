@@ -108,7 +108,7 @@ jobs:
 
       - name: PR comment
         if: needs.add-headers.outputs.made-change == 'true'
-        uses: mshick/add-pr-comment@v2
+        uses: mshick/add-pr-comment@v3
         with:
           refresh-message-position: true
           message: |
