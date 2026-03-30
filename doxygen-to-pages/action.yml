@@ -35,7 +35,7 @@ runs:
   steps:
     - name: Setup Pages
       id: setup
-      uses: actions/configure-pages@v5
+      uses: actions/configure-pages@v6
       continue-on-error: true
     - name: Run Doxygen
       uses: mattnotmitt/doxygen-action@v1.12.0
