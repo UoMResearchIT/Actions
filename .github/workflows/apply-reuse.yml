@@ -117,7 +117,7 @@ jobs:
 
       - name: Fail marker
         if: needs.add-headers.outputs.made-change == 'true'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             core.setFailed("Copyright updates at ${{ github.server_url }}/${{ github.repository }}/compare/${{ inputs.branch }}...${{ needs.add-headers.outputs.branch }}?expand=1, please review and merge.")
