@@ -36,6 +36,11 @@ on:
         type: string
         required: false
         default: apache-2.0
+      copyright-holder:
+        description: "The name of the copyright holder."
+        type: string
+        required: false
+        default: "University of Manchester"
     outputs:
       check-failed:
         description: "Whether the check applied by this workflow 'failed'."
@@ -69,6 +74,7 @@ jobs:
           extra-formats-file: ${{ inputs.work-dir }}/.extraformats
           ignore-file: ${{ inputs.work-dir }}/.licenseignore
           license: ${{ inputs.license }}
+          copyright-holder: ${{ inputs.copyright-holder }}
 
       - name: Delete existing fix-headers branches
         uses: phpdocker-io/github-actions-delete-abandoned-branches@v2
