@@ -25,7 +25,7 @@ OUTPUT_FILE=$(realpath $OUTPUT_FILE.json)
 
 if [ -z "$BRANCH" ]; then
     # Fetch default branch dynamically
-    DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name)
+    DEFAULT_BRANCH=$(gh repo view "$REPO_NAME" --json defaultBranchRef --jq .defaultBranchRef.name)
     echo "Default branch detected: $DEFAULT_BRANCH"
     BRANCH=$DEFAULT_BRANCH
 fi
