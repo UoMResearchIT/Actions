@@ -33,6 +33,8 @@ These are intended for use in many types of project, wherever relevant.
 
 * [`apply-reuse` (reusable workflow)](.github/workflows/apply-reuse.yml) is a reusable workflow that encodes how to use our branch of [reuse](https://reuse.software/) for managing copyright headers. Intended to be called from PR-triggered workflows.
 
+* [`check-ruleset` (reusable workflow)](.github/workflows/check-ruleset.yml) is a reusable workflow that encodes how to check your repository for compliance with the standard rules for branch access control.
+
 * [`scan-for-secrets` (reusable workflow)](.github/workflows/scan-for-secrets.yml) is a reusable workflow that you can use in your repository to scan for API keys (e.g., for AWS) that your code accidentally exposes.
 
 # Language-Specific Tools

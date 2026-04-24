@@ -1,0 +1,90 @@
+# GitHub Actions Workflow: Check Repository Ruleset
+#
+# This workflow ensures that the repository's branch protection rules
+# match the expected ruleset defined in the template repository.
+#
+# It runs on pushes to the main branch and pull requests.
+#
+# Steps:
+# 1. Fetch the expected Branch Protection Rulesets from the template repository.
+# 2. Fetch the current repository's Branch Protection Rulesets.
+# 3. Compare the expected and actual rulesets.
+
+# Copyright (c) 2025-2026 The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Check Repository Ruleset
+
+on:
+  workflow_call:
+    inputs:
+      bot-id:
+        description: The ORG_ACTIONS_BOT_APP_ID from the organisation variables.
+        type: string
+        required: true
+      standard-owner:
+        description: The owner of the standard repository.
+        type: string
+        default: UoMResearchIT
+        required: false
+      standard-repo:
+        description: The name of the standard repository.
+        type: string
+        default: RSE-Repository-Template
+        required: false
+    secrets:
+      bot-key:
+        description: The ORG_ACTIONS_BOT_PRIVATE_KEY from the organisation secrets.
+        required: true
+
+jobs:
+  check-ruleset:
+    runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.head_ref, 'dependabot/') }}
+    name: Compare Ruleset Against Standard
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        timeout-minutes: 1
+
+      - name: Create Github App Token
+        id: mint-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ inputs.bot-id }}
+          private-key: ${{ secrets.bot-key }}
+          owner: ${{ inputs.standard-owner }}
+          repositories: ${{ inputs.standard-repo }}
+        timeout-minutes: 1
+
+      - name: Fetch Standard Ruleset from ${{ inputs.standard-owner }}/${{ inputs.standard-repo }}
+        id: expected
+        uses: UoMResearchIT/actions/get-repo-ruleset@v1.2.4
+        with:
+          repository: ${{ inputs.standard-owner }}/${{ inputs.standard-repo }}
+          token: ${{ steps.mint-token.outputs.token }}
+        timeout-minutes: 1
+
+      - name: Fetch This Repository's Ruleset
+        id: current
+        uses: UoMResearchIT/actions/get-repo-ruleset@v1.2.4
+        timeout-minutes: 1
+
+      - name: Check Inclusion of Standard Ruleset in Current Ruleset
+        uses: UoMResearchIT/actions/check-ruleset-containment@v1.2.4
+        with:
+          current: ${{ steps.current.outputs.filename }}
+          expected: ${{ steps.expected.outputs.filename }}
+        timeout-minutes: 1
