@@ -52,32 +52,39 @@ jobs:
   check-ruleset:
     runs-on: ubuntu-latest
     if: ${{ !startsWith(github.head_ref, 'dependabot/') }}
+    name: Compare Ruleset Against Standard
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
+        timeout-minutes: 1
 
       - name: Create Github App Token
-        id: app-token
+        id: mint-token
         uses: actions/create-github-app-token@v3
         with:
           client-id: ${{ inputs.bot-id }}
           private-key: ${{ secrets.bot-key }}
           owner: ${{ inputs.standard-owner }}
           repositories: ${{ inputs.standard-repo }}
-      - name: Fetch Standard RSE Ruleset
+        timeout-minutes: 1
+
+      - name: Fetch Standard Ruleset from ${{ inputs.standard-owner }}/${{ inputs.standard-repo }}
         id: expected
         uses: UoMResearchIT/actions/get-repo-ruleset@v1.2.4
         with:
           repository: ${{ inputs.standard-owner }}/${{ inputs.standard-repo }}
-          token: ${{ steps.app-token.outputs.token }}
+          token: ${{ steps.mint-token.outputs.token }}
+        timeout-minutes: 1
 
       - name: Fetch This Repository's Ruleset
         id: current
         uses: UoMResearchIT/actions/get-repo-ruleset@v1.2.4
+        timeout-minutes: 1
 
-      - name: Compare Rulesets
+      - name: Check Inclusion of Standard Ruleset in Current Ruleset
         uses: UoMResearchIT/actions/check-ruleset-containment@v1.2.4
         with:
           current: ${{ steps.current.outputs.filename }}
           expected: ${{ steps.expected.outputs.filename }}
+        timeout-minutes: 1
