@@ -54,6 +54,9 @@ jobs:
     if: ${{ !startsWith(github.head_ref, 'dependabot/') }}
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Create Github App Token
         id: app-token
         uses: actions/create-github-app-token@v3
@@ -69,8 +72,6 @@ jobs:
           repository: ${{ inputs.standard-owner }}/${{ inputs.standard-repo }}
           token: ${{ steps.app-token.outputs.token }}
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
       - name: Fetch This Repository's Ruleset
         id: current
         uses: UoMResearchIT/actions/get-repo-ruleset@v1.2.4
