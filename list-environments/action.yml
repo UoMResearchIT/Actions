@@ -35,9 +35,10 @@ runs:
       shell: bash
       id: list
       run: |
-        envs="$(gh api repos/{owner}/{repo}/environments --jq '
+        envs="$(gh api repos/{owner}/{repo}/environments | jq -c '
           .environments | map(.name)
         ')"
+        echo "$envs" | jq -r '.[]'
         echo "environments=$envs" >> $GITHUB_OUTPUT
       env:
         GH_TOKEN: ${{ inputs.token }}
