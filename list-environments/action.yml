@@ -24,10 +24,19 @@ inputs:
     description: >
       The access token to use.
     default: ${{ github.token }}
+    required: false
+  has-env:
+    description: >
+      If given, describes whether a specific environment is defined.
+    required: false
+    default: ""
 outputs:
   environments:
     description: The JSON array of environment names.
     value: ${{ steps.list.outputs.environments }}
+  env-present:
+    description: Whether the named environment is present.
+    value: ${{ inputs.has-env != '' && contains(inputs.has-env, fromJSON(steps.list.outputs.environments)) }}
 runs:
   using: composite
   steps:

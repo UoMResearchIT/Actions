@@ -15,10 +15,18 @@ Example:
 
   Defaults to the `GITHUB_TOKEN`.
 
+* `has-env`
+
+  If given, describes whether the specific named environment is defined. **Optional.**
+
 ## Outputs
 * `environments`
 
   A JSON list of all environment names, as a string.
+
+* `env-present`
+
+  Whether the environment named in the `has-env` input is present. `false` if no environment is named.
 
 ## Permissions
 Requires at least `actions: read`, and very likely `contents: read` implicitly as well
