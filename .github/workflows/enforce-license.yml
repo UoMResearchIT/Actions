@@ -16,6 +16,7 @@ name: Enforce License Rules
 # Enforces our own license rules.
 run-name: License Check
 on: push
+permissions: {}
 jobs:
   check:
     runs-on: ubuntu-latest

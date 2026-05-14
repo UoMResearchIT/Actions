@@ -65,6 +65,11 @@ branding:
 runs:
   using: composite
   steps:
+    - name: Check version sanity
+      shell: bash
+      run: $GITHUB_ACTION_PATH/checkver.bash
+      env:
+        IN_VERSION: ${{ inputs.version }}
     - name: Cache RAT
       id: cache
       uses: actions/cache@v5

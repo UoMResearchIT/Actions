@@ -18,6 +18,7 @@ run-name: "Assign issue #${{ github.event.issue.id }} to default assignee"
 on:
   issues:
     types: [opened]
+permissions: {}
 jobs:
   auto-assign:
     if: vars.DEFAULT_ISSUE_ASSIGNEE != ''

@@ -29,6 +29,9 @@ These are intended for use in many types of project, wherever relevant.
 
 ## Reusable Workflows
 
+> [!WARNING]
+> Do ***not*** call these from `pull_request_target`- or `issue_comment`-triggered workflows.
+
 * [`add_prs_to_project` (reusable workflow)](.github/workflows/add_prs_to_project.yml) is a reusable workflow that you can use in your repository to add any PRs assigned to a user to a Project and set the Status in the project to a value of your choosing.
 
 * [`apply-reuse` (reusable workflow)](.github/workflows/apply-reuse.yml) is a reusable workflow that encodes how to use our branch of [reuse](https://reuse.software/) for managing copyright headers. Intended to be called from PR-triggered workflows.

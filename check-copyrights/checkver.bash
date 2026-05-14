@@ -1,4 +1,6 @@
-# Copyright (c) 2025 The University of Manchester
+#!/usr/bin/env bash
+
+# Copyright (c) 2026 The University of Manchester
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,15 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-version: 2
-updates:
-  - package-ecosystem: "github-actions"
-    directories:
-      - "/"
-      - "/*"
-    schedule:
-      interval: "weekly"
-    assignees:
-      - dkfellows
-    cooldown:
-      default-days: 3
+case "$IN_VERSION" in
+    "[0-9].[0-9][0-9]")
+        exit 0
+        ;;
+    *)
+        echo "Unsupported version: $IN_VERSION"
+        exit 1
+        ;;
+esac

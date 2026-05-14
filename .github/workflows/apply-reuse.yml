@@ -52,20 +52,28 @@ on:
         description: "If some branches were delete, what branches were they."
         value: ${{ jobs.add-headers.outputs.deleted }}
 
+permissions: {}
+
 jobs:
   add-headers:
     runs-on: ubuntu-latest
-    concurrency: prune:add-license-headers
+    concurrency:
+      group: prune:add-license-headers
+      cancel-in-progress: false
+      queue: max
     outputs:
       made-change: ${{ steps.push.outputs.changed }}
       branch: ${{ steps.push.outputs.branch }}
       deleted: ${{ steps.delete.outputs.deleted_branches }}
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v6
         with:
           path: ${{ inputs.work-dir }}
           ref: ${{ inputs.ref }}
+          persist-credentials: true
 
       - name: Add copyright headers
         uses: UoMResearchIT/actions/reuse@v1.2.4
@@ -96,8 +104,13 @@ jobs:
 
   annotate:
     runs-on: ubuntu-latest
-    concurrency: prune:bot-comments
+    concurrency:
+      group: prune:bot-comments
+      queue: max
+      cancel-in-progress: false
     needs: add-headers
+    permissions:
+      pull-requests: write
     steps:
       - name: Commit comment
         if: needs.add-headers.outputs.made-change == 'true'

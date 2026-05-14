@@ -53,6 +53,8 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ !startsWith(github.head_ref, 'dependabot/') }}
     name: Compare Ruleset Against Standard
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout Repository
