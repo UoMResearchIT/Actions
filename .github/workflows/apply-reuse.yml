@@ -89,7 +89,7 @@ jobs:
           copyright-holder: ${{ inputs.copyright-holder }}
 
       - name: Delete existing fix-headers branches
-        uses: phpdocker-io/github-actions-delete-abandoned-branches@e04764c2f0f714dedb80c42d5174e756568a0452 # v2.02
+        uses: phpdocker-io/github-actions-delete-abandoned-branches@e04764c2f0f714dedb80c42d5174e756568a0452 # v2.0.2
         id: delete
         with:
           github_token: ${{ github.token }}
