@@ -94,16 +94,18 @@ runs:
     shell: bash
 
   - name: Enable reuse-tool Environment
+    id: venv
     run: |
       source reuse-tool-venv/${SCRIPT_DIR}/activate
-      echo "VIRTUAL_ENV=${VIRTUAL_ENV}" >> $GITHUB_ENV
-      echo "${VIRTUAL_ENV}/${SCRIPT_DIR}" >> $GITHUB_PATH
+      echo "virtual_env=${VIRTUAL_ENV}" >> $GITHUB_OUTPUT
+      echo "path=${VIRTUAL_ENV}/${SCRIPT_DIR}" >> $GITHUB_OUTPUT
     shell: bash
     env:
       SCRIPT_DIR: ${{ runner.os == 'Windows' && 'Scripts' || 'bin' }}
 
   - name: Setup reuse-tool Environment
     run: |
+      PATH="$PATH_ELEMENT:$PATH"
       pip install "poetry~=$USE_POETRY_VERSION"
       cd reuse-tool
       poetry install --no-interaction --only main
@@ -113,6 +115,8 @@ runs:
     shell: bash
     env:
       USE_POETRY_VERSION: ${{ inputs.poetry-version }}
+      VIRTUAL_ENV: ${{ steps.venv.outputs.virtual_env }}
+      PATH_ELEMENT: ${{ steps.venv.outputs.path }}
 
   - name: Save Cache
     uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
@@ -139,7 +143,8 @@ runs:
   - name: Run reuse
     shell: bash
     run: |
-      source reuse-tool-venv/bin/activate
+      source "$Venv_Path/activate"
       reuse $Arguments
     env:
       Arguments: ${{ steps.args.outputs.args }}
+      Venv_Path: ${{ steps.venv.outputs.path }}

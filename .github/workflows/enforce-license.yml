@@ -30,6 +30,6 @@ jobs:
         with:
           persist-credentials: false
       - name: Enforce
-        uses: UoMResearchIT/actions/check-copyrights@v1.2.4
+        uses: UoMResearchIT/actions/check-copyrights@4e469793f6f793229bac2ebed8a7479b31883072 #v1.2.4
         with:
           profile: ASL
