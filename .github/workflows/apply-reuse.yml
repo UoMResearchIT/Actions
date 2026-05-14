@@ -126,4 +126,6 @@ jobs:
         uses: actions/github-script@v9
         with:
           script: |
-            core.setFailed("Copyright updates at ${{ github.server_url }}/${{ github.repository }}/compare/${{ inputs.branch }}...${{ needs.add-headers.outputs.branch }}?expand=1, please review and merge.")
+            core.setFailed(`Copyright updates at ${process.env.COMPARE_URL}, please review and merge.`)
+        env:
+          COMPARE_URL: ${{ github.server_url }}/${{ github.repository }}/compare/${{ inputs.branch }}...${{ needs.add-headers.outputs.branch }}?expand=1

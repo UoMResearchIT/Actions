@@ -71,8 +71,10 @@ runs:
         password: ${{ inputs.token || github.token }}
     - name: Record that we've logged in
       if: steps.login.outcome == 'success'
-      shell: bash
-      run: echo "uomRIT_docker_login=$ACTOR" >> $GITHUB_ENV
+      uses: actions/github-script@v9
+      with:
+        script: |
+          core.exportVariable('uomRIT_docker_login', process.env.ACTOR)
       env:
         ACTOR: ${{ inputs.actor }}
 

@@ -57,6 +57,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
         timeout-minutes: 1
 
       - name: Create Github App Token
