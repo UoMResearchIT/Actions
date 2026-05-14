@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
     - name: REUSE Compliance Check
       uses: UoMResearchIT/reuse@v1.0
@@ -56,7 +56,7 @@ If you would like to run other subcommands, you could use the following snippet 
 
 ```yml
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
     - name: REUSE SPDX SBOM
       uses: UoMResearchIT/reuse@v1.0
       with:
@@ -67,7 +67,7 @@ In the same fashion, it is possible to add optional arguments like `--include-su
 
 ```yml
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
     - name: REUSE Compliance Check
       uses: UoMResearchIT/reuse@v1.0
       with:

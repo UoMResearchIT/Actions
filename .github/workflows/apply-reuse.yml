@@ -72,7 +72,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           path: ${{ inputs.work-dir }}
           ref: ${{ inputs.ref }}
@@ -118,20 +118,20 @@ jobs:
     steps:
       - name: Commit comment
         if: needs.add-headers.outputs.made-change == 'true'
-        uses: peter-evans/commit-comment@v4
+        uses: peter-evans/commit-comment@f6d60c65d05bb59f750fa51ad3de1d443ba0eb52 # v4.0.0
         with:
           body: >
             Copyright updates at [.../compare/${{ inputs.branch }}...${{ needs.add-headers.outputs.branch }}](${{ github.server_url }}/${{ github.repository }}/compare/${{ inputs.branch }}...${{ needs.add-headers.outputs.branch }}?expand=1), please review and merge.
 
       - name: Hide old PR comments
         if: needs.add-headers.outputs.made-change == 'false'
-        uses: kanga333/comment-hider@v0.4.0
+        uses: kanga333/comment-hider@c12bb20b48aeb8fc098e35967de8d4f8018fffdf # v0.4.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: PR comment
         if: needs.add-headers.outputs.made-change == 'true'
-        uses: mshick/add-pr-comment@v3
+        uses: mshick/add-pr-comment@8e4927817251f1ff60c001f04568532b38e0b4a0 # v3.11.0
         with:
           refresh-message-position: true
           message: |
@@ -140,7 +140,7 @@ jobs:
 
       - name: Fail marker
         if: needs.add-headers.outputs.made-change == 'true'
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             core.setFailed(`Copyright updates at ${process.env.COMPARE_URL}, please review and merge.`)
