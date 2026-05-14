@@ -79,7 +79,7 @@ jobs:
           persist-credentials: true
 
       - name: Add copyright headers
-        uses: UoMResearchIT/actions/reuse@4e469793f6f793229bac2ebed8a7479b31883072 #v1.2.4
+        uses: UoMResearchIT/actions/reuse@4e469793f6f793229bac2ebed8a7479b31883072 # v1.2.4
 
         with:
           base-dir: ${{ inputs.work-dir }}
@@ -89,7 +89,7 @@ jobs:
           copyright-holder: ${{ inputs.copyright-holder }}
 
       - name: Delete existing fix-headers branches
-        uses: phpdocker-io/github-actions-delete-abandoned-branches@v2
+        uses: phpdocker-io/github-actions-delete-abandoned-branches@e04764c2f0f714dedb80c42d5174e756568a0452 # v2.02
         id: delete
         with:
           github_token: ${{ github.token }}
@@ -99,7 +99,7 @@ jobs:
 
       - name: Commit and push changes
         id: push
-        uses: UoMResearchIT/actions/git-push-changes-to-branch@4e469793f6f793229bac2ebed8a7479b31883072 #v1.2.4
+        uses: UoMResearchIT/actions/git-push-changes-to-branch@4e469793f6f793229bac2ebed8a7479b31883072 # v1.2.4
         with:
           working-directory: ${{ inputs.work-dir }}
           branch-prefix: add-license-headers-to
