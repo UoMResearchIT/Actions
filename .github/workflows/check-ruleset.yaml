@@ -57,6 +57,13 @@ jobs:
       contents: read
 
     steps:
+      - name: Fail if no credentials
+        if: inputs.bot-id == ''
+        shell: bash
+        run: |
+          echo "No required valid ORG_ACTIONS_BOT_APP_ID supplied; aborting..."
+          exit 1
+
       - name: Checkout Repository
         uses: actions/checkout@v6
         with:

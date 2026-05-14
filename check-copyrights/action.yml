@@ -75,7 +75,7 @@ runs:
       uses: actions/cache@v5
       with:
         path: ${{ github.action_path }}/apache-rat-${{ inputs.version }}
-        key: apache-rat-${{ inputs.version }}
+        key: apache-rat-${{ inputs.version }}/${{ github.ref }}
     - name: Download RAT
       if: steps.cache.outputs.cache-hit != 'true'
       run: $GITHUB_ACTION_PATH/download.bash

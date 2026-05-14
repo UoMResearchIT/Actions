@@ -140,4 +140,6 @@ runs:
     shell: bash
     run: |
       source reuse-tool-venv/bin/activate
-      reuse ${{ steps.args.outputs.args }}
+      reuse $Arguments
+    env:
+      Arguments: ${{ steps.args.outputs.args }}

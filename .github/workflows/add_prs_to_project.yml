@@ -64,6 +64,7 @@ on:
 
 jobs:
   track_pr:
+    name: Add PR
     runs-on: ubuntu-latest
     steps:
       - name: Get project data

@@ -24,6 +24,7 @@ permissions: {}
 
 jobs:
   zizmor:
+    name: Scan with Zizmor
     runs-on: ubuntu-latest
     permissions:
       security-events: write

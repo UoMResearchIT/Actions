@@ -56,6 +56,9 @@ permissions: {}
 
 jobs:
   add-headers:
+    name: Add Headers
+    # Categorically never run this in pull_request_target workflows. UNSAFE TO DO THAT!
+    if: github.event_name != 'pull_request_trigger'
     runs-on: ubuntu-latest
     concurrency:
       group: prune:add-license-headers
@@ -103,6 +106,7 @@ jobs:
           exclude: .github/workflows/*
 
   annotate:
+    name: Annotate PR
     runs-on: ubuntu-latest
     concurrency:
       group: prune:bot-comments

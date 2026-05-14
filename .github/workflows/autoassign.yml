@@ -21,6 +21,7 @@ on:
 permissions: {}
 jobs:
   auto-assign:
+    name: Assign Issue to default assignee
     if: vars.DEFAULT_ISSUE_ASSIGNEE != ''
     runs-on: ubuntu-latest
     permissions:
