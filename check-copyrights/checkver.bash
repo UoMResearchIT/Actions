@@ -15,7 +15,7 @@
 # limitations under the License.
 
 case "$IN_VERSION" in
-    "[0-9].[0-9][0-9]")
+    [0-9].[0-9][0-9])
         exit 0
         ;;
     *)
