@@ -70,6 +70,7 @@ jobs:
       deleted: ${{ steps.delete.outputs.deleted_branches }}
     permissions:
       contents: write
+      pull-requests: read
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -80,7 +81,6 @@ jobs:
 
       - name: Add copyright headers
         uses: UoMResearchIT/actions/reuse@4e469793f6f793229bac2ebed8a7479b31883072 # v1.2.4
-
         with:
           base-dir: ${{ inputs.work-dir }}
           extra-formats-file: ${{ inputs.work-dir }}/.extraformats
