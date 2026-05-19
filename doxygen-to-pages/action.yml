@@ -17,6 +17,9 @@ author: Donal Fellows
 description: >
   Runs Doxygen and uploads the result as an artifact ready to be deployed to
   Github Pages (see actions/deploy-pages).
+  If no publication environment is set up, just uploads a debug artifact instead
+  so that the contents of the documentation can be examined prior to initial
+  publication.
 branding:
   icon: file-text
   color: blue
@@ -33,7 +36,10 @@ inputs:
 outputs:
   artifact_id:
     description: The ID of the artifact that was uploaded.
-    value: ${{ steps.upload.outputs.artifact_id }}
+    value: ${{ steps.upload.outputs.artifact_id || '' }}
+  deploy-ready:
+    description: Whether a deployment is possible from what was uploaded.
+    value: ${{ steps.upload.outcome == 'success' }}
 runs:
   using: composite
   steps:
@@ -62,5 +68,7 @@ runs:
       if: steps.env-chk.outputs.env-present != 'true'
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
+        name: Doxygen HTML Build
         path: ${{ inputs.working-directory }}/html
         if-no-files-found: error
+        retention-days: 3

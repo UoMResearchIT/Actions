@@ -38,14 +38,22 @@ If that can't be determined, the environment variable will be set to `https://ex
 
   Defaults to `.`.
 
+* `publish-environment`
+
+  The environment that will be published to. Defaults to `github-pages`, the usual correct value. **Optional.**
+
+  If this environment is not defined in the repository, a debugging artifact containing the Doxygen output will be attached to the workflow run summary page.
+
 ## Outputs
 * `artifact_id`
 
-  The ID of the artifact that was uploaded. The artifact is _not_ deployed by this action.
+  The ID of the artifact that was uploaded, if it is production-ready. The artifact is _not_ deployed by this action.
+
+* `deploy-ready`
+
+  Whether a deployment is possible from what was uploaded. Either `true` or `false`, as strings.
 
 ## Permissions
-Requires at least `pages: read` if a meaningful site URL is to be provided.
+Requires at least `actions: read` and `contents: read`.
 (By contrast, [actions/deploy-pages](https://github.com/actions/deploy-pages)
-_requires both_ `pages: write` _and_ `it-token: write`.)
-
-If not deploying (i.e., because you are going to download the artifact to examine it locally), no special permissions are required.
+_requires both_ `pages: write` _and_ `id-token: write`.)
