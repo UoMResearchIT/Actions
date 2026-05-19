@@ -116,6 +116,7 @@ jobs:
     needs: add-headers
     permissions:
       pull-requests: write
+      contents: read
     steps:
       - name: Commit comment
         if: needs.add-headers.outputs.made-change == 'true'
