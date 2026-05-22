@@ -1,4 +1,4 @@
-# Copyright (c) 2023-2025 The University of Manchester
+# Copyright (c) 2026 The University of Manchester
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,23 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: Auto-Assign
-run-name: "Assign issue #${{ github.event.issue.id }} to default assignee"
-# Automatically assign issues to one of the people registered for that.
+name: GitHub Actions Security Analysis with zizmor 🌈
+
 on:
-  issues:
-    types: [opened]
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["**"]
+
 permissions: {}
+
 jobs:
-  auto-assign:
-    name: Assign Issue to default assignee
-    if: vars.DEFAULT_ISSUE_ASSIGNEE != ''
+  zizmor:
+    name: Scan with Zizmor
     runs-on: ubuntu-latest
     permissions:
-      issues: write
+      security-events: write
     steps:
-      - name: 'Auto-assign issue'
-        uses: pozil/auto-assign-issue@70adb98ca8b3941524e9ecde48e89067c4f96736
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          abortIfPreviousAssignees: true
-          assignees: ${{ vars.DEFAULT_ISSUE_ASSIGNEE }}
+          persist-credentials: false
+
+      - name: Run zizmor 🌈
+        uses: zizmorcore/zizmor-action@b1d7e1fb5de872772f31590499237e7cce841e8e # v0.5.3

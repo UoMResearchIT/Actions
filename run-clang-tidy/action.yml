@@ -46,16 +46,17 @@ runs:
   using: composite
   steps:
     - name: Install clang-tidy
-      uses: UoMResearchIT/actions/apt-get-install@v1.2.4
+      uses: UoMResearchIT/actions/apt-get-install@4e469793f6f793229bac2ebed8a7479b31883072 # v1.2.4
       with:
         packages: clang-tidy
     - name: Run clang-tidy
       run: |
         [ -f "$USER_CFG" -a -r "$USER_CFG" ] && CFG=$USER_CFG
-        exec clang-tidy ${{ inputs.file-glob }} "--config-file=$CFG" $OPTIONS
+        exec clang-tidy $FILE_GLOB "--config-file=$CFG" $OPTIONS
       env:
         USER_CFG: ${{ inputs.config-file }}
         CFG: ${{ github.action_path }}/.clang-tidy
         OPTIONS: ${{ inputs.options }}
+        FILE_GLOB: ${{ inputs.file-glob }}
       working-directory: ${{ inputs.working-directory }}
       shell: bash

@@ -64,24 +64,25 @@ runs:
   using: composite
   steps:
   - name: Checkout
-    uses: actions/checkout@v6
+    uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
     with:
       path: reuse-tool
       repository: UoMResearchIT/reuse-tool
       ref: ${{ inputs.branch }}
+      persist-credentials: false
 
   - name: Setup Python
-    uses: actions/setup-python@v6.2.0
+    uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
     id: setup-python
     with:
-      python-version: ${{ inputs.python-version}}
+      python-version: ${{ inputs.python-version }}
 
   - name: Clear Problem Matcher
     run: echo '::remove-matcher owner=python::'
     shell: bash
 
   - name: Restore Cache
-    uses: actions/cache/restore@v5.0.5
+    uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
     id: cache-venv
     with:
       path: reuse-tool-venv
@@ -93,16 +94,18 @@ runs:
     shell: bash
 
   - name: Enable reuse-tool Environment
+    id: venv
     run: |
       source reuse-tool-venv/${SCRIPT_DIR}/activate
-      echo "VIRTUAL_ENV=${VIRTUAL_ENV}" >> $GITHUB_ENV
-      echo "${VIRTUAL_ENV}/${SCRIPT_DIR}" >> $GITHUB_PATH
+      echo "virtual_env=${VIRTUAL_ENV}" >> $GITHUB_OUTPUT
+      echo "path=${VIRTUAL_ENV}/${SCRIPT_DIR}" >> $GITHUB_OUTPUT
     shell: bash
     env:
       SCRIPT_DIR: ${{ runner.os == 'Windows' && 'Scripts' || 'bin' }}
 
   - name: Setup reuse-tool Environment
     run: |
+      PATH="$PATH_ELEMENT:$PATH"
       pip install "poetry~=$USE_POETRY_VERSION"
       cd reuse-tool
       poetry install --no-interaction --only main
@@ -112,9 +115,11 @@ runs:
     shell: bash
     env:
       USE_POETRY_VERSION: ${{ inputs.poetry-version }}
+      VIRTUAL_ENV: ${{ steps.venv.outputs.virtual_env }}
+      PATH_ELEMENT: ${{ steps.venv.outputs.path }}
 
   - name: Save Cache
-    uses: actions/cache/save@v5.0.5
+    uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
     with:
       path: reuse-tool-venv
       key: ${{ steps.cache-venv.outputs.cache-primary-key }}
@@ -138,5 +143,8 @@ runs:
   - name: Run reuse
     shell: bash
     run: |
-      source reuse-tool-venv/bin/activate
-      reuse ${{ steps.args.outputs.args }}
+      source "$Venv_Path/activate"
+      reuse $Arguments
+    env:
+      Arguments: ${{ steps.args.outputs.args }}
+      Venv_Path: ${{ steps.venv.outputs.path }}

@@ -53,15 +53,26 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ !startsWith(github.head_ref, 'dependabot/') }}
     name: Compare Ruleset Against Standard
+    permissions:
+      contents: read
 
     steps:
+      - name: Fail if no credentials
+        if: inputs.bot-id == ''
+        shell: bash
+        run: |
+          echo "No required valid ORG_ACTIONS_BOT_APP_ID supplied; aborting..."
+          exit 1
+
       - name: Checkout Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
         timeout-minutes: 1
 
       - name: Create Github App Token
         id: mint-token
-        uses: actions/create-github-app-token@v3
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
           client-id: ${{ inputs.bot-id }}
           private-key: ${{ secrets.bot-key }}
@@ -71,7 +82,7 @@ jobs:
 
       - name: Fetch Standard Ruleset from ${{ inputs.standard-owner }}/${{ inputs.standard-repo }}
         id: expected
-        uses: UoMResearchIT/actions/get-repo-ruleset@v1.2.4
+        uses: UoMResearchIT/actions/get-repo-ruleset@4e469793f6f793229bac2ebed8a7479b31883072 # v1.2.4
         with:
           repository: ${{ inputs.standard-owner }}/${{ inputs.standard-repo }}
           token: ${{ steps.mint-token.outputs.token }}
@@ -79,11 +90,11 @@ jobs:
 
       - name: Fetch This Repository's Ruleset
         id: current
-        uses: UoMResearchIT/actions/get-repo-ruleset@v1.2.4
+        uses: UoMResearchIT/actions/get-repo-ruleset@4e469793f6f793229bac2ebed8a7479b31883072 # v1.2.4
         timeout-minutes: 1
 
       - name: Check Inclusion of Standard Ruleset in Current Ruleset
-        uses: UoMResearchIT/actions/check-ruleset-containment@v1.2.4
+        uses: UoMResearchIT/actions/check-ruleset-containment@4e469793f6f793229bac2ebed8a7479b31883072 # v1.2.4
         with:
           current: ${{ steps.current.outputs.filename }}
           expected: ${{ steps.expected.outputs.filename }}

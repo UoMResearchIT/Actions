@@ -17,6 +17,9 @@ author: Donal Fellows
 description: >
   Runs Doxygen and uploads the result as an artifact ready to be deployed to
   Github Pages (see actions/deploy-pages).
+  If no publication environment is set up, just uploads a debug artifact instead
+  so that the contents of the documentation can be examined prior to initial
+  publication.
 branding:
   icon: file-text
   color: blue
@@ -26,25 +29,46 @@ inputs:
       The working directory to run Doxygen in.
       Where the `Doxyfile` is located.
     default: .
+  publish-environment:
+    description: >
+      The environment that will be published to.
+    default: github-pages
 outputs:
   artifact_id:
     description: The ID of the artifact that was uploaded.
-    value: ${{ steps.upload.outputs.artifact_id }}
+    value: ${{ steps.upload.outputs.artifact_id || '' }}
+  deploy-ready:
+    description: Whether a deployment is possible from what was uploaded.
+    value: ${{ steps.upload.outcome == 'success' }}
 runs:
   using: composite
   steps:
+    - name: Check for Environment
+      id: env-chk
+      uses: UoMResearchIT/actions/list-environments@55c02a2f91888d43751f94dfaaf53ca2e9d93d14 # main
+      with:
+        has-env: ${{ inputs.publish-environment }}
     - name: Setup Pages
+      if: steps.env-chk.outputs.env-present == 'true'
       id: setup
-      uses: actions/configure-pages@v6
-      continue-on-error: true
+      uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
     - name: Run Doxygen
-      uses: mattnotmitt/doxygen-action@v1.12.0
+      uses: mattnotmitt/doxygen-action@b84fe17600245bb5db3d6c247cc274ea98c15a3b # v1.12.0
       with:
         working-directory: ${{ inputs.working-directory }}
       env:
         SITE_URL: ${{ steps.setup.outputs.base_url || 'https://example.org/' }}
     - name: Upload Artifact
+      if: steps.env-chk.outputs.env-present == 'true'
       id: upload
-      uses: actions/upload-pages-artifact@v5
+      uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
       with:
         path: ${{ inputs.working-directory }}/html
+    - name: Upload Debug Artifact
+      if: steps.env-chk.outputs.env-present != 'true'
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: Doxygen HTML Build
+        path: ${{ inputs.working-directory }}/html
+        if-no-files-found: error
+        retention-days: 3

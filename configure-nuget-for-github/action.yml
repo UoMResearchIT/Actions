@@ -48,6 +48,6 @@ runs:
         dotnet nuget add source --username "$NGUSER" --password "$NGPASS" --store-password-in-clear-text --name "$NGHNDL" "$NGURL"
       env:
         NGUSER: ${{ github.actor }}
-        NGPASS: ${{ secrets.GITHUB_TOKEN }}
+        NGPASS: ${{ github.token }}
         NGURL: ${{ steps.naming.outputs.url }}
         NGHNDL: ${{ inputs.short-handle }}

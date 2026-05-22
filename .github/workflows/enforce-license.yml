@@ -16,16 +16,20 @@ name: Enforce License Rules
 # Enforces our own license rules.
 run-name: License Check
 on: push
+permissions: {}
 jobs:
   check:
+    name: Check
     runs-on: ubuntu-latest
     timeout-minutes: 2
     permissions:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - name: Enforce
-        uses: UoMResearchIT/actions/check-copyrights@v1.2.4
+        uses: UoMResearchIT/actions/check-copyrights@4e469793f6f793229bac2ebed8a7479b31883072 # v1.2.4
         with:
           profile: ASL

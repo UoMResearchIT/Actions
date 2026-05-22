@@ -64,15 +64,17 @@ runs:
     - name: Log in to the Container registry
       id: login
       if: env.uomRIT_docker_login != inputs.actor
-      uses: docker/login-action@v4
+      uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
       with:
         registry: ghcr.io
         username: ${{ inputs.actor }}
         password: ${{ inputs.token || github.token }}
     - name: Record that we've logged in
       if: steps.login.outcome == 'success'
-      shell: bash
-      run: echo "uomRIT_docker_login=$ACTOR" >> $GITHUB_ENV
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      with:
+        script: |
+          core.exportVariable('uomRIT_docker_login', process.env.ACTOR)
       env:
         ACTOR: ${{ inputs.actor }}
 

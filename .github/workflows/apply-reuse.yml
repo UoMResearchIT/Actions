@@ -52,23 +52,35 @@ on:
         description: "If some branches were delete, what branches were they."
         value: ${{ jobs.add-headers.outputs.deleted }}
 
+permissions: {}
+
 jobs:
   add-headers:
+    name: Add Headers
+    # Categorically never run this in pull_request_target workflows. UNSAFE TO DO THAT!
+    if: github.event_name != 'pull_request_trigger'
     runs-on: ubuntu-latest
-    concurrency: prune:add-license-headers
+    concurrency:
+      group: prune:add-license-headers
+      cancel-in-progress: false
+      queue: max
     outputs:
       made-change: ${{ steps.push.outputs.changed }}
       branch: ${{ steps.push.outputs.branch }}
       deleted: ${{ steps.delete.outputs.deleted_branches }}
+    permissions:
+      contents: write
+      pull-requests: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           path: ${{ inputs.work-dir }}
           ref: ${{ inputs.ref }}
+          persist-credentials: true
 
       - name: Add copyright headers
-        uses: UoMResearchIT/actions/reuse@v1.2.4
+        uses: UoMResearchIT/actions/reuse@4e469793f6f793229bac2ebed8a7479b31883072 # v1.2.4
         with:
           base-dir: ${{ inputs.work-dir }}
           extra-formats-file: ${{ inputs.work-dir }}/.extraformats
@@ -77,7 +89,7 @@ jobs:
           copyright-holder: ${{ inputs.copyright-holder }}
 
       - name: Delete existing fix-headers branches
-        uses: phpdocker-io/github-actions-delete-abandoned-branches@v2
+        uses: phpdocker-io/github-actions-delete-abandoned-branches@e04764c2f0f714dedb80c42d5174e756568a0452 # v2.0.3
         id: delete
         with:
           github_token: ${{ github.token }}
@@ -87,7 +99,7 @@ jobs:
 
       - name: Commit and push changes
         id: push
-        uses: UoMResearchIT/actions/git-push-changes-to-branch@v1.2.4
+        uses: UoMResearchIT/actions/git-push-changes-to-branch@4e469793f6f793229bac2ebed8a7479b31883072 # v1.2.4
         with:
           working-directory: ${{ inputs.work-dir }}
           branch-prefix: add-license-headers-to
@@ -95,26 +107,33 @@ jobs:
           exclude: .github/workflows/*
 
   annotate:
+    name: Annotate PR
     runs-on: ubuntu-latest
-    concurrency: prune:bot-comments
+    concurrency:
+      group: prune:bot-comments
+      queue: max
+      cancel-in-progress: false
     needs: add-headers
+    permissions:
+      pull-requests: write
+      contents: write
     steps:
       - name: Commit comment
         if: needs.add-headers.outputs.made-change == 'true'
-        uses: peter-evans/commit-comment@v4
+        uses: peter-evans/commit-comment@f6d60c65d05bb59f750fa51ad3de1d443ba0eb52 # v4.0.0
         with:
           body: >
             Copyright updates at [.../compare/${{ inputs.branch }}...${{ needs.add-headers.outputs.branch }}](${{ github.server_url }}/${{ github.repository }}/compare/${{ inputs.branch }}...${{ needs.add-headers.outputs.branch }}?expand=1), please review and merge.
 
       - name: Hide old PR comments
         if: needs.add-headers.outputs.made-change == 'false'
-        uses: kanga333/comment-hider@v0.4.0
+        uses: kanga333/comment-hider@c12bb20b48aeb8fc098e35967de8d4f8018fffdf # v0.4.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: PR comment
         if: needs.add-headers.outputs.made-change == 'true'
-        uses: mshick/add-pr-comment@v3
+        uses: mshick/add-pr-comment@8e4927817251f1ff60c001f04568532b38e0b4a0 # v3.11.0
         with:
           refresh-message-position: true
           message: |
@@ -123,7 +142,9 @@ jobs:
 
       - name: Fail marker
         if: needs.add-headers.outputs.made-change == 'true'
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
-            core.setFailed("Copyright updates at ${{ github.server_url }}/${{ github.repository }}/compare/${{ inputs.branch }}...${{ needs.add-headers.outputs.branch }}?expand=1, please review and merge.")
+            core.setFailed(`Copyright updates at ${process.env.COMPARE_URL}, please review and merge.`)
+        env:
+          COMPARE_URL: ${{ github.server_url }}/${{ github.repository }}/compare/${{ inputs.branch }}...${{ needs.add-headers.outputs.branch }}?expand=1

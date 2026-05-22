@@ -84,7 +84,7 @@ runs:
     - name: Set up python if not already done
       id: python
       if: env.pythonLocation == ''
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
       with:
         python-version: '3.12'
     - name: Ensure critical Python packages are set up right
@@ -104,7 +104,7 @@ runs:
         USER_LANG: ${{ inputs.language }}
     - name: Install spell checker
       if: inputs.language != ''
-      uses: UoMResearchIT/actions/apt-get-install@v1.2.4
+      uses: UoMResearchIT/actions/apt-get-install@4e469793f6f793229bac2ebed8a7479b31883072 # v1.2.4
       with:
         packages: enchant-2 hunspell libhunspell-dev ${{ steps.lang.outputs.pkg }}
     - name: Build composite dictionary
