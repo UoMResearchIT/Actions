@@ -45,7 +45,7 @@ runs:
   steps:
     - name: Check for Environment
       id: env-chk
-      uses: UoMResearchIT/actions/list-environments@55c02a2f91888d43751f94dfaaf53ca2e9d93d14 # main
+      uses: UoMResearchIT/actions/list-environments@a925e1b7a7db4bedcdcd04f41b42c0a39771566b # main
       with:
         has-env: ${{ inputs.publish-environment }}
     - name: Setup Pages
