@@ -1,0 +1,53 @@
+# A fork of https://github.com/secret-scanner/action to fix some bugs and set some defaults.
+name: Secret Scanner
+author: 'GarnerCorp'
+description: >
+  Scan for secrets in a repository.
+branding:
+  icon: eye
+  color: orange
+
+inputs:
+  additional-args:
+    description: "Extra arguments to pass to the detect-secret binary."
+    required: false
+    default: ''
+  baseline-file:
+    description: "A path to the baseline secrets file"
+    required: false
+    default: .github/secret-scanner/baseline.json
+  python-version:
+    description: "The version of python to use."
+    required: false
+    default: "3.12"
+  exclude-path:
+    description: "A path to the files containing things to exclude."
+    required: false
+    default: .github/secret-scanner
+
+runs:
+  using: composite
+  steps:
+    - name: Set-up python
+      id: py
+      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      with:
+        python-version: ${{ inputs.python-version }}
+        update-environment: false
+    - name: Install detect-secrets
+      shell: bash
+      # Version number fixed due to bugs...
+      run: |
+        $PYTHON_PATH -m pip install "detect-secrets[gibberish]==1.3.0"
+      env:
+        PYTHON_PATH: ${{ steps.py.outputs.python-path }}
+    - name: Check for secrets
+      shell: bash
+      run: $GITHUB_ACTION_PATH/detect-new-secrets.sh
+      env:
+        PYTHON_PATH: ${{ steps.py.outputs.python-path }}
+        BASELINE_FILE: ${{ inputs.baseline-file }}
+        ADDITIONAL_ARGS: ${{ inputs.additional-args }}
+        EXCLUDE_FILES_PATH: ${{ inputs.exclude-path }}/excluded_files.patterns
+        EXCLUDE_SECRETS_PATH: ${{ inputs.exclude-path }}/excluded_secrets.patterns
+        EXCLUDE_LINES_PATH: ${{ inputs.exclude-path }}/excluded_lines.patterns
