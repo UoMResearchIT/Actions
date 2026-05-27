@@ -36,7 +36,7 @@ outputs:
     value: ${{ steps.list.outputs.environments }}
   env-present:
     description: Whether the named environment is present.
-    value: ${{ inputs.has-env != '' && contains(inputs.has-env, fromJSON(steps.list.outputs.environments)) }}
+    value: ${{ inputs.has-env != '' && contains(fromJSON(steps.list.outputs.environments), inputs.has-env) }}
 runs:
   using: composite
   steps:
