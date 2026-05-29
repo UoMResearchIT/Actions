@@ -4,7 +4,7 @@ This configures NuGet so that it can access the organisation namespace for packa
 
 Example:
 ```yml
-  - uses: UoMResearchIT/actions/configure-nuget-for-github@v1.2.4
+  - uses: UoMResearchIT/actions/configure-nuget-for-github@v1.2.5
 ```
 
 # inputs
