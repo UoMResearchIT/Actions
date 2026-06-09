@@ -23,8 +23,11 @@ yellow=$(printf '\033[0;33m')
 reset=$(printf '\033[0m')
 
 # Build ignore paths (supports nested like a.b.c)
-IGNORE_PATHS=$(echo "$IGNORE_KEYS" | jq -c 'map(split("."))')
-
+IGNORE_KEYS_JSON=${IGNORE_KEYS:-'[]'}
+if ! IGNORE_PATHS=$(jq -ce 'if type == "array" then map(tostring | split(".")) else error("ignore must be a JSON array") end' <<<"$IGNORE_KEYS_JSON"); then
+  echo "${red}Error:${reset} 'ignore' input must be a JSON array of strings, e.g. [\"enforcement\",\"required_status_checks.strict\"]."
+  exit 1
+fi
 # jq helper to drop nested paths
 DROP_PATHS_JQ='
 def drop_paths($paths):
