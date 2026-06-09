@@ -11,7 +11,7 @@ Example:
         with:
           current: ${{ steps.get-rules.outputs.filename }}
           expected: project_setup/my_ruleset_file.json
-		  ignore: '["enforcement", "required_status_checks.strict"]'
+          ignore: '["enforcement", "required_status_checks.strict"]'
 ```
 
 > [!NOTE]
