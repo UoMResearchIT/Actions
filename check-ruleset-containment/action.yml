@@ -31,7 +31,7 @@ inputs:
     required: true
   ignore:
     description: >-
-      JSON array of parameter keys to ignore when comparing rulesets.
+      JSON array of parameter paths to ignore when comparing rulesets (supports dot notation, e.g. "required_status_checks.strict").
       e.g. '["enforcement","bypass_actors"]'
     required: false
     default: '[]'
