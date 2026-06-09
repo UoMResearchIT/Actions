@@ -43,6 +43,11 @@ on:
         type: string
         default: RSE-Repository-Template
         required: false
+      ignore:
+        description: JSON array of parameter paths to ignore
+        type: string
+        required: false
+        default: '[]'
     secrets:
       bot-key:
         description: The ORG_ACTIONS_BOT_PRIVATE_KEY from the organisation secrets.
@@ -98,4 +103,5 @@ jobs:
         with:
           current: ${{ steps.current.outputs.filename }}
           expected: ${{ steps.expected.outputs.filename }}
+          ignore: ${{ inputs.ignore }}
         timeout-minutes: 1
