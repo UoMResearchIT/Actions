@@ -99,7 +99,7 @@ jobs:
         timeout-minutes: 1
 
       - name: Check Inclusion of Standard Ruleset in Current Ruleset
-        uses: UoMResearchIT/actions/check-ruleset-containment@4e469793f6f793229bac2ebed8a7479b31883072 # v1.2.4
+        uses: UoMResearchIT/actions/check-ruleset-containment@142-frq-check-ruleset-should-allow-exceptions # Temporary feature branch to allow the ignore features to be used
         with:
           current: ${{ steps.current.outputs.filename }}
           expected: ${{ steps.expected.outputs.filename }}
