@@ -99,7 +99,7 @@ jobs:
         timeout-minutes: 1
 
       - name: Check Inclusion of Standard Ruleset in Current Ruleset
-        uses: UoMResearchIT/actions/check-ruleset-containment@8839be4e18a5a880aa052da40d9730445bb42e99 # Temporary feature branch to allow the ignore features to be used
+        uses: UoMResearchIT/actions/check-ruleset-containment@77805abee9d484f0f2b606de7796afa2024fb1e4 # Temporary feature branch to allow the ignore features to be used
         with:
           current: ${{ steps.current.outputs.filename }}
           expected: ${{ steps.expected.outputs.filename }}
