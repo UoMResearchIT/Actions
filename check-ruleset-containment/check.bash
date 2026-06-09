@@ -38,12 +38,11 @@ def drop_paths($paths):
 ACTUAL_RULES=$(jq -c \
   --argjson ignore "$IGNORE_PATHS" \
   "$DROP_PATHS_JQ
-  ;
   map({
     type,
     parameters: (
       (.parameters // {})
-      | drop_paths($ignore)
+      | drop_paths(\$ignore)
     )
   })
 " "$CURRENT_FILE")
@@ -51,12 +50,11 @@ ACTUAL_RULES=$(jq -c \
 EXPECTED_RULES=$(jq -c \
   --argjson ignore "$IGNORE_PATHS" \
   "$DROP_PATHS_JQ
-  ;
   map({
     type,
     parameters: (
       (.parameters // {})
-      | drop_paths($ignore)
+      | drop_paths(\$ignore)
     )
   })
 " "$EXPECTED_FILE")
