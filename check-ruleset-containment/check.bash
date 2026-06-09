@@ -22,9 +22,39 @@ green=$(printf '\033[0;32m')
 yellow=$(printf '\033[0;33m')
 reset=$(printf '\033[0m')
 
+# Build ignore paths (supports nested like a.b.c)
+IGNORE_PATHS=$(echo "$IGNORE_KEYS" | jq -c 'map(split("."))')
+
+# jq helper to drop nested paths
+DROP_PATHS_JQ='
+def drop_paths($paths):
+  reduce $paths[] as $p (.; delpaths([$p]));
+'
+
 # Load actual and expected rulesets using jq
-ACTUAL_RULES=$(jq -c 'map({type, parameters: (if has("parameters") then .parameters else {} end)})' "$CURRENT_FILE")
-EXPECTED_RULES=$(jq -c 'map({type, parameters: (if has("parameters") then .parameters else {} end)})' "$EXPECTED_FILE")
+ACTUAL_RULES=$(jq -c \
+  --argjson ignore "$IGNORE_PATHS" \
+  "$DROP_PATHS_JQ
+  map({
+    type,
+    parameters: (
+      (.parameters // {})
+      | drop_paths($ignore)
+    )
+  })
+" "$CURRENT_FILE")
+
+EXPECTED_RULES=$(jq -c \
+  --argjson ignore "$IGNORE_PATHS" \
+  "$DROP_PATHS_JQ
+  map({
+    type,
+    parameters: (
+      (.parameters // {})
+      | drop_paths($ignore)
+    )
+  })
+" "$EXPECTED_FILE")
 
 echo ::group::Data to compare
 echo "${yellow}Actual Rules:${reset} $ACTUAL_RULES"
