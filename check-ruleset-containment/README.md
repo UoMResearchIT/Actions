@@ -28,7 +28,7 @@ Example:
   
 * `ignore`
 
-  A JSON array of parameter paths to ignore when comparing rulesets. **Optional.**
+  A JSON array of parameter paths to ignore when comparing rulesets. **Optional.**
   - Supports nested paths using dot notation (e.g. a.b.c)
   - Ignored parameters are removed from both rulesets before comparison
   - Differences in ignored parameters (including missing keys) are not reported
