@@ -83,11 +83,12 @@ jobs:
           private-key: ${{ secrets.bot-key }}
           owner: ${{ inputs.standard-owner }}
           repositories: ${{ inputs.standard-repo }}
+          permission-contents: read
         timeout-minutes: 1
 
       - name: Fetch Standard Ruleset from ${{ inputs.standard-owner }}/${{ inputs.standard-repo }}
         id: expected
-        uses: UoMResearchIT/actions/get-repo-ruleset@4e469793f6f793229bac2ebed8a7479b31883072 # v1.2.4
+        uses: UoMResearchIT/actions/get-repo-ruleset@d1daa552b595b77a4628d28de138db571e91ab87 # v1.2.5
         with:
           repository: ${{ inputs.standard-owner }}/${{ inputs.standard-repo }}
           token: ${{ steps.mint-token.outputs.token }}
@@ -95,7 +96,7 @@ jobs:
 
       - name: Fetch This Repository's Ruleset
         id: current
-        uses: UoMResearchIT/actions/get-repo-ruleset@4e469793f6f793229bac2ebed8a7479b31883072 # v1.2.4
+        uses: UoMResearchIT/actions/get-repo-ruleset@d1daa552b595b77a4628d28de138db571e91ab87 # v1.2.5
         timeout-minutes: 1
 
       - name: Check Inclusion of Standard Ruleset in Current Ruleset

@@ -45,4 +45,4 @@ Example:
 
 ## Permissions
 No special permissions required when accessing the current repository's ruleset.
-If accessing a different repository, an appropriate PAT will be required.
+If accessing a different repository, an appropriate PAT or app token will be required.
