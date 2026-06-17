@@ -1,0 +1,158 @@
+# Copyright (c) 2025 The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Add PR to project
+description: >
+  This action adds a PR to a project.
+author: Donal Fellows, Andrew Rowley
+branding:
+  color: green
+  icon: check-square
+inputs:
+  organisation:
+    default: ${{ github.repository_owner }}
+    description: >
+      The name of the organisation that owns the project.
+  pr-number:
+    required: true
+    description: >
+      The PR number.
+    default: ${{ github.event.pull_request.node_id }}
+  project-number:
+    required: true
+    description: >
+      The identifier of the project to add the PR to in the organisation being run in.
+  status-field:
+    required: false
+    default: Status
+    description: >
+      The name of the "status" field, in case that is something other than the default.
+  target-status:
+    required: false
+    default: Ready To Review
+    description: >
+      The name of the option to select in as the Status field.
+      This workflow assumes that the project has a single select field called "Status" (or whatever the status_field input names it as) that includes an option that this value specifies.
+      Set to the empty string to use the default status (usually "Todo").
+  token:
+    default: ${{ github.token }}
+    required: false
+    description: >
+      The access token to use to add the PR to the project.  Must have appropriate permissions.
+
+runs:
+  using: composite
+  steps:
+  - name: Resolve project data
+    # Uses [GitHub CLI](https://cli.github.com/manual/) to query the API for the ID of the project and return the name and ID of the first 20 fields in the project.
+    # `fields` returns a union and the query uses inline fragments (`... on`) to return information about any `ProjectV2Field` and `ProjectV2SingleSelectField` fields.
+    id: raw-data
+    uses: octokit/graphql-action@v3.0.2
+    with:
+      query: |
+        query($org: String!, $number: Int!) {
+          organization(login: $org){
+            projectV2(number: $number) {
+              id
+              fields(first:20) {
+                nodes {
+                  ... on ProjectV2Field {
+                    id
+                    name
+                  }
+                  ... on ProjectV2SingleSelectField {
+                    id
+                    name
+                    options {
+                      id
+                      name
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      org: ${{ inputs.organisation }}
+      number: ${{ inputs.project-number }}
+    env:
+      GITHUB_TOKEN: ${{ inputs.token }}
+
+  - name: Extract info from response
+    # Extracted values:
+    #   project: The GraphQL ID for the project.
+    #   field: The GraphQL ID for the status field to change.
+    #   option: The GraphQL ID for the value to set the status field to.
+    id: data
+    shell: bash
+    run: |
+      echo 'project='$(jq '.data.organization.projectV2.id' <<< "$INPUT") >> $GITHUB_OUTPUT
+      echo 'field='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name==env.STATUS_FIELD) | .id' <<< "$INPUT") >> $GITHUB_OUTPUT
+      echo 'option='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name==env.STATUS_FIELD) | .options[] | select(.name==env.STATUS_VALUE) |.id' <<< "$INPUT") >> $GITHUB_OUTPUT
+    env:
+      STATUS_FIELD: ${{ inputs.status-field }}
+      STATUS_VALUE: ${{ inputs.target-status }}
+      INPUT: ${{ steps.raw-data.outputs.data }}
+
+  - name: Add PR to project
+    # Uses the API to add the pull request (presumably that triggered this workflow) to the project.
+    # The response includes the ID of the created item.
+    id: item
+    uses: octokit/graphql-action@v3.0.2
+    with:
+      query: |
+        mutation($project:ID!, $pr:ID!) {
+          addProjectV2ItemById(input: {projectId: $project, contentId: $pr}) {
+            item {
+              id
+            }
+          }
+        }
+      pr: ${{ inputs.pr-number }}
+      project: ${{ steps.data.outputs.project }}
+    env:
+      GITHUB_TOKEN: ${{ inputs.token }}
+
+  - name: Set fields
+    # Sets the value of the `Status` field to `Ready to Review`. (Or whatever the field and value are called)
+    id: set
+    if: inputs.target-status != ''
+    uses: octokit/graphql-action@v3.0.2
+    with:
+      query: |
+        mutation (
+          $project: ID!
+          $item: ID!
+          $status_field: ID!
+          $status_value: String!
+        ) {
+          set_status: updateProjectV2ItemFieldValue(input: {
+            projectId: $project
+            itemId: $item
+            fieldId: $status_field
+            value: {
+              singleSelectOptionId: $status_value
+            }
+          }) {
+            projectV2Item {
+              id
+            }
+          }
+        }
+      project: ${{ steps.data.outputs.project }}
+      item: ${{ fromJson(steps.item.outputs.data).data.addProjectV2ItemById.item.id }}
+      status_field: ${{ steps.data.outputs.field }}
+      status_value: ${{ steps.data.outputs.option }}
+    env:
+      GITHUB_TOKEN: ${{ inputs.token }}
