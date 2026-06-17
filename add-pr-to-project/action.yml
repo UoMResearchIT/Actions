@@ -58,7 +58,7 @@ runs:
     # Uses [GitHub CLI](https://cli.github.com/manual/) to query the API for the ID of the project and return the name and ID of the first 20 fields in the project.
     # `fields` returns a union and the query uses inline fragments (`... on`) to return information about any `ProjectV2Field` and `ProjectV2SingleSelectField` fields.
     id: raw-data
-    uses: octokit/graphql-action@v3.0.2
+    uses: octokit/graphql-action@ddde8ebb2493e79f390e6449c725c21663a67505  # v3.0.2
     with:
       query: |
         query($org: String!, $number: Int!) {
@@ -109,7 +109,7 @@ runs:
     # Uses the API to add the pull request (presumably that triggered this workflow) to the project.
     # The response includes the ID of the created item.
     id: item
-    uses: octokit/graphql-action@v3.0.2
+    uses: octokit/graphql-action@ddde8ebb2493e79f390e6449c725c21663a67505  # v3.0.2
     with:
       query: |
         mutation($project:ID!, $pr:ID!) {
@@ -128,7 +128,7 @@ runs:
     # Sets the value of the `Status` field to `Ready to Review`. (Or whatever the field and value are called)
     id: set
     if: inputs.target-status != ''
-    uses: octokit/graphql-action@v3.0.2
+    uses: octokit/graphql-action@ddde8ebb2493e79f390e6449c725c21663a67505  # v3.0.2
     with:
       query: |
         mutation (
