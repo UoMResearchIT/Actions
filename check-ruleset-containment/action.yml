@@ -29,6 +29,12 @@ inputs:
     description: >
       The name of the file containing the "expected" ruleset to check against.
     required: true
+  ignore:
+    description: >-
+      JSON array of parameter paths to ignore when comparing rulesets (supports dot notation, e.g. "required_status_checks.strict").
+      e.g. '["enforcement","bypass_actors"]'
+    required: false
+    default: '[]'
 runs:
   using: composite
   steps:
@@ -38,3 +44,4 @@ runs:
       env:
         CURRENT_FILE: ${{ inputs.current }}
         EXPECTED_FILE: ${{ inputs.expected }}
+        IGNORE_KEYS: ${{ inputs.ignore }}

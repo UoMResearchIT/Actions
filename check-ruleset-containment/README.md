@@ -5,12 +5,13 @@ from a standard model ruleset (the "expected" ruleset).
 
 Example:
 ```yml
-      - uses: UoMResearchIT/actions/get-repo-ruleset@v1.2.4
+      - uses: UoMResearchIT/actions/get-repo-ruleset@v1.2.6
         id: get-rules
-      - uses: UoMResearchIT/actions/check-ruleset-containment@v1.2.4
+      - uses: UoMResearchIT/actions/check-ruleset-containment@v1.2.6
         with:
           current: ${{ steps.get-rules.outputs.filename }}
           expected: project_setup/my_ruleset_file.json
+          ignore: '["enforcement", "required_status_checks.strict"]'
 ```
 
 > [!NOTE]
@@ -24,6 +25,13 @@ Example:
 * `expected`
 
   The name of the file containing the "expected" ruleset to check against. **Required.**
+  
+* `ignore`
+
+  A JSON array of parameter paths to ignore when comparing rulesets. **Optional.**
+  - Supports nested paths using dot notation (e.g. a.b.c)
+  - Ignored parameters are removed from both rulesets before comparison
+  - Differences in ignored parameters (including missing keys) are not reported
 
 ## Outputs
 None.

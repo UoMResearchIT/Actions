@@ -4,7 +4,7 @@ Gets the ruleset applied to a particular branch of a repository.
 
 Example:
 ```yml
-      - uses: UoMResearchIT/actions/get-repo-ruleset@v1.2.4
+      - uses: UoMResearchIT/actions/get-repo-ruleset@v1.2.6
         id: rules
       - run: jq . < $THE_FILE
         env:
@@ -45,4 +45,4 @@ Example:
 
 ## Permissions
 No special permissions required when accessing the current repository's ruleset.
-If accessing a different repository, an appropriate PAT will be required.
+If accessing a different repository, an appropriate PAT or app token will be required.
