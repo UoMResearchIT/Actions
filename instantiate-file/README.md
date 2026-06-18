@@ -5,7 +5,7 @@ This action is careful to delete the file later in the workflow (after it should
 
 Example:
 ```yml
-      - uses: UoMResearchIT/actions/instantiate-file@v1.2.4
+      - uses: UoMResearchIT/actions/instantiate-file@v1.2.6
         id: mkfile
         with:
           value: SGVsbG8sIHdvcmxkLg==
@@ -19,7 +19,7 @@ Example:
 This action is intended for use with secrets, making them available to later workflow steps that expect them
 in files:
 ```yml
-      - uses: UoMResearchIT/actions/instantiate-file@v1.2.4
+      - uses: UoMResearchIT/actions/instantiate-file@v1.2.6
         with:
           value: ${{ secrets.ENCODED_PRIVATE_KEY }}
           filename: privateKey.pem
