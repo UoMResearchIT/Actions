@@ -144,8 +144,7 @@ runs:
     shell: bash
     run: |
       source "$Venv_Path/activate"
-      opts=( $Arguments )
-      reuse "${opts[@]}"
+      reuse $Arguments
     env:
       Arguments: ${{ steps.args.outputs.args }}
       Venv_Path: ${{ steps.venv.outputs.path }}
