@@ -7,7 +7,7 @@ It's intended to be used by the `license-copyright-add` workflow in repositories
 Example:
 ```yml
       - name: Detect and push changes
-        uses: UoMResearchIT/actions/git-push-changes-to-branch@v1.2.5
+        uses: UoMResearchIT/actions/git-push-changes-to-branch@v1.2.6
         id: push
         with:
           working-directory: repo

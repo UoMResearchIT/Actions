@@ -8,7 +8,7 @@ This runs a [simple style checker](https://github.com/verateam/vera) on a direct
 Example usage:
 
 ```yml
-  - uses: UoMResearchIT/actions/run-c-style-check@v1.2.5
+  - uses: UoMResearchIT/actions/run-c-style-check@v1.2.6
     with:
       base-dir: src
 ```
