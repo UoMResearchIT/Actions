@@ -21,7 +21,7 @@
 #       - review_requested
 # jobs:
 #   call-add-prs-to-project:
-#     uses: UoMResearchIT/Actions/.github/workflows/add_prs_to_project.yml@v1.2.4
+#     uses: UoMResearchIT/Actions/.github/workflows/add_prs_to_project.yml@v1.2.6
 #     with:
 #       organisation: UoMResearchIT
 #       project_number: 123

@@ -6,7 +6,7 @@ The warnings are surfaced in the summary.
 
 Usage:
 ```yml
-  - uses: UoMResearchIT/actions/todo@v1.2.4
+  - uses: UoMResearchIT/actions/todo@v1.2.6
 ```
 
 > [!NOTE]
