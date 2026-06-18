@@ -43,6 +43,11 @@ on:
         type: string
         default: RSE-Repository-Template
         required: false
+      ignore:
+        description: JSON array of parameter paths to ignore
+        type: string
+        required: false
+        default: '[]'
     secrets:
       bot-key:
         description: The ORG_ACTIONS_BOT_PRIVATE_KEY from the organisation secrets.
@@ -65,7 +70,7 @@ jobs:
           exit 1
 
       - name: Checkout Repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
         timeout-minutes: 1
@@ -78,11 +83,12 @@ jobs:
           private-key: ${{ secrets.bot-key }}
           owner: ${{ inputs.standard-owner }}
           repositories: ${{ inputs.standard-repo }}
+          permission-contents: read
         timeout-minutes: 1
 
       - name: Fetch Standard Ruleset from ${{ inputs.standard-owner }}/${{ inputs.standard-repo }}
         id: expected
-        uses: UoMResearchIT/actions/get-repo-ruleset@4e469793f6f793229bac2ebed8a7479b31883072 # v1.2.4
+        uses: UoMResearchIT/actions/get-repo-ruleset@d1daa552b595b77a4628d28de138db571e91ab87 # v1.2.5
         with:
           repository: ${{ inputs.standard-owner }}/${{ inputs.standard-repo }}
           token: ${{ steps.mint-token.outputs.token }}
@@ -90,12 +96,13 @@ jobs:
 
       - name: Fetch This Repository's Ruleset
         id: current
-        uses: UoMResearchIT/actions/get-repo-ruleset@4e469793f6f793229bac2ebed8a7479b31883072 # v1.2.4
+        uses: UoMResearchIT/actions/get-repo-ruleset@d1daa552b595b77a4628d28de138db571e91ab87 # v1.2.5
         timeout-minutes: 1
 
       - name: Check Inclusion of Standard Ruleset in Current Ruleset
-        uses: UoMResearchIT/actions/check-ruleset-containment@4e469793f6f793229bac2ebed8a7479b31883072 # v1.2.4
+        uses: UoMResearchIT/actions/check-ruleset-containment@9c16e0e859f8b7b2c11ece374b168793536ddfe5 # on main until next release
         with:
           current: ${{ steps.current.outputs.filename }}
           expected: ${{ steps.expected.outputs.filename }}
+          ignore: ${{ inputs.ignore }}
         timeout-minutes: 1

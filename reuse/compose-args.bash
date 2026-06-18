@@ -18,35 +18,41 @@ set -e
 
 # If a full set of args supplied, skip generating them
 if [ -z "$Arguments" ]; then
-    # Basic arguments
-    Arguments="annotate --copyright \"$Who\" --license '$License' --recursive"
-
-    # Add if flag set
-    if [ "$Merge" == 'true' ]; then
-        Arguments="$Arguments --merge-copyrights"
-    fi
-
-    # Add if flag set
-    if [ "$Fallback" == 'true' ]; then
-        Arguments="$Arguments --fallback-dot-license"
-    fi
+    declare -a opts=()
 
     # Add if file exists
     if [ -f "$Extra" ]; then
-        Arguments="--extra-formats '$Extra' $Arguments"
+        opts+=( --extra-formats "$Extra" )
     fi
 
     # Add if file exists
     if [ -f "$Ignore" ]; then
-        Arguments="--ignore-file '$Ignore' $Arguments"
+        opts+=( --ignore-file "$Ignore" )
+    fi
+
+    # Basic arguments
+    opts+=( annotate )
+    opts+=( --copyright "$Who" )
+    opts+=( --license "$License" )
+    opts+=( --recursive )
+
+    # Add if flag set
+    if [ "$Merge" == 'true' ]; then
+        opts+=( --merge-copyrights )
+    fi
+
+    # Add if flag set
+    if [ "$Fallback" == 'true' ]; then
+        opts+=( --fallback-dot-license )
     fi
 
     # Add if directory exists, else use fallback
     if [ -d "$Dir" ]; then
-        Arguments="$Arguments '$Dir'"
+        opts+=( "$Dir" )
     else
-        Arguments="$Arguments ."
+        opts+=( . )
     fi
+    Arguments="${opts[@]@Q}"
 fi
 
 echo "args=$Arguments" >>$GITHUB_OUTPUT
