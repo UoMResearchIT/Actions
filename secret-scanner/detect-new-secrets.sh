@@ -57,8 +57,8 @@ scan_new_secrets() {
     detect_secret_args="${excluded_files} ${excluded_secrets} ${excluded_lines} ${ADDITIONAL_ARGS}"
     echo "Running detect-secrets with args: ${detect_secret_args}"
 
-    "${PYTHON_PATH}" -m detect-secrets scan ${detect_secret_args} --baseline "${BASELINE_FILE}"
-    "${PYTHON_PATH}" -m detect-secrets audit "${BASELINE_FILE}" --report --json > "${all_secrets_file}"
+    "${PYTHON_PATH}" -m detect_secrets scan ${detect_secret_args} --baseline "${BASELINE_FILE}"
+    "${PYTHON_PATH}" -m detect_secrets audit "${BASELINE_FILE}" --report --json > "${all_secrets_file}"
     jq 'map(select(.category == "UNVERIFIED"))' "${all_secrets_file}" > "${new_secrets_file}"
 }
 
