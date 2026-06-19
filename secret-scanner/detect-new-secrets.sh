@@ -1,11 +1,35 @@
 #!/usr/bin/env bash
+
+# Copyright (c) 2026 The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+#############################################################
+####
+#### Set up variables
+####
 all_secrets_file=$(mktemp)
 new_secrets_file=$(mktemp)
 command_to_update_baseline_file=$(mktemp)
 : "${GITHUB_ACTION_PATH:=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)}"
 : "${GITHUB_STEP_SUMMARY:=/dev/stderr}"
 : "${PYTHON_PATH:=python}"
+jobs_summary_link="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/attempts/${GITHUB_RUN_ATTEMPT}"
 
+#############################################################
+####
+#### Argument construction helper.
+####
 fetch_flags_from_file() {
     flag_to_add="$1"
     file_to_check="$2"
@@ -14,15 +38,18 @@ fetch_flags_from_file() {
     if [ -r "$file_to_check" ]; then
         while read line; do
             if [[ "${line::1}" != '#' ]] && [[ ! -z "$line" ]]; then
-                flag="$flag_to_add $line "
-                flags+="$flag"
+                flags+=("${flag_to_add}" "${line}")
             fi
         done < "$file_to_check"
     fi
 
-    echo "$flags"
+    echo "${flags[@]@Q}"
 }
 
+#############################################################
+####
+#### How to run detect-secrets.
+####
 scan_new_secrets() {
     excluded_files=$(fetch_flags_from_file '--exclude-files' "${EXCLUDE_FILES_PATH}" 2>/dev/null)
     excluded_secrets=$(fetch_flags_from_file '--exclude-secrets' "${EXCLUDE_SECRETS_PATH}" 2>/dev/null)
@@ -35,9 +62,11 @@ scan_new_secrets() {
     jq 'map(select(.category == "UNVERIFIED"))' "${all_secrets_file}" > "${new_secrets_file}"
 }
 
+#############################################################
+####
+#### Generate markdown: for log
+####
 advice_if_none_are_secret_short() {
-    jobs_summary_link="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/attempts/${GITHUB_RUN_ATTEMPT}"
-
     cat << EOF
 ### If none of these are secrets or you don't care about these secrets
 1. Visit →→→"$jobs_summary_link"
@@ -46,7 +75,11 @@ advice_if_none_are_secret_short() {
 EOF
 }
 
-generate_command_to_update_secrets_baseline() {
+#############################################################
+####
+#### Generate markdown: for job summary
+####
+advice_if_none_are_secret_verbose() {
     cat << EOF > "$command_to_update_baseline_file"
 cat << 'NEW_BASELINE' > '$NEW_BASELINE'
 $(jq 'setpath(["results"]; (.results | map_values(. | map_values(setpath(["is_secret"]; (.is_secret // false))))))' "$BASELINE_FILE")
@@ -54,10 +87,6 @@ NEW_BASELINE
 
 git commit -m 'Updating baseline file' '$NEW_BASELINE'
 EOF
-}
-
-advice_if_none_are_secret_verbose() {
-    generate_command_to_update_secrets_baseline
 
     cat << EOF
 ### If none of these are secrets or you don't care about these secrets
@@ -74,9 +103,12 @@ EOF
 EOF
 }
 
+#############################################################
+####
+#### Generate markdown: common
+####
 markdown_from_new_secrets() {
-    secrets_table_body_with_json_chars=$(jq -r '.[] | "|\(.filename)|\(.lines | keys)|\(.types)|"' "$new_secrets_file")
-    secret_table_body=$(echo "${secrets_table_body_with_json_chars}" | tr -d '["]')
+    secret_table_body=$(jq -r '.[] | "|\(.filename)|\(.lines | keys)|\(.types)|"' "$new_secrets_file" | tr -d '["]')
 
     cat << EOF
 # Secret Scanner Report
@@ -89,10 +121,15 @@ $secret_table_body
 ### If any of these are secrets
 Secrets pushed to GitHub are not safe to use.
 
-For the secrets you have just compromised (it is NOT sufficient to rebase to remove the commit), you should:
+For the secrets you have just compromised (it is _not_ sufficient to rebase to remove the commit), you should:
 * Rotate the secret
 EOF
 }
+
+#############################################################
+####
+#### Generate markdown: main part of script
+####
 
 echo "::add-matcher::${GITHUB_ACTION_PATH}/secret-problem-matcher.json"
 if [ -z "${BASELINE_FILE}" ]; then
