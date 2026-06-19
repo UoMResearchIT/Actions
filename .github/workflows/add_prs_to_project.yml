@@ -14,6 +14,7 @@
 
 # This workflow adds a PR to a project.
 # To re-use in your repo:
+#
 # name: Add PRs to Project
 # on:
 #   pull_request:
@@ -23,33 +24,28 @@
 #   call-add-prs-to-project:
 #     uses: UoMResearchIT/Actions/.github/workflows/add_prs_to_project.yml@v1.2.6
 #     with:
-#       organisation: UoMResearchIT
-#       project_number: 123
-#       personal_access_token: ${{ secrets.TOKEN }}
+#       project-number: 123
+#     secrets:
+#       bot-key: ${{ secrets.ORG_ACTIONS_BOT_PRIVATE_KEY }}
 #
 
 name: Add PR to project
-run-name: "Add PR #${{ github.event.pull_request.id }} to Project #${{ inputs.project_number }}"
+run-name: "Add PR #${{ github.event.pull_request.id }} to Project #${{ inputs.project-number }}"
 on:
   workflow_call:
     inputs:
-      organisation:
-        type: string
-        required: true
-        description: >
-          The name of the organisation that owns the project.
-      project_number:
+      project-number:
         type: number
         required: true
         description: >
-          The identifier of the project to add the PR to in the organisation being run in.
-      status_field:
+          The identifier of the project to add the PR to.
+      status-field:
         type: string
         required: false
         default: Status
         description: >
-          The name of the "status" field, in case that is something other than the default.
-      status_to_change_to:
+          The name of the "Status" field, in case that is something other than the default.
+      target-status:
         type: string
         required: false
         default: Ready To Review
@@ -57,104 +53,30 @@ on:
           The name of the option to select in as the Status field.
           This workflow assumes that the project has a single select field called "Status" (or whatever the status_field input names it as) that includes an option that this value specifies.
     secrets:
-      personal_access_token:
+      bot-key:
+        description: The ORG_ACTIONS_BOT_PRIVATE_KEY from the organisation secrets.
         required: true
-        description: >
-          The access token to use to add the PR to the project.  Must have appropriate permissions.
 
 jobs:
   track_pr:
     name: Add PR
     runs-on: ubuntu-latest
     steps:
-      - name: Get project data
-        env:
-          GH_TOKEN: ${{ secrets.personal_access_token }}
-          ORGANIZATION: ${{ inputs.organisation }}
-          PROJECT_NUMBER: ${{ inputs.project_number }}
-          STATUS_FIELD: ${{ inputs.status_field }}
-          STATUS_VALUE: ${{ inputs.status_to_change_to }}
-        # Uses [GitHub CLI](https://cli.github.com/manual/) to query the API for the ID of the project and return the name and ID of the first 20 fields in the project.
-        # `fields` returns a union and the query uses inline fragments (`... on`) to return information about any `ProjectV2Field` and `ProjectV2SingleSelectField` fields.
-        # The response is stored in a file called `project_data.json` that is parsed to get the relevant IDs that are stored as environment variables.
-        #
-        # Extracted values are written to $GITHUB_ENV so *future* steps will have these environment variables:
-        #   PROJECT_ID: The GraphQL ID for the project.
-        #   STATUS_FIELD_ID: The GraphQL ID for the status field to change.
-        #   STATUS_OPTION_ID: The GraphQL ID for the value to set the status field to.
-        run: |
-          gh api graphql -f query='
-            query($org: String!, $number: Int!) {
-              organization(login: $org){
-                projectV2(number: $number) {
-                  id
-                  fields(first:20) {
-                    nodes {
-                      ... on ProjectV2Field {
-                        id
-                        name
-                      }
-                      ... on ProjectV2SingleSelectField {
-                        id
-                        name
-                        options {
-                          id
-                          name
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }' -f org=$ORGANIZATION -F number=$PROJECT_NUMBER > project_data.json
-          echo 'PROJECT_ID='$(jq '.data.organization.projectV2.id' project_data.json) >> $GITHUB_ENV
-          echo 'STATUS_FIELD_ID='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name==env.STATUS_FIELD) | .id' project_data.json) >> $GITHUB_ENV
-          echo 'STATUS_OPTION_ID='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name==env.STATUS_FIELD) | .options[] | select(.name==env.STATUS_VALUE) |.id' project_data.json) >> $GITHUB_ENV
-
-      - name: Add PR to project
-        env:
-          GH_TOKEN: ${{ secrets.personal_access_token }}
-          PR_ID: ${{ github.event.pull_request.node_id }}
-        # Uses [GitHub CLI](https://cli.github.com/manual/) and the API to add the pull request that triggered this workflow to the project.
-        # The `jq` flag parses the response to get the ID of the created item.
-        #
-        # Future steps gain this environment variable:
-        #   ITEM_ID: The GraphQL ID for the project item (i.e., the PR's entry in the project).
-        run: |
-          item_id="$( gh api graphql -f query='
-            mutation($project:ID!, $pr:ID!) {
-              addProjectV2ItemById(input: {projectId: $project, contentId: $pr}) {
-                item {
-                  id
-                }
-              }
-            }' -f project=$PROJECT_ID -f pr=$PR_ID --jq '.data.addProjectV2ItemById.item.id')"
-
-          # Stores the ID of the created item as an environment variable.
-          echo 'ITEM_ID='$item_id >> $GITHUB_ENV
-
-      - name: Set fields
-        env:
-          GH_TOKEN: ${{ secrets.personal_access_token }}
-        # Sets the value of the `Status` field to `Ready to Review`. (Or whatever the field and value are called)
-        run: |
-          gh api graphql -f query='
-            mutation (
-              $project: ID!
-              $item: ID!
-              $status_field: ID!
-              $status_value: String!
-            ) {
-              set_status: updateProjectV2ItemFieldValue(input: {
-                projectId: $project
-                itemId: $item
-                fieldId: $status_field
-                value: {
-                  singleSelectOptionId: $status_value
-                }
-              }) {
-                projectV2Item {
-                  id
-                }
-              }
-            }' -f project=$PROJECT_ID -f item=$ITEM_ID -f status_field=$STATUS_FIELD_ID -f status_value=$STATUS_OPTION_ID --silent
+      - name: Create Github App Token
+        id: mint-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.ORG_ACTIONS_BOT_APP_ID }}
+          private-key: ${{ secrets.bot-key }}
+          owner: ${{ github.repository_owner }}
+          permission-organization-projects: write
+        timeout-minutes: 1
+      - name: Add PR to Project
+        uses: UoMResearchIT/actions/add-pr-to-project@add-pr-to-project-action
+        with:
+          organisation: ${{ github.repository_owner }}
+          pr-number: ${{ github.event.pull_request.node_id }}
+          project-number: ${{ inputs.project-number }}
+          status-field: ${{ inputs.status-field }}
+          target-status: ${{ inputs.target-status }}
+          token: ${{ steps.mint-token.outputs.token }}
