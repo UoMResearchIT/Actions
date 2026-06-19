@@ -50,7 +50,9 @@ runs:
     - name: Install detect-secrets
       shell: bash
       run: |
+        echo "::group::{Installing python packages...}"
         "${PYTHON_PATH}" -m pip install -r $GITHUB_ACTION_PATH/requirements.txt
+        echo "::endgroup::"
       env:
         PYTHON_PATH: ${{ steps.py.outputs.python-path }}
     - name: Check for secrets
