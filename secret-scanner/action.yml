@@ -1,0 +1,67 @@
+# A fork of https://github.com/secret-scanner/action to fix some bugs and set some defaults.
+
+# Copyright (c) 2026 The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Secret Scanner
+description: >
+  Scan for secrets in a repository.
+branding:
+  icon: eye
+  color: orange
+
+inputs:
+  additional-args:
+    description: >
+      Extra arguments to pass to the detect-secret program.
+    required: false
+    default: ''
+  baseline-file:
+    description: >
+      A path to the baseline secrets file.
+    required: false
+    default: .github/secret-scanner/baseline.json
+  exclude-path:
+    description: >
+      A path to the files containing things to exclude.
+    required: false
+    default: .github/secret-scanner
+
+runs:
+  using: composite
+  steps:
+    - name: Set-up python
+      id: py
+      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      with:
+        python-version: "3.12"
+        update-environment: false
+    - name: Install detect-secrets
+      shell: bash
+      run: |
+        echo "::group::Installing python packages..."
+        "${PYTHON_PATH}" -m pip install -r $GITHUB_ACTION_PATH/requirements.txt
+        echo "::endgroup::"
+      env:
+        PYTHON_PATH: ${{ steps.py.outputs.python-path }}
+    - name: Check for secrets
+      shell: bash
+      run: $GITHUB_ACTION_PATH/detect-new-secrets.sh
+      env:
+        PYTHON_PATH: ${{ steps.py.outputs.python-path }}
+        BASELINE_FILE: ${{ inputs.baseline-file }}
+        ADDITIONAL_ARGS: ${{ inputs.additional-args }}
+        EXCLUDE_FILES_PATH: ${{ inputs.exclude-path }}/excluded_files.txt
+        EXCLUDE_SECRETS_PATH: ${{ inputs.exclude-path }}/excluded_secrets.txt
+        EXCLUDE_LINES_PATH: ${{ inputs.exclude-path }}/excluded_lines.txt
