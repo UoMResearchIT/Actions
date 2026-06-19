@@ -69,10 +69,12 @@ jobs:
           client-id: ${{ vars.ORG_ACTIONS_BOT_APP_ID }}
           private-key: ${{ secrets.bot-key }}
           owner: ${{ github.repository_owner }}
+          repositories: ${{ github.repository }}
           permission-organization-projects: write
+          permission-pull-requests: write
         timeout-minutes: 1
       - name: Add PR to Project
-        uses: UoMResearchIT/actions/add-pr-to-project@add-pr-to-project-action
+        uses: UoMResearchIT/actions/add-pr-to-project@2a56165e85e13c3aacccf1472e3fc515a1e29642 # add-pr-to-project-action
         with:
           organisation: ${{ github.repository_owner }}
           pr-number: ${{ github.event.pull_request.node_id }}
