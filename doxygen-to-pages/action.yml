@@ -33,10 +33,19 @@ inputs:
     description: >
       The environment that will be published to.
     default: github-pages
+  doxygen-version:
+    description: >
+      The version of Doxygen to use.
+      Any version that has a binary release for Linux published on GitHub is supported.
+      See https://github.com/doxygen/doxygen/releases
+    default: "1.9.8"
 outputs:
   artifact_id:
     description: The ID of the artifact that was uploaded.
     value: ${{ steps.upload.outputs.artifact_id || '' }}
+  debug-artifact_id:
+    description: The ID of the debug artifact that was uploaded.
+    value: ${{ steps.debug-upload.outputs.artifact_id || '' }}
   deploy-ready:
     description: Whether a deployment is possible from what was uploaded.
     value: ${{ steps.upload.outcome == 'success' }}
@@ -45,18 +54,28 @@ runs:
   steps:
     - name: Check for Environment
       id: env-chk
-      uses: UoMResearchIT/actions/list-environments@d1daa552b595b77a4628d28de138db571e91ab87 # v1.2.5
+      uses: UoMResearchIT/actions/list-environments@b747e3097a2cb9d927b63e2bb83fbf6e75716a53 # v1.2.6
       with:
         has-env: ${{ inputs.publish-environment }}
     - name: Setup Pages
       if: steps.env-chk.outputs.env-present == 'true'
       id: setup
       uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
-    - name: Run Doxygen
-      uses: mattnotmitt/doxygen-action@b84fe17600245bb5db3d6c247cc274ea98c15a3b # v1.12.0
+    - name: Install Dependencies
+      uses: UoMResearchIT/actions/apt-get-install@b747e3097a2cb9d927b63e2bb83fbf6e75716a53 # v1.2.6
       with:
-        working-directory: ${{ inputs.working-directory }}
+        packages: wget graphviz
+    - name: Install Doxygen v${{ inputs.doxygen-version }}
+      shell: bash
+      run: exec $GITHUB_ACTION_PATH/download.bash
       env:
+        DOXY_VER: ${{ inputs.doxygen-version }}
+    - name: Run Doxygen
+      shell: bash
+      run: "${DOXY_PATH}/doxygen"
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        DOXY_PATH: ${{ github.workspace }}/doxygen-${{ inputs.doxygen-version }}/bin
         SITE_URL: ${{ steps.setup.outputs.base_url || 'https://example.org/' }}
     - name: Upload Artifact
       if: steps.env-chk.outputs.env-present == 'true'
@@ -66,6 +85,7 @@ runs:
         path: ${{ inputs.working-directory }}/html
     - name: Upload Debug Artifact
       if: steps.env-chk.outputs.env-present != 'true'
+      id: debug-upload
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: Doxygen HTML Build
