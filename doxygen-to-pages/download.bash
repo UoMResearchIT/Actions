@@ -1,4 +1,6 @@
-# Copyright (c) 2025 The University of Manchester
+#!/usr/bin/env bash
+
+# Copyright (c) 2026 The University of Manchester
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,6 +13,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-*.yml linguist-detectable
-*.yaml linguist-detectable
-*.bash text eol=lf
+
+set -e
+
+rel_name="Release_$(echo "$DOXY_VER" | tr '.' '_')"
+url="https://github.com/doxygen/doxygen/releases/download/${rel_name}/doxygen-${DOXY_VER}.linux.bin.tar.gz"
+echo "Download from: ${url}"
+echo ""
+
+wget -nv -O - "$url" | tar -xzf -
