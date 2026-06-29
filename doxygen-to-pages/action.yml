@@ -72,7 +72,9 @@ runs:
         DOXY_VER: ${{ inputs.doxygen-version }}
     - name: Run Doxygen
       shell: bash
-      run: "${DOXY_PATH}/doxygen"
+      run: |
+        echo "::add-matcher::${GITHUB_ACTION_PATH}/doxygen-problem-matcher.json"
+        "${DOXY_PATH}/doxygen"
       working-directory: ${{ inputs.working-directory }}
       env:
         DOXY_PATH: ${{ github.workspace }}/doxygen-${{ inputs.doxygen-version }}/bin
