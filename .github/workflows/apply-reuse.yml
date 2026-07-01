@@ -80,7 +80,7 @@ jobs:
           persist-credentials: true
 
       - name: Add copyright headers
-        uses: UoMResearchIT/actions/reuse@c1106820e385a14b9cfa3c4682b1a1ac11354968 # fix-reuse
+        uses: UoMResearchIT/actions/reuse@c1106820e385a14b9cfa3c4682b1a1ac11354968 # main
         with:
           base-dir: ${{ inputs.work-dir }}
           extra-formats-file: ${{ inputs.work-dir }}/.extraformats
