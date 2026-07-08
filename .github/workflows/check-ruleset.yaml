@@ -88,7 +88,7 @@ jobs:
 
       - name: Fetch Standard Ruleset from ${{ inputs.standard-owner }}/${{ inputs.standard-repo }}
         id: expected
-        uses: UoMResearchIT/actions/get-repo-ruleset@d1daa552b595b77a4628d28de138db571e91ab87 # v1.2.5
+        uses: UoMResearchIT/actions/get-repo-ruleset@b747e3097a2cb9d927b63e2bb83fbf6e75716a53 # v1.2.6
         with:
           repository: ${{ inputs.standard-owner }}/${{ inputs.standard-repo }}
           token: ${{ steps.mint-token.outputs.token }}
@@ -96,7 +96,7 @@ jobs:
 
       - name: Fetch This Repository's Ruleset
         id: current
-        uses: UoMResearchIT/actions/get-repo-ruleset@d1daa552b595b77a4628d28de138db571e91ab87 # v1.2.5
+        uses: UoMResearchIT/actions/get-repo-ruleset@b747e3097a2cb9d927b63e2bb83fbf6e75716a53 # v1.2.6
         timeout-minutes: 1
 
       - name: Check Inclusion of Standard Ruleset in Current Ruleset
