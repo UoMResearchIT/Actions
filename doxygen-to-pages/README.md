@@ -44,10 +44,21 @@ If that can't be determined, the environment variable will be set to `https://ex
 
   If this environment is not defined in the repository, a debugging artifact containing the Doxygen output will be attached to the workflow run summary page.
 
+* `doxygen-version`
+
+  The version of Doxygen to use. Defaults to `1.9.8`. **Optional.**
+
+  Any version that has a binary release for Linux published on GitHub is supported.
+  See https://github.com/doxygen/doxygen/releases for the supported versions.
+
 ## Outputs
 * `artifact_id`
 
   The ID of the artifact that was uploaded, if it is production-ready. The artifact is _not_ deployed by this action.
+
+* `debug-artifact_id`
+
+  The ID of the debug artifact that was uploaded, if it is _not_ a production-ready upload. Note that debug artifacts are easier to extract and view than main artifacts.
 
 * `deploy-ready`
 
