@@ -7,21 +7,10 @@ Runs [detect-secrets](https://github.com/Yelp/detect-secrets) to detect secrets 
 > [!IMPORTANT]
 > This action will set up Python. It _assumes_ a `ubuntu-latest` runner.
 
-Example basic usage:
+Example usage:
 
 ```yml
-  - uses: UoMResearchIT/actions/secret-scanner@main
-    with:
-      package: mycode.pkg_name
-```
-
-Example usage with spell checking:
-
-```yml
-  - uses: UoMResearchIT/actions/secret-scanner@main
-    with:
-      package: mycode.pkg_name
-      language: en_GB
+  - uses: UoMResearchIT/actions/secret-scanner@v1.2.7
 ```
 
 ## Inputs
@@ -35,12 +24,6 @@ Example usage with spell checking:
   A path to the baseline secrets file. **Optional.**
 
   Defaults to `.github/secret-scanner/baseline.json`
-
-* `python-version`
-
-  The version of python to use. **Optional.**
-
-  Defaults to `3.12`
 
 * `exclude-path`
 

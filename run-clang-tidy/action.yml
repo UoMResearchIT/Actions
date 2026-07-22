@@ -46,7 +46,7 @@ runs:
   using: composite
   steps:
     - name: Install clang-tidy
-      uses: UoMResearchIT/actions/apt-get-install@d1daa552b595b77a4628d28de138db571e91ab87 # v1.2.5
+      uses: UoMResearchIT/actions/apt-get-install@c62e71b7108986ca2d5c9338fb8f55061b18ac44 # v1.2.7
       with:
         packages: clang-tidy
     - name: Run clang-tidy
