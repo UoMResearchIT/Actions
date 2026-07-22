@@ -100,7 +100,7 @@ jobs:
         timeout-minutes: 1
 
       - name: Check Inclusion of Standard Ruleset in Current Ruleset
-        uses: UoMResearchIT/actions/check-ruleset-containment@4471f5560d53170ca804d49608dd6343578724f5 # on main until next release
+        uses: UoMResearchIT/actions/check-ruleset-containment@4725ae9ab00bc1d2ff1d0f4e74f8e907a9458141 # on main until next release
         with:
           current: ${{ steps.current.outputs.filename }}
           expected: ${{ steps.expected.outputs.filename }}
