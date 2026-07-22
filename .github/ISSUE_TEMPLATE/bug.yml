@@ -55,6 +55,7 @@ body:
         - "v1.2.4"
         - "v1.2.5"
         - "v1.2.6"
+        - "v1.2.7"
         - "other"
       default: 0
   - type: input

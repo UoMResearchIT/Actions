@@ -80,7 +80,7 @@ jobs:
           persist-credentials: true
 
       - name: Add copyright headers
-        uses: UoMResearchIT/actions/reuse@4725ae9ab00bc1d2ff1d0f4e74f8e907a9458141 # main
+        uses: UoMResearchIT/actions/reuse@c62e71b7108986ca2d5c9338fb8f55061b18ac44 # v1.2.7
         with:
           base-dir: ${{ inputs.work-dir }}
           extra-formats-file: ${{ inputs.work-dir }}/.extraformats
@@ -99,7 +99,7 @@ jobs:
 
       - name: Commit and push changes
         id: push
-        uses: UoMResearchIT/actions/git-push-changes-to-branch@b747e3097a2cb9d927b63e2bb83fbf6e75716a53 # v1.2.6
+        uses: UoMResearchIT/actions/git-push-changes-to-branch@c62e71b7108986ca2d5c9338fb8f55061b18ac44 # v1.2.7
         with:
           working-directory: ${{ inputs.work-dir }}
           branch-prefix: add-license-headers-to
