@@ -10,6 +10,9 @@ Example usage:
       packages: vera++
 ```
 
+> [!NOTE]
+> If you want to source a package from a PPA, you must call [`add-apt-repository`](https://manpages.debian.org/unstable/software-properties-common/add-apt-repository.1.en.html) _before_ calling this action. This action assumes that the source list is already configured.
+
 ## Inputs
 
 * `packages`
