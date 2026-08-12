@@ -54,7 +54,7 @@ runs:
   steps:
     - name: Check for Environment
       id: env-chk
-      uses: UoMResearchIT/actions/list-environments@c62e71b7108986ca2d5c9338fb8f55061b18ac44 # v1.2.7
+      uses: $/list-environments
       with:
         has-env: ${{ inputs.publish-environment }}
     - name: Setup Pages
@@ -62,7 +62,7 @@ runs:
       id: setup
       uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
     - name: Install Dependencies
-      uses: UoMResearchIT/actions/apt-get-install@c62e71b7108986ca2d5c9338fb8f55061b18ac44 # v1.2.7
+      uses: $/apt-get-install
       with:
         packages: wget graphviz
     - name: Install Doxygen v${{ inputs.doxygen-version }}
