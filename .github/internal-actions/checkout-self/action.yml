@@ -31,8 +31,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Checkout ${{ github.action_repository }}
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         path: ${{ inputs.path }}
         sparse-checkout: ${{ inputs.sparse-checkout }}
