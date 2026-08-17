@@ -22,6 +22,12 @@ inputs:
   sparse-checkout:
     description: What part of the repository to check out.
     required: true
+  repository:
+    description: What repository to check out.
+    default: ${{ github.action_repository }}
+  ref:
+    description: What ref to check out.
+    default: ${{ github.action_ref }}
 runs:
   using: composite
   steps:
@@ -30,6 +36,6 @@ runs:
       with:
         path: ${{ inputs.path }}
         sparse-checkout: ${{ inputs.sparse-checkout }}
-        repository: ${{ github.action_repository }}
-        ref: ${{ github.action_ref }}
+        repository: ${{ inputs.repository }}
+        ref: ${{ inputs.ref }}
         persist-credentials: false
