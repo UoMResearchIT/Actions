@@ -1,4 +1,4 @@
-# Copyright (c) 2025 The University of Manchester
+# Copyright (c) 2026 The University of Manchester
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,20 +13,21 @@
 # limitations under the License.
 
 name: "Internal: Checkout Self"
-description: >
-  Checks out this repository.
+description: Checks out (part of) this repository.
 inputs:
   path:
-    description: Where to put the checkout.
-    required: true
+    description: Where to put the checkout, relative to $GITHUB_WORKSPACE.
+    default: .self
   sparse-checkout:
     description: What part of the repository to check out.
-    required: true
+    default: null
   repository:
-    description: What repository to check out.
+    # Bind this value to an input here to avoid a Github misfeature.
+    description: What repository to check out. You should not specify this yourself.
     default: ${{ github.action_repository }}
   ref:
-    description: What ref to check out.
+    # Bind this value to an input here to avoid a Github misfeature.
+    description: What ref to check out. You should not specify this yourself.
     default: ${{ github.action_ref }}
 runs:
   using: composite
