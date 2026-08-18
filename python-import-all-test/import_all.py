@@ -12,7 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import importlib, os, re, sys, traceback
+import importlib
+import os
+import re
+import sys
+import traceback
+from pathlib import Path
 from collections.abc import Sequence
 
 
@@ -20,35 +25,43 @@ from collections.abc import Sequence
 NAME_RE = re.compile("^[a-zA-Z_][a-zA-Z0-9_]*$")
 
 
-def print_note(msg: str) -> None:
+def _print_note(msg: str) -> None:
     """
     Write a note to stdout.
+
+    :param msg: the message to write
     """
     print(msg)
 
 
-def print_warning(msg: str) -> None:
+def _print_warning(msg: str) -> None:
     """
     Write a warning to stdout.
+
+    :param msg: the message to write
     """
     print(f"\033[0;33m{msg}\033[0m")
 
 
-def print_error(msg: str) -> None:
+def _print_error(msg: str) -> None:
     """
     Write an error to stdout.
+
+    :param msg: the message to write
     """
-    print(f"\033[0;31m{msg}\033[0m")
+    print(f"\033[0;31m{msg}\033[0m", flush=True)
 
 
-def print_good(msg: str) -> None:
+def _print_good(msg: str) -> None:
     """
     Write a good message to stdout.
+
+    :param msg: the message to write
     """
-    print(f"\033[0;32m{msg}\033[0m")
+    print(f"\033[0;32m{msg}\033[0m", flush=True)
 
 
-def _all_modules(directory: str, prefix: str,
+def _all_modules(directory: Path, prefix: str,
                  remove_pyc_files: bool,
                  results: set[str]) -> None:
     """
@@ -62,47 +75,43 @@ def _all_modules(directory: str, prefix: str,
     :param remove_pyc_files: whether to delete ``.pyc`` files when found
     :param results: the set to accumulate the python package names in
     """
-    for file_name in os.listdir(directory):
-        if file_name == "__init__.py":
+
+    to_unlink: list[Path] = []
+    for file in directory.iterdir():
+        if file.name == "__init__.py":
             results.add(prefix)
-        elif file_name == "__init__.pyc":
+        elif file.name == "__init__.pyc":
             results.add(prefix)
             if remove_pyc_files:  # pragma: no cover
-                full_path = os.path.join(directory, file_name)
-                print_note(f"Deleting: {full_path}")
-                os.remove(full_path)
-        elif file_name[-3:] == ".py":
-            local_name = file_name[:-3]
-            if NAME_RE.match(local_name):
-                results.add(f"{prefix}.{local_name}")
-        elif file_name[-4:] == ".pyc":
-            local_name = file_name[:-4]
-            if NAME_RE.match(local_name):
-                results.add(f"{prefix}.{local_name}")
+                to_unlink.append(file)
+        elif file.suffix == ".py":
+            if NAME_RE.match(file.stem):
+                results.add(f"{prefix}.{file.stem}")
+        elif file.suffix == ".pyc":
+            if NAME_RE.match(file.stem):
+                results.add(f"{prefix}.{file.stem}")
             if remove_pyc_files:  # pragma: no cover
-                full_path = os.path.join(directory, file_name)
-                print_note(f"Deleting: {full_path}")
-                os.remove(full_path)
-        elif file_name != "__pycache__" and NAME_RE.match(file_name):
-            full_path = os.path.join(directory, file_name)
-            if os.path.isdir(full_path):
-                _all_modules(full_path, f"{prefix}.{file_name}", remove_pyc_files,
-                             results)
+                to_unlink.append(file)
+        elif file.name != "__pycache__" and NAME_RE.match(file.name) and file.is_dir:
+            _all_modules(file, f"{prefix}.{file.name}", remove_pyc_files, results)
+    for file in to_unlink:  # pragma: no cover
+        _print_note(f"Deleting: {file}")
+        file.unlink()
 
 
 def _print_import_exception(module: str, exc: Exception) -> None:
     """
     Write an exception to stdout, formatted in standard form for this code.
     """
-    print_error(f"Error importing module {module}:")
+    _print_error(f"Error importing module {module}:")
     for line in (
             line for tb_msgs in traceback.format_exception(exc)
             for line in tb_msgs.splitlines()):
-        print_warning(f"  {line}")
+        _print_warning(f"  {line}")
 
 
 def _load_modules(
-        directory: str, prefix: str, remove_pyc_files: bool,
+        directory: Path, prefix: str, remove_pyc_files: bool,
         exclusions: frozenset[str]) -> int:
     """
     Loads all the python files found in this directory, giving them the
@@ -123,15 +132,15 @@ def _load_modules(
     errors: list[tuple[str, Exception]] = list()
     for module in modules:
         if module in exclusions:
-            print_warning(f"SKIPPING {module}")
+            _print_warning(f"SKIPPING {module}")
             continue
         try:
             __import__(module)
         except Exception as e:  # pylint: disable=broad-except
-            print_error(f"Error with {module}")
+            _print_error(f"Error with {module}")
             errors.append((module, e))
         else:
-            print_note(f"checked {module}")
+            _print_note(f"checked {module}")
 
     for module, exc in errors:
         _print_import_exception(module, exc)
@@ -156,15 +165,15 @@ def load_module(
         return 2
     path = module.__file__
     if path is None:
-        print_error(f"cannot determine path to module {name}")
+        _print_error(f"cannot determine path to module {name}")
         return 2
 
-    if _load_modules(os.path.dirname(path), name, remove_pyc_files,
+    if _load_modules(Path(path).parent, name, remove_pyc_files,
                      frozenset(exclusions)):
-        print_error(f"Error when importing, starting at {name}")
+        _print_error(f"Error when importing, starting at {name}")
         return 1
     else:
-        print_good(f"module {name} and descendents are importable")
+        _print_good(f"module {name} and descendents are importable")
         return 0
 
 
