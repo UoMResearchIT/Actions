@@ -103,7 +103,7 @@ runs:
         PACKAGE: hunspell-${{ inputs.language }}
     - name: Install spell checker
       if: inputs.language != ''
-      uses: UoMResearchIT/actions/apt-get-install@c62e71b7108986ca2d5c9338fb8f55061b18ac44 # v1.2.7
+      uses: $/apt-get-install
       with:
         packages: enchant-2 hunspell libhunspell-dev ${{ steps.lang.outputs.result }}
     - name: Build composite dictionary
