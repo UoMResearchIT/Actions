@@ -32,22 +32,21 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: ensure org name in url is lower case
+    - name: Ensure whole URL is lower case
+      # Because the package repository is fussier than the rest of the GitHub API...
       id: naming
-      shell: python
-      run: |
-        import os, sys
-        name = os.environ["NGNS"].lower()
-        with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-          f.write(f"url=https://nuget.pkg.github.com/{name}/index.json\n")
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      with:
+        script: return process.env.NGURL.toLowerCase();
+        result-encoding: string
       env:
-        NGNS: ${{ inputs.namespace }}
-    - name: configure nuget
+        NGURL: https://nuget.pkg.github.com/${{ inputs.namespace }}/index.json
+    - name: Configure nuget
       shell: bash
       run: |
         dotnet nuget add source --username "$NGUSER" --password "$NGPASS" --store-password-in-clear-text --name "$NGHNDL" "$NGURL"
       env:
         NGUSER: ${{ github.actor }}
         NGPASS: ${{ github.token }}
-        NGURL: ${{ steps.naming.outputs.url }}
+        NGURL: ${{ steps.naming.outputs.result }}
         NGHNDL: ${{ inputs.short-handle }}
