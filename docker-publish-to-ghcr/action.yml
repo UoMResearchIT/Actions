@@ -80,15 +80,27 @@ runs:
 
     - name: Determine container name
       id: derive-names
-      shell: bash
-      run: python $GITHUB_ACTION_PATH/container-name.py
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      with:
+        script: |
+          let ctr = process.env.CONTAINER;
+          if (ctr == '') {
+            ctr = context.repo.repo;
+            console.log(`determined container name to be ${ctr}`);
+          }
+          ctr = ctr.toLowerCase();
+          let ns = process.env.NAMESPACE.toLowerCase();
+          core.setOutput('container', ctr);
+          core.setOutput('handle', `ghcr.io/${ns}/${ctr}:${process.env.VERSION}`);
       env:
         CONTAINER: ${{ inputs.container-name }}
         NAMESPACE: ${{ inputs.namespace-name }}
         VERSION: ${{ inputs.version }}
 
     - name: Push versioned
-      run: $GITHUB_ACTION_PATH/push.bash
+      run: |
+        docker image tag "${IMAGEID:-${CONTAINER}:${SRCTAG}}" "$HANDLE"
+        docker image push "$HANDLE"
       shell: bash
       env:
         CONTAINER: ${{ steps.derive-names.outputs.container }}
