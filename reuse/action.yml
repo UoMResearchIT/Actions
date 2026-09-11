@@ -62,7 +62,7 @@ inputs:
     default: "."
 runs:
   using: docker
-  image: docker://ghcr.io/uomresearchit/reuse-tool:sha256-1a0d5fa9bf09aa994b6f0d9121ee8e07b1626da08150bec360f048207ab93812
+  image: docker://ghcr.io/uomresearchit/reuse-tool:1.0.0
   args:
     - bash
     - -c
