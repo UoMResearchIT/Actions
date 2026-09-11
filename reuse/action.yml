@@ -21,15 +21,15 @@ inputs:
     required: false
     default: ""
   branch:
-    description: "The branch or tag to check out the reuse-tool from"
+    description: "Deprecated: ignored by the Docker image-based action."
     required: false
     default: "main"
   python-version:
-    description: "The version of Python to run the reuse-tool in."
+    description: "Deprecated: ignored by the Docker image-based action."
     required: false
     default: "3.12"
   poetry-version:
-    description: "The version of Poetry to install the reuse-tool with."
+    description: "Deprecated: ignored by the Docker image-based action."
     required: false
     default: "1.3.0"
   copyright-holder:
@@ -61,91 +61,29 @@ inputs:
     required: false
     default: "."
 runs:
-  using: composite
-  steps:
-  - name: Checkout
-    uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-    with:
-      path: reuse-tool
-      repository: UoMResearchIT/reuse-tool
-      ref: ${{ inputs.branch }}
-      persist-credentials: false
+  using: docker
+  image: docker://ghcr.io/uomresearchit/reuse-tool:1.0.0
+  args:
+    - bash
+    - -c
+    - |
+      set -e
 
-  - name: Setup Python
-    uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-    id: setup-python
-    with:
-      python-version: ${{ inputs.python-version }}
+      export Arguments="${{ inputs.args }}"
+      export Who="${{ inputs.copyright-holder }}"
+      export License="${{ inputs.license }}"
+      export Merge="${{ inputs.merge }}"
+      export Fallback="${{ inputs.fallback-dot-license }}"
+      export Extra="${{ inputs.extra-formats-file }}"
+      export Ignore="${{ inputs.ignore-file }}"
+      export Dir="${{ inputs.base-dir }}"
 
-  - name: Clear Problem Matcher
-    run: echo '::remove-matcher owner=python::'
-    shell: bash
+      if [ -f "${GITHUB_ACTION_PATH}/compose-args.bash" ]; then
+        source "${GITHUB_ACTION_PATH}/compose-args.bash"
+      else
+        echo "compose-args.bash not found" >&2
+        exit 1
+      fi
 
-  - name: Restore Cache
-    uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-    id: cache-venv
-    with:
-      path: reuse-tool-venv
-      key: setup-venv-${{ runner.os }}-py-${{ steps.setup-python.outputs.python-version }}-${{ steps.setup-python.outputs.python-path }}-reuse-${{ inputs.branch }}-${{ hashFiles('reuse-tool/pyproject.toml', 'reuse-tool/src/**/*.py') }}
-
-  - name: Create reuse-tool Environment
-    run: python -m venv reuse-tool-venv
-    if: steps.cache-venv.outputs.cache-hit != 'true'
-    shell: bash
-
-  - name: Enable reuse-tool Environment
-    id: venv
-    run: |
-      source reuse-tool-venv/${SCRIPT_DIR}/activate
-      echo "virtual_env=${VIRTUAL_ENV}" >> $GITHUB_OUTPUT
-      echo "path=${VIRTUAL_ENV}/${SCRIPT_DIR}" >> $GITHUB_OUTPUT
-    shell: bash
-    env:
-      SCRIPT_DIR: ${{ runner.os == 'Windows' && 'Scripts' || 'bin' }}
-
-  - name: Setup reuse-tool Environment
-    run: |
-      PATH="$PATH_ELEMENT:$PATH"
-      pip install "poetry~=$USE_POETRY_VERSION"
-      cd reuse-tool
-      poetry install --no-interaction --only main
-      poetry build --no-interaction
-      pip install dist/*.whl
-    if: steps.cache-venv.outputs.cache-hit != 'true'
-    shell: bash
-    env:
-      USE_POETRY_VERSION: ${{ inputs.poetry-version }}
-      VIRTUAL_ENV: ${{ steps.venv.outputs.virtual_env }}
-      PATH_ELEMENT: ${{ steps.venv.outputs.path }}
-
-  - name: Save Cache
-    uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-    with:
-      path: reuse-tool-venv
-      key: ${{ steps.cache-venv.outputs.cache-primary-key }}
-    if: steps.cache-venv.outputs.cache-hit != 'true'
-
-  - name: Set Up Arguments
-    id: args
-    shell: bash
-    env:
-      Arguments: ${{ inputs.args }}
-      Who: ${{ inputs.copyright-holder }}
-      License: ${{ inputs.license }}
-      Merge: ${{ inputs.merge }}
-      Fallback: ${{ inputs.fallback-dot-license }}
-      Extra: ${{ inputs.extra-formats-file }}
-      Ignore: ${{ inputs.ignore-file }}
-      Dir: ${{ inputs.base-dir }}
-    run: |
-      $GITHUB_ACTION_PATH/compose-args.bash
-
-  - name: Run reuse
-    shell: bash
-    run: |
-      source "$Venv_Path/activate"
       IFS=$'\n' arr=( $(xargs -n1 <<<"$Arguments") )
       reuse "${arr[@]}"
-    env:
-      Arguments: ${{ steps.args.outputs.args }}
-      Venv_Path: ${{ steps.venv.outputs.path }}
