@@ -21,15 +21,15 @@ inputs:
     required: false
     default: ""
   branch:
-    description: "The branch or tag to check out the reuse-tool from"
+    description: "Deprecated: ignored by the Docker image-based action."
     required: false
     default: "main"
   python-version:
-    description: "The version of Python to run the reuse-tool in."
+    description: "Deprecated: ignored by the Docker image-based action."
     required: false
     default: "3.12"
   poetry-version:
-    description: "The version of Poetry to install the reuse-tool with."
+    description: "Deprecated: ignored by the Docker image-based action."
     required: false
     default: "1.3.0"
   copyright-holder:
