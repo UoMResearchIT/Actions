@@ -54,5 +54,3 @@ if [ -z "$Arguments" ]; then
     fi
     Arguments="${opts[@]@Q}"
 fi
-
-echo "args=$Arguments" >>$GITHUB_OUTPUT
