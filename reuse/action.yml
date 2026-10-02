@@ -79,3 +79,7 @@ runs:
     run: |
       $GITHUB_ACTION_PATH/compose-args.bash
   
+  - name: Run reuse container
+    uses: docker://ghcr.io/uomresearchit/reuse-tool:1.0.0
+    with:
+      args: ${{ steps.args.outputs.args }}
