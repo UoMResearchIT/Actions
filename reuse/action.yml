@@ -60,30 +60,22 @@ inputs:
     description: "The base directory to analyse and annotate"
     required: false
     default: "."
+  
 runs:
-  using: docker
-  image: docker://ghcr.io/uomresearchit/reuse-tool:1.0.0
-  args:
-    - bash
-    - -c
-    - |
-      set -e
-
-      export Arguments="${{ inputs.args }}"
-      export Who="${{ inputs.copyright-holder }}"
-      export License="${{ inputs.license }}"
-      export Merge="${{ inputs.merge }}"
-      export Fallback="${{ inputs.fallback-dot-license }}"
-      export Extra="${{ inputs.extra-formats-file }}"
-      export Ignore="${{ inputs.ignore-file }}"
-      export Dir="${{ inputs.base-dir }}"
-
-      if [ -f "${GITHUB_ACTION_PATH}/compose-args.bash" ]; then
-        source "${GITHUB_ACTION_PATH}/compose-args.bash"
-      else
-        echo "compose-args.bash not found" >&2
-        exit 1
-      fi
-
-      IFS=$'\n' arr=( $(xargs -n1 <<<"$Arguments") )
-      reuse "${arr[@]}"
+  using: composite
+  steps:
+  - name: Set Up Arguments
+    id: args
+    shell: bash
+    env:
+      Arguments: ${{ inputs.args }}
+      Who: ${{ inputs.copyright-holder }}
+      License: ${{ inputs.license }}
+      Merge: ${{ inputs.merge }}
+      Fallback: ${{ inputs.fallback-dot-license }}
+      Extra: ${{ inputs.extra-formats-file }}
+      Ignore: ${{ inputs.ignore-file }}
+      Dir: ${{ inputs.base-dir }}
+    run: |
+      $GITHUB_ACTION_PATH/compose-args.bash
+  
