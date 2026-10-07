@@ -30,6 +30,9 @@ if [ -z "$Arguments" ]; then
         opts+=( --ignore-file "$Ignore" )
     fi
 
+    #  enable debug
+    opts+=( --debug )
+
     # Basic arguments
     opts+=( annotate )
     opts+=( --copyright "$Who" )
