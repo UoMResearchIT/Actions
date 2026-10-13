@@ -122,6 +122,11 @@ In the same fashion, it is possible to add optional arguments like `--include-su
   The branch to check out the `reuse-tool` from.
   **Optional.** _Very_ rarely required.
 
+* `image-tag`
+
+  The tag of the `reuse-tool` image to pull.
+  **Optional.** Defaults to `1.0.0`.
+  
 ## Outputs
 None
 
