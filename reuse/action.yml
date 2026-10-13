@@ -60,6 +60,10 @@ inputs:
     description: "The base directory to analyse and annotate"
     required: false
     default: "."
+  image-tag:
+    description: "The tag of the reuse-tool image to pull"
+    required: false
+    default: "1.0.0"
   
 runs:
   using: composite
@@ -83,11 +87,12 @@ runs:
     shell: bash
     env:
       Arguments: ${{ steps.args.outputs.args }}
+      ImageTag: ${{inputs.image-tag}}
     run: |
       set -e
       IFS=$'\n' arr=( $(xargs -n1 <<<"$Arguments") )
       docker run --rm \
       -v "$GITHUB_WORKSPACE:/github/workspace" \
       -w /github/workspace \
-      ghcr.io/uomresearchit/reuse-tool:1.0.0 \
+      ghcr.io/uomresearchit/reuse-tool:${ImageTag} \
       "${arr[@]}"
