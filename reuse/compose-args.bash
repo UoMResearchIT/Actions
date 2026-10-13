@@ -31,7 +31,13 @@ if [ -z "$Arguments" ]; then
     fi
 
     #  enable debug
-    opts+=( --debug )
+    # Debugging aid: keep --debug available for temporary REUSE troubleshooting.
+    # It is useful when diagnosing annotation or lint failures, but it is intentionally
+    # commented out instead of removed so future developers can re-enable it quickly
+    # without losing the reference. 
+    # Normal CI runs should stay quiet, and verbose output should only be 
+    # enabled when investigating a real problem.
+    # opts+=( --debug )
 
     # Basic arguments
     opts+=( annotate )
