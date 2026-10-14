@@ -1,0 +1,189 @@
+# Copyright (c) 2026 The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Docker Web Smoke Test
+description: >
+  Builds a Docker image of a web app, starts it, waits until it answers over HTTP, then
+  runs either a bundled check (chosen with app-kind) or your own check script.
+  Container logs are always printed at the end so failures can be diagnosed.
+
+  Assumes the repository has already been checked out.
+branding:
+  color: blue
+  icon: box
+
+inputs:
+  port:
+    description: Port the app listens on inside the container. It is published on the same host port.
+    required: true
+  app-kind:
+    description: >
+      Run the bundled check for this kind of app: fastapi, flask, shiny,
+      static or streamlit.
+      Also passed to check-script as APP_KIND if both are given.
+    required: false
+    default: ""
+  check-script:
+    description: >
+      Your own check script (relative to the repository root) to run once the
+      app is up. Takes precedence over the bundled check.
+    required: false
+    default: ""
+  check-env:
+    description: >
+      Extra environment variables for the check, one KEY=value per line.
+      Values may contain spaces.
+    required: false
+    default: ""
+  context:
+    description: Docker build context.
+    required: false
+    default: .
+  dockerfile:
+    description: Path to the Dockerfile.
+    required: false
+    default: ./Dockerfile
+  build-args:
+    description: Build arguments, one KEY=value per line.
+    required: false
+    default: ""
+  image-tag:
+    description: Tag for the local image.
+    required: false
+    default: docker-web-smoke:ci
+  cache-scope:
+    description: >
+      GitHub Actions cache scope for build layers. Give each image its own
+      scope if a repository builds more than one.
+    required: false
+    default: buildkit
+  run-args:
+    description: >
+      Extra arguments for docker run, such as "-e KEY=value". Split on
+      whitespace, so values cannot contain spaces.
+    required: false
+    default: ""
+  ready-path:
+    description: Path that must return a 2xx response once the app is up.
+    required: false
+    default: /
+  ready-timeout:
+    description: Seconds to wait for ready-path to respond.
+    required: false
+    default: "60"
+  reclaim-disk:
+    description: Remove preinstalled Docker images first to free runner disk space.
+    required: false
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+    - name: Reclaim runner disk space
+      if: inputs.reclaim-disk == 'true'
+      shell: bash
+      run: |
+        df -h
+        docker system prune -af --volumes || true
+        docker buildx prune -af || true
+        df -h
+
+    - name: Build Docker image
+      uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+      with:
+        context: ${{ inputs.context }}
+        file: ${{ inputs.dockerfile }}
+        build-args: ${{ inputs.build-args }}
+        load: true
+        tags: ${{ inputs.image-tag }}
+        cache-from: type=gha,scope=${{ inputs.cache-scope }}
+        # Smoke builds only need a disposable local image; avoid exporting
+        # a large cache blob that can exhaust runner disk space.
+        cache-to: type=gha,mode=min,scope=${{ inputs.cache-scope }}
+
+    - name: Start container
+      shell: bash
+      env:
+        CONTAINER_NAME: docker-web-smoke
+        IMAGE_TAG: ${{ inputs.image-tag }}
+        PORT: ${{ inputs.port }}
+        RUN_ARGS: ${{ inputs.run-args }}
+      run: |
+        set -euo pipefail
+        # RUN_ARGS is left unquoted on purpose so it splits into arguments.
+        # shellcheck disable=SC2086
+        docker run -d --name "$CONTAINER_NAME" -p "$PORT:$PORT" $RUN_ARGS "$IMAGE_TAG"
+
+    - name: Wait for the app to respond
+      shell: bash
+      env:
+        CONTAINER_NAME: docker-web-smoke
+        BASE_URL: http://127.0.0.1:${{ inputs.port }}
+        READY_PATH: ${{ inputs.ready-path }}
+        READY_TIMEOUT: ${{ inputs.ready-timeout }}
+      run: |
+        set -euo pipefail
+        deadline=$((SECONDS + READY_TIMEOUT))
+        until curl --fail --silent "$BASE_URL$READY_PATH" >/dev/null; do
+          if [ "$(docker inspect -f '{{.State.Running}}' "$CONTAINER_NAME")" != true ]; then
+            echo "Container exited before it became ready" >&2
+            exit 1
+          fi
+          if [ "$SECONDS" -ge "$deadline" ]; then
+            echo "Timed out after ${READY_TIMEOUT}s waiting for $BASE_URL$READY_PATH" >&2
+            exit 1
+          fi
+          sleep 2
+        done
+        echo "Container is responding at $BASE_URL$READY_PATH"
+
+    - name: Run check
+      if: inputs.check-script != '' || inputs.app-kind != ''
+      shell: bash
+      env:
+        CONTAINER_NAME: docker-web-smoke
+        BASE_URL: http://127.0.0.1:${{ inputs.port }}
+        APP_KIND: ${{ inputs.app-kind }}
+        CHECK_SCRIPT: ${{ inputs.check-script }}
+        CHECK_ENV: ${{ inputs.check-env }}
+      run: |
+        set -euo pipefail
+        while IFS= read -r line; do
+          [ -z "$line" ] && continue
+          case "$line" in
+            # ${line?} exports the KEY=value pair itself (quiets SC2163).
+            *=*) export "${line?}" ;;
+            *) echo "check-env line is not KEY=value: $line" >&2; exit 1 ;;
+          esac
+        done <<< "$CHECK_ENV"
+        if [ -n "$CHECK_SCRIPT" ]; then
+          echo "Running $CHECK_SCRIPT"
+          bash "$CHECK_SCRIPT"
+        else
+          echo "Running bundled $APP_KIND check"
+          bash "$GITHUB_ACTION_PATH/docker_smoke_check.sh"
+        fi
+
+    - name: Show container logs
+      if: always()
+      shell: bash
+      run: docker logs docker-web-smoke || true
+
+    - name: Stop container
+      if: always()
+      shell: bash
+      run: docker rm -f docker-web-smoke || true

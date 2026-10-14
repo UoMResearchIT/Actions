@@ -29,6 +29,8 @@ These are intended for use in many types of project, wherever relevant.
 
 * [`docker-publish-to-ghcr`](docker-publish-to-ghcr) publishes a workflow-local Docker image to the Github container registry.
 
+* [`docker-web-smoke-test`](docker-web-smoke-test) builds and starts a Docker image of a web app, then checks it responds over HTTP, with bundled checks for FastAPI, Flask, R Shiny, Streamlit and static sites.
+
 * [`check-copyrights`](check-copyrights) ensures that all files in your repository have an "acceptable" copyright notice near their top.
 
 * [`todo`](todo) finds `FIXME` and `TODO` comments in code.
