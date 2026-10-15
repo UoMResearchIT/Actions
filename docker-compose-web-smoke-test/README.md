@@ -82,7 +82,7 @@ Why each input is needed:
   Any other secrets a site declares, such as reCAPTCHA or map API keys, also get random values, so features using them will not work, but the site will start.
 
 These inputs are supported for the template and for sites that keep close to it.
-The template is tested with them every week by [this repository's workflow](../.github/workflows/test-docker-compose-web-smoke-test.yml), so a change to either the template or this action that breaks the other is caught.
+These inputs were tested against the template on 15 October 2026. The template should run this action in its own CI, on pull requests and on a schedule, so that changes to either the template or this action that break the other are caught.
 
 ### Other WADS sites
 

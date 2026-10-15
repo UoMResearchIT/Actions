@@ -335,9 +335,15 @@ runs:
           echo "Running $CHECK_SCRIPT"
           bash "$CHECK_SCRIPT"
         else
-          # The bundled check is shared with the docker-web-smoke-test action.
+          # The bundled check is shared with the docker-web-smoke-test action,
+          # which is fetched along with this one as part of the same repository.
+          bundled="$GITHUB_ACTION_PATH/../docker-web-smoke-test/docker_smoke_check.sh"
+          if [ ! -f "$bundled" ]; then
+            echo "Bundled check not found at $bundled" >&2
+            exit 1
+          fi
           echo "Running bundled $APP_KIND check"
-          bash "$GITHUB_ACTION_PATH/../docker-web-smoke-test/docker_smoke_check.sh"
+          bash "$bundled"
         fi
 
     - name: Show logs
