@@ -86,17 +86,19 @@ inputs:
       "service: command", e.g. "django: python manage.py migrate --no-input".
       Each runs with docker compose exec in that service's running container,
       before waiting for ready-path. A failing command is retried every 5
-      seconds until setup-timeout, as services such as a database may still
-      be starting, so commands should be safe to repeat (migrate and
+      seconds, as services such as a database may still be starting, for up to
+      setup-timeout in all; commands should therefore be safe to repeat (migrate and
       collectstatic are). Afterwards each service that ran a command is
       restarted, so that it picks up the changes (e.g. Django reads the
       collectstatic manifest only at startup).
     required: false
     default: ""
   setup-timeout:
-    description: Seconds to keep retrying each setup command while it fails.
+    description: >
+      Seconds each setup command may take, including retries while it fails.
+      A command still running at the end is stopped.
     required: false
-    default: "90"
+    default: "300"
   insecure-tls:
     description: >
       Accept a self-signed HTTPS certificate when waiting for and checking the
@@ -134,6 +136,15 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Choose a Compose project name
+      id: names
+      shell: bash
+      # Unique per run, so that jobs sharing a Docker daemon (e.g. on a
+      # self-hosted runner) get separate stacks, and one job's clean-up cannot
+      # remove another's. Containers, networks and volumes with fixed names in
+      # the Compose file are not covered by this.
+      run: echo "project=smoke-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${RANDOM}${RANDOM}" >> "$GITHUB_OUTPUT"
+
     - name: Reclaim runner disk space
       if: inputs.reclaim-disk == 'true'
       shell: bash
@@ -196,6 +207,7 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       env:
         COMPOSE_FILES: ${{ inputs.compose-files }}
+        COMPOSE_PROJECT_NAME: ${{ steps.names.outputs.project }}
       run: |
         set -euo pipefail
         # Read the config first, so that a Compose error (e.g. an unset
@@ -217,6 +229,7 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       env:
         COMPOSE_FILES: ${{ inputs.compose-files }}
+        COMPOSE_PROJECT_NAME: ${{ steps.names.outputs.project }}
       run: '"$GITHUB_ACTION_PATH/compose.sh" build'
 
     - name: Start stack
@@ -224,6 +237,7 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       env:
         COMPOSE_FILES: ${{ inputs.compose-files }}
+        COMPOSE_PROJECT_NAME: ${{ steps.names.outputs.project }}
       run: '"$GITHUB_ACTION_PATH/compose.sh" up -d'
 
     - name: Run setup commands
@@ -232,6 +246,7 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       env:
         COMPOSE_FILES: ${{ inputs.compose-files }}
+        COMPOSE_PROJECT_NAME: ${{ steps.names.outputs.project }}
         SETUP_COMMANDS: ${{ inputs.setup-commands }}
         SETUP_TIMEOUT: ${{ inputs.setup-timeout }}
       run: |
@@ -248,11 +263,25 @@ runs:
           command="${line#*:}"
           echo "::group::$service:$command"
           deadline=$((SECONDS + SETUP_TIMEOUT))
-          # stdin is closed so the command cannot read the remaining lines.
-          until "$GITHUB_ACTION_PATH/compose.sh" exec -T "$service" sh -c "$command" < /dev/null; do
+          while true; do
+            # Each attempt is limited to the time left, so a command that
+            # hangs (e.g. waiting on a lock) cannot hang the job. stdin is
+            # closed so the command cannot read the remaining lines.
+            left=$((deadline - SECONDS))
+            if [ "$left" -lt 1 ]; then left=1; fi
+            rc=0
+            timeout --kill-after=10 "$left" \
+              "$GITHUB_ACTION_PATH/compose.sh" exec -T "$service" sh -c "$command" < /dev/null || rc=$?
+            if [ "$rc" = 0 ]; then
+              break
+            fi
             if [ "$SECONDS" -ge "$deadline" ]; then
               echo "::endgroup::"
-              echo "Setup command still failing after ${SETUP_TIMEOUT}s: $service:$command" >&2
+              if [ "$rc" = 124 ]; then
+                echo "Setup command did not finish within ${SETUP_TIMEOUT}s: $service:$command" >&2
+              else
+                echo "Setup command still failing after ${SETUP_TIMEOUT}s: $service:$command" >&2
+              fi
               exit 1
             fi
             echo "Failed; retrying in 5s"
@@ -275,6 +304,7 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       env:
         COMPOSE_FILES: ${{ inputs.compose-files }}
+        COMPOSE_PROJECT_NAME: ${{ steps.names.outputs.project }}
         BASE_URL: ${{ inputs.base-url }}
         READY_PATH: ${{ inputs.ready-path }}
         READY_TIMEOUT: ${{ inputs.ready-timeout }}
@@ -286,7 +316,15 @@ runs:
           curl_args+=(--insecure)
         fi
         deadline=$((SECONDS + READY_TIMEOUT))
-        until curl "${curl_args[@]}" "$BASE_URL$READY_PATH"; do
+        while true; do
+          # Each probe is limited to the time left (at most 10s), so an app
+          # that accepts connections but never responds cannot hang the job.
+          probe=$((deadline - SECONDS))
+          if [ "$probe" -gt 10 ]; then probe=10; fi
+          if [ "$probe" -lt 1 ]; then probe=1; fi
+          if curl "${curl_args[@]}" --max-time "$probe" "$BASE_URL$READY_PATH"; then
+            break
+          fi
           # A container that is restarting or has exited with an error has
           # crashed; one-off containers that exited cleanly are fine.
           crashed="$("$GITHUB_ACTION_PATH/compose.sh" ps -a --format '{{.Service}} {{.State}} {{.ExitCode}}' \
@@ -309,6 +347,7 @@ runs:
       shell: bash
       env:
         COMPOSE_FILES: ${{ inputs.compose-files }}
+        COMPOSE_PROJECT_NAME: ${{ steps.names.outputs.project }}
         WORKING_DIRECTORY: ${{ inputs.working-directory }}
         BASE_URL: ${{ inputs.base-url }}
         APP_KIND: ${{ inputs.app-kind }}
@@ -352,6 +391,7 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       env:
         COMPOSE_FILES: ${{ inputs.compose-files }}
+        COMPOSE_PROJECT_NAME: ${{ steps.names.outputs.project }}
       run: '"$GITHUB_ACTION_PATH/compose.sh" logs --no-color || true'
 
     - name: Remove stack and volumes
@@ -360,4 +400,7 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       env:
         COMPOSE_FILES: ${{ inputs.compose-files }}
-      run: '"$GITHUB_ACTION_PATH/compose.sh" down --volumes --remove-orphans || true'
+        COMPOSE_PROJECT_NAME: ${{ steps.names.outputs.project }}
+      # --rmi local also removes the images built for this run, which are
+      # named after its unique project name and would otherwise pile up.
+      run: '"$GITHUB_ACTION_PATH/compose.sh" down --volumes --remove-orphans --rmi local || true'

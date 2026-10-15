@@ -29,16 +29,19 @@ Both actions share the same [bundled checks](../docker-web-smoke-test#app-kinds)
 2. Creates any file-based Compose secrets that are missing, with random values (turn off with `generate-secrets: false`).
 3. Builds the images with `docker compose build`.
 4. Starts the stack with `docker compose up -d`.
-5. Runs each of `setup-commands` with `docker compose exec`, as in a manual deployment. A failing command is retried every 5 seconds for up to `setup-timeout`, as the database may still be starting. Then each service that ran a command is restarted, so it picks up the results (Django reads the `collectstatic` manifest only at startup).
+5. Runs each of `setup-commands` with `docker compose exec`, as in a manual deployment. A failing command is retried every 5 seconds, as the database may still be starting; each command, including its retries, is stopped if it takes longer than `setup-timeout`. Then each service that ran a command is restarted, so it picks up the results (Django reads the `collectstatic` manifest only at startup).
 6. Waits until `base-url` + `ready-path` responds. It fails early if a service crashes, i.e. is restarting or has exited with an error; one-off services that exit cleanly are fine.
 7. Runs the check chosen with `app-kind`, or your `check-script`.
-8. Always prints every service's logs, then runs `docker compose down --volumes`.
+8. Always prints every service's logs, then runs `docker compose down --volumes --rmi local`, removing the stack, its volumes and the images it built.
 
 Image layers are not cached between runs, so every run builds the stack from scratch.
 
+Each run uses its own Compose project name, so that jobs sharing a Docker daemon, as on a self-hosted runner, get separate stacks and cannot remove each other's.
+
 > [!WARNING]
-> Step 8 deletes the stack's volumes, including any with fixed names (`name:` in the Compose file).
-> On a self-hosted runner that also hosts a real deployment, make sure the smoke test cannot use the same container, network or volume names, e.g. by giving it its own `WADS_CONTAINER_PREFIX`.
+> That separation does not cover containers, networks or volumes given fixed names in the Compose file (`container_name:` or `name:`), as WADS sites do.
+> Step 8 deletes the stack's volumes, including any with fixed names.
+> On a self-hosted runner, make sure the smoke test cannot use the same names as a real deployment or another job running at the same time, e.g. by giving each its own `WADS_CONTAINER_PREFIX`.
 
 ## Wagtail And Django Stack (WADS) sites
 
@@ -190,7 +193,7 @@ The bundled [`docker_smoke_check.sh`](../docker-web-smoke-test/docker_smoke_chec
 
 * `setup-commands`
 
-  Commands to run once the stack has started, one per line as `service: command`, e.g. `django: python manage.py migrate --no-input`. Each runs with `sh -c` in that service's running container (`docker compose exec`). A failing command is retried every 5 seconds until `setup-timeout`, so commands should be safe to repeat, as `migrate` and `collectstatic` are. Afterwards each service that ran a command is restarted. **Optional.**
+  Commands to run once the stack has started, one per line as `service: command`, e.g. `django: python manage.py migrate --no-input`. Each runs with `sh -c` in that service's running container (`docker compose exec`). A failing command is retried every 5 seconds, so commands should be safe to repeat, as `migrate` and `collectstatic` are; a command that has not succeeded within `setup-timeout` (including one that hangs) fails the job. Afterwards each service that ran a command is restarted. **Optional.**
 
 * `env-template`
 
@@ -232,7 +235,7 @@ The bundled [`docker_smoke_check.sh`](../docker-web-smoke-test/docker_smoke_chec
 
 * `setup-timeout`
 
-  Seconds to keep retrying each setup command while it fails. Defaults to `90`. **Optional.**
+  Seconds each setup command may take, including retries while it fails. A command still running at the end is stopped. Defaults to `300`. **Optional.**
 
 * `ready-timeout`
 
@@ -260,4 +263,3 @@ Checking out the repository first needs:
 ```yml
 contents: read
 ```
-
