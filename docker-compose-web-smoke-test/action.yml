@@ -156,7 +156,8 @@ runs:
 
     - name: Prepare .env
       if: inputs.env-template != '' || inputs.env-values != ''
-      shell: python
+      # python3 rather than "python", which a self-hosted runner may not have.
+      shell: python3 {0}
       working-directory: ${{ inputs.working-directory }}
       env:
         ENV_TEMPLATE: ${{ inputs.env-template }}
@@ -322,17 +323,27 @@ runs:
           probe=$((deadline - SECONDS))
           if [ "$probe" -gt 10 ]; then probe=10; fi
           if [ "$probe" -lt 1 ]; then probe=1; fi
-          if curl "${curl_args[@]}" --max-time "$probe" "$BASE_URL$READY_PATH"; then
-            break
+          rc=0
+          curl "${curl_args[@]}" --max-time "$probe" "$BASE_URL$READY_PATH" || rc=$?
+          # curl exit code 60: the certificate is not trusted, which retrying
+          # will not change.
+          if [ "$rc" = 60 ]; then
+            echo "$BASE_URL has a certificate curl does not trust; set insecure-tls: true if it is self-signed" >&2
+            exit 1
           fi
           # A container that is restarting or has exited with an error has
-          # crashed; one-off containers that exited cleanly are fine.
+          # crashed; one-off containers that exited cleanly are fine. This is
+          # checked even when the probe succeeds, as a proxy such as nginx can
+          # answer while the app behind it has crashed.
           crashed="$("$GITHUB_ACTION_PATH/compose.sh" ps -a --format '{{.Service}} {{.State}} {{.ExitCode}}' \
             | awk '$2 == "restarting" || ($2 == "exited" && $3 != 0)')"
           if [ -n "$crashed" ]; then
             echo "Services crashed before the stack became ready (service, state, exit code):" >&2
             echo "$crashed" >&2
             exit 1
+          fi
+          if [ "$rc" = 0 ]; then
+            break
           fi
           if [ "$SECONDS" -ge "$deadline" ]; then
             echo "Timed out after ${READY_TIMEOUT}s waiting for $BASE_URL$READY_PATH" >&2
