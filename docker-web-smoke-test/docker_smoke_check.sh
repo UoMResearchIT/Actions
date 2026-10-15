@@ -208,6 +208,7 @@ shiny_check() {
       || fail "${app_path}app.json is missing or not JSON"
     # The service worker has to be served from the app's own path.
     expect_status "${app_path}shinylive-sw.js"
+    expect_repeatable "$app_path"
     return
   fi
 
