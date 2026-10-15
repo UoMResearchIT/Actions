@@ -54,6 +54,12 @@ fail() {
   exit 1
 }
 
+# Every request below goes through this, so that none can hang the job; a
+# later --max-time in the arguments takes precedence.
+curl() {
+  command curl --max-time 30 "$@"
+}
+
 # Print the HTTP status code for a GET request.
 status_of() {
   curl --silent -o /dev/null -w '%{http_code}' "$@"
@@ -94,30 +100,57 @@ expect_repeatable() {
   done
 }
 
-# Pipes from curl use "grep >/dev/null" rather than "grep -q": grep -q stops
-# reading at the first match, and with pipefail curl's write error would then
-# fail the check.
+# Pipes into grep use "grep >/dev/null" rather than "grep -q": grep -q stops
+# reading at the first match, and with pipefail the writer's error would then
+# make the whole pipeline fail.
+
+# Print the scripts and stylesheets linked from the HTML on stdin, one URL per
+# line: <script src>, and <link href> with rel stylesheet or modulepreload.
+linked_assets() {
+  python3 -c '
+import sys
+from html.parser import HTMLParser
+
+class Links(HTMLParser):
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        rel = set((attrs.get("rel") or "").lower().split())
+        if tag == "script" and attrs.get("src"):
+            print(attrs["src"])
+        elif tag == "link" and attrs.get("href") and rel & {"stylesheet", "modulepreload"}:
+            print(attrs["href"])
+
+Links().feed(sys.stdin.read())
+'
+}
 
 # Fail unless every local script and stylesheet linked from the HTML on stdin
-# loads. Links are resolved against app_path; external URLs are skipped.
+# loads. Links are resolved against app_path; external URLs are skipped. An
+# HTML response counts as a failure, as a single-page app's fallback serves
+# index.html with HTTP 200 for missing files.
 expect_assets_load() {
-  local link url count=0
+  local link url result count=0
   while IFS= read -r link; do
     case "$link" in
       http://* | https://* | //* | data:*) continue ;;
       /*) url="$link" ;;
       *) url="$app_path${link#./}" ;;
     esac
-    expect_status "$url"
+    result="$(curl --silent -o /dev/null -w '%{http_code} %{content_type}' "$base$url")"
+    case "$result" in
+      "200 text/html"*) fail "$url returned an HTML page instead of the file (missing file behind a fallback?)" ;;
+      "200 "*) ;;
+      *) fail "$url returned HTTP ${result%% *}, expected 200" ;;
+    esac
     count=$((count + 1))
-  done < <(grep -oE '(src|href)="[^"]+\.(m?js|css)(\?[^"]*)?"' | sed -E 's/^[a-z]+="(.*)"$/\1/')
+  done < <(linked_assets)
   echo "Loaded $count linked assets"
 }
 
 # Fail if the container has logged a Python traceback so far.
 check_logs_clean() {
   if [ -n "${CONTAINER_NAME:-}" ] \
-    && docker logs "$CONTAINER_NAME" 2>&1 | grep -q 'Traceback (most recent call last)'; then
+    && docker logs "$CONTAINER_NAME" 2>&1 | grep 'Traceback (most recent call last)' >/dev/null; then
     fail "container logs contain a traceback"
   fi
 }

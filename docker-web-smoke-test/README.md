@@ -193,7 +193,7 @@ For static sites and single-page apps, such as a React or Vite build served by n
 Checks that:
 
 * the page at `APP_PATH` loads and is HTML;
-* every local script and stylesheet it links loads, which catches a wrong `base` path in the build;
+* every local script (`<script src>`) and stylesheet or preloaded module (`<link href>`) it links loads, which catches a wrong `base` path in the build. A file that comes back as an HTML page counts as missing, as a single-page app's fallback serves `index.html` in place of missing files;
 * without `SPA_ROUTES`, an unknown path returns 404;
 * with `SPA_ROUTES=true`, a deep link (`<app>/smoke-test/deep/link`) serves the app instead, which catches a missing `try_files $uri /index.html` fallback in nginx that would make reloading a deep link fail;
 * the page returns 200 ten times over.
@@ -338,6 +338,7 @@ None.
 
 The action itself needs no `GITHUB_TOKEN` permissions.
 Checking out the repository first needs:
+
 ```yml
 contents: read
 ```
