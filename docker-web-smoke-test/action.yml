@@ -13,6 +13,7 @@
 # limitations under the License.
 
 name: Docker Web Smoke Test
+author: Josh Woodcock
 description: >
   Builds a Docker image of a web app, starts it, waits until it answers over HTTP, then
   runs either a bundled check (chosen with app-kind) or your own check script.
@@ -75,7 +76,7 @@ inputs:
     required: false
     default: ""
   ready-path:
-    description: Path that must return a 2xx response once the app is up.
+    description: Path that must respond without an error (status below 400; redirects count) once the app is up.
     required: false
     default: /
   ready-timeout:
@@ -83,9 +84,14 @@ inputs:
     required: false
     default: "60"
   reclaim-disk:
-    description: Remove preinstalled Docker images first to free runner disk space.
+    description: >
+      Free disk space first by removing all unused Docker images, volumes and
+      build cache on the machine running the job. Only turn this on for
+      GitHub-hosted runners, which are thrown away after each job; on a
+      self-hosted runner or a local run (e.g. with act) it deletes that
+      machine's own Docker data.
     required: false
-    default: "true"
+    default: "false"
 
 runs:
   using: composite
