@@ -18,6 +18,7 @@ If neither `app-kind` nor `check-script` is given, the action only checks that t
 
 > [!NOTE]
 > Linux runners only.
+> GitHub-hosted Ubuntu runners have everything needed; self-hosted runners need Docker, `curl` and `python3`.
 
 ## App kinds
 
@@ -287,7 +288,7 @@ If `APP_KIND` is unset or has no matching function, it fails and lists the kinds
 
 * `ready-path`
 
-  Path that must return a 2xx response once the app is up. Defaults to `/`. **Optional.**
+  Path that must respond without an error (status below 400; redirects count) once the app is up. Defaults to `/`. **Optional.**
 
 ### Less Commonly Needed
 
@@ -321,4 +322,22 @@ If `APP_KIND` is unset or has no matching function, it fails and lists the kinds
 
 * `reclaim-disk`
 
-  Remove preinstalled Docker images first to free runner disk space. Defaults to `true`. **Optional.**
+  Free disk space before building by removing all unused Docker images, volumes and build cache on the machine running the job. Defaults to `false`. **Optional.**
+
+  Turn this on if a large image fails to build on a GitHub-hosted runner with "no space left on device".
+  GitHub-hosted runners have limited free disk space, partly because of the Docker images preinstalled on them, and each job gets a fresh runner that is thrown away afterwards, so clearing them is safe.
+
+  Leave it off anywhere else.
+  On a self-hosted runner, or when running the workflow locally (e.g. with [act](https://github.com/nektos/act)), the job runs on a machine that is kept between runs, and this would delete that machine's own Docker images, volumes and build cache.
+
+## Outputs
+
+None.
+
+## Permissions
+
+The action itself needs no `GITHUB_TOKEN` permissions.
+Checking out the repository first needs:
+```yml
+contents: read
+```
