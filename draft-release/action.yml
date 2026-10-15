@@ -1,0 +1,328 @@
+# Copyright (c) 2026 The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Draft a release from a merged PR
+author: Josh Woodcock
+description: >
+  While a release PR (development into main) is open, checks that it can be
+  released and reports the tag it will get. When it is merged, checks that it
+  was merged with a merge commit and creates a (draft) GitHub release with
+  auto-generated notes whose tag (by default STAGE_vX.Y.Z) will be on the
+  merge commit.
+branding:
+  color: blue
+  icon: tag
+inputs:
+  token:
+    description: >
+      The access token to use. Must be able to write releases.
+    default: ${{ github.token }}
+    required: false
+  stage:
+    description: >
+      The tag prefix describing the release stage, e.g. `demo`, `UAT` or `prod`.
+    default: prod
+    required: false
+  production-stage:
+    description: >
+      Which stage counts as a production release (used for version checks).
+    default: prod
+    required: false
+  version:
+    description: >
+      The version to release, as `X.Y.Z` with an optional suffix such as `-rc`.
+      If empty, it is read from `version-file`, else from the PR title (e.g.
+      `Release v1.0.2`), else the latest version for this stage is bumped
+      according to the PR's labels (`release:major`, `release:minor`,
+      otherwise patch).
+    default: ""
+    required: false
+  version-file:
+    description: >
+      A file in the repository to read the version from: a `package.json`,
+      a `pyproject.toml`, an MSBuild file (`.csproj`, `.props`, etc.) with a
+      `<Version>` element, or otherwise a file containing just the version.
+    default: ""
+    required: false
+  tag-format:
+    description: >
+      The format of the release's tag. `{stage}`, `{version}` and `{build}`
+      are replaced by their values; `{version}` is required. Add `{build}`
+      (e.g. `{stage}_v{version}_build{build}`) to number each release.
+    default: "{stage}_v{version}"
+    required: false
+  build-number:
+    description: >
+      The build number to use, if `tag-format` includes `{build}`. Must be
+      greater than every build number already used in a tag or release. If
+      empty, one more than the highest existing build number is used.
+    default: ""
+    required: false
+  source-branches:
+    description: >
+      The branches that releases may be merged from, separated by spaces or
+      newlines. `*` matches any characters, so `hotfix/*` allows any branch
+      whose name starts with `hotfix/`. Empty to allow any branch.
+    default: development hotfix/*
+    required: false
+  target-branch:
+    description: >
+      The branch that releases must be merged into.
+    default: main
+    required: false
+  release-name:
+    description: >
+      The title of the release. `{stage}`, `{version}`, `{build}`, `{tag}`,
+      `{pr}` (the PR number) and `{title}` (the PR title) are replaced by
+      their values. If empty, `{stage} v{version}` is used, followed by
+      ` (build {build})` if `tag-format` includes `{build}`.
+    default: ""
+    required: false
+  draft:
+    description: >
+      Whether to create the release as a draft. Publishing a draft creates the tag.
+    default: "true"
+    required: false
+outputs:
+  tag:
+    description: The tag name of the release, e.g. `prod_v1.0.2`.
+    value: ${{ fromJson(steps.release.outputs.result || '{}').tag }}
+  version:
+    description: The version number, e.g. `1.0.2`.
+    value: ${{ fromJson(steps.release.outputs.result || '{}').version }}
+  build-number:
+    description: The build number, e.g. `24`, or empty if `tag-format` does not include `{build}`.
+    value: ${{ fromJson(steps.release.outputs.result || '{}').build }}
+  release-url:
+    description: The URL of the created release, or empty if the PR is not yet merged.
+    value: ${{ fromJson(steps.release.outputs.result || '{}').url }}
+
+runs:
+  using: composite
+  steps:
+    - name: Create the release
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      id: release
+      env:
+        STAGE: ${{ inputs.stage }}
+        PRODUCTION_STAGE: ${{ inputs.production-stage }}
+        VERSION: ${{ inputs.version }}
+        VERSION_FILE: ${{ inputs.version-file }}
+        TAG_FORMAT: ${{ inputs.tag-format }}
+        BUILD_NUMBER: ${{ inputs.build-number }}
+        SOURCE_BRANCHES: ${{ inputs.source-branches }}
+        TARGET_BRANCH: ${{ inputs.target-branch }}
+        RELEASE_NAME: ${{ inputs.release-name }}
+        DRAFT: ${{ inputs.draft }}
+      with:
+        github-token: ${{ inputs.token }}
+        script: |
+          const env = process.env;
+          const repo = context.repo;
+          const pr = context.payload.pull_request;
+          if (!pr) {
+            throw new Error("must be run from a pull_request event");
+          }
+          // While the PR is open, only check it; release once it is merged
+          if (pr.state === "closed" && !pr.merged) {
+            core.notice(`PR #${pr.number} was closed without being merged; nothing to do`);
+            return {tag: "", version: "", build: "", url: ""};
+          }
+          const checkOnly = !pr.merged;
+          if (pr.base.ref !== env.TARGET_BRANCH) {
+            throw new Error(`PR #${pr.number} targets ${pr.base.ref}, not ${env.TARGET_BRANCH}`);
+          }
+          const sources = env.SOURCE_BRANCHES.split(/\s+/).filter(b => b);
+          const globToRE = glob => new RegExp("^" + glob.split("*").map(
+            part => part.replace(/[.+?^${}()|[\]\\]/g, "\\$&")).join(".*") + "$");
+          if (sources.length && !sources.some(glob => globToRE(glob).test(pr.head.ref))) {
+            throw new Error(`PR #${pr.number} is from ${pr.head.ref}, which is not one of: ${sources.join(", ")}`);
+          }
+
+          // Releases must be represented by a real merge commit; this can only be checked after merging
+          const sha = pr.merge_commit_sha;
+          if (!checkOnly) {
+            const commit = (await github.rest.git.getCommit({...repo, commit_sha: sha})).data;
+            if (commit.parents.length < 2) {
+              throw new Error(`PR #${pr.number} was squashed or rebased (${sha} is not a merge commit); releases must use a merge commit`);
+            }
+          }
+
+          // Everything already used as a tag, including the tags of draft releases
+          const names = new Set([
+            ...(await github.paginate(github.rest.repos.listTags, {...repo, per_page: 100})).map(t => t.name),
+            ...(await github.paginate(github.rest.repos.listReleases, {...repo, per_page: 100})).map(r => r.tag_name),
+          ]);
+
+          // Recognise earlier releases by matching their tags against the tag format
+          if (!env.TAG_FORMAT.includes("{version}")) {
+            throw new Error(`tag format "${env.TAG_FORMAT}" must include {version}`);
+          }
+          const usesBuild = env.TAG_FORMAT.includes("{build}");
+          const placeholderRE = {
+            "{stage}": "(?<stage>.+?)",
+            "{version}": "(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)(?<suffix>-[0-9A-Za-z.-]+)?",
+            "{build}": "(?<build>\\d+)",
+          };
+          const tagRE = new RegExp("^" + env.TAG_FORMAT.split(/(\{\w+\})/).map(
+            part => placeholderRE[part] ?? part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("") + "$");
+          const known = [...names].map(n => n.match(tagRE)?.groups).filter(g => g).map(g => ({
+            stage: g.stage ?? env.STAGE, major: +g.major, minor: +g.minor, patch: +g.patch,
+            suffix: g.suffix ?? "", build: +(g.build ?? 0),
+          }));
+          const maxBuild = Math.max(0, ...known.map(k => k.build));
+
+          let build = "";
+          if (!usesBuild) {
+            if (env.BUILD_NUMBER) {
+              throw new Error(`a build number was given, but tag format "${env.TAG_FORMAT}" does not include {build}`);
+            }
+          } else if (env.BUILD_NUMBER) {
+            if (!/^\d+$/.test(env.BUILD_NUMBER)) {
+              throw new Error(`build number "${env.BUILD_NUMBER}" is not an integer`);
+            }
+            build = +env.BUILD_NUMBER;
+            if (build <= maxBuild) {
+              throw new Error(`build number ${build} must be greater than the previous build number ${maxBuild}`);
+            }
+          } else {
+            build = maxBuild + 1;
+          }
+
+          const isProduction = env.STAGE === env.PRODUCTION_STAGE;
+          const earlierProduction = known.filter(k => k.stage === env.PRODUCTION_STAGE);
+          const versionRE = /^(\d+)\.(\d+)\.(\d+)(-[0-9A-Za-z.-]+)?$/;
+          const parse = v => {
+            const m = v.match(versionRE);
+            return m && {major: +m[1], minor: +m[2], patch: +m[3], suffix: m[4] ?? ""};
+          };
+          const show = k => `${k.major}.${k.minor}.${k.patch}${k.suffix}`;
+          // As in semantic versioning, X.Y.Z-rc comes before X.Y.Z
+          const cmp = (a, b) => a.major - b.major || a.minor - b.minor || a.patch - b.patch
+            || (!a.suffix - !b.suffix) || a.suffix.localeCompare(b.suffix);
+          const previous = known.filter(k => k.stage === env.STAGE).sort(cmp).pop();
+
+          // The version that the PR has been titled with, if any
+          const titleVersion = pr.title.match(/(?:^|\s)v(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)(?=\s|$)/)?.[1];
+          const titleAttempt = pr.title.match(/(?:^|\s)(v\d\S*)/)?.[1];
+          if (titleAttempt && !titleVersion) {
+            throw new Error(`the PR title has "${titleAttempt}", which is not of the form vX.Y.Z or vX.Y.Z-suffix`);
+          }
+
+          let version, source;
+          if (env.VERSION) {
+            version = env.VERSION.replace(/^v/, "");
+            source = "the version input";
+          } else if (env.VERSION_FILE) {
+            const ref = checkOnly ? pr.head.sha : sha;
+            let content;
+            try {
+              const file = (await github.rest.repos.getContent({...repo, path: env.VERSION_FILE, ref})).data;
+              content = Buffer.from(file.content, "base64").toString("utf8");
+            } catch (e) {
+              throw new Error(`cannot read version file ${env.VERSION_FILE}: ${e.message}`);
+            }
+            const name = env.VERSION_FILE.split("/").pop();
+            if (name === "package.json") {
+              version = JSON.parse(content).version;
+            } else if (name === "pyproject.toml") {
+              let section = "";
+              for (const line of content.split(/\r?\n/)) {
+                const header = line.match(/^\s*\[([^\]]+)\]/);
+                if (header) {
+                  section = header[1].trim();
+                  continue;
+                }
+                const m = line.match(/^\s*version\s*=\s*["']([^"']+)["']/);
+                if (m && (section === "project" || section === "tool.poetry")) {
+                  version = m[1];
+                  break;
+                }
+              }
+            } else if (/\.(cs|vb|fs)proj$|\.props$|\.targets$/.test(name)) {
+              version = content.match(/<Version>\s*([^<\s]+)\s*<\/Version>/)?.[1];
+            } else {
+              version = content.trim();
+            }
+            if (!version) {
+              throw new Error(`no version found in ${env.VERSION_FILE}`);
+            }
+            version = version.replace(/^v/, "");
+            source = env.VERSION_FILE;
+          } else if (titleVersion) {
+            version = titleVersion;
+            source = "the PR title";
+          } else {
+            const labels = pr.labels.map(l => l.name);
+            if (!previous) {
+              version = isProduction ? "1.0.0" : "0.1.0";
+            } else if (labels.includes("release:major")) {
+              version = `${previous.major + 1}.0.0`;
+            } else if (labels.includes("release:minor")) {
+              version = `${previous.major}.${previous.minor + 1}.0`;
+            } else if (previous.suffix) {
+              // After a release candidate, the next release is the real thing
+              version = `${previous.major}.${previous.minor}.${previous.patch}`;
+            } else {
+              version = `${previous.major}.${previous.minor}.${previous.patch + 1}`;
+            }
+            source = "the PR labels";
+          }
+          const parsed = parse(version);
+          if (!parsed) {
+            throw new Error(`version "${version}" from ${source} is not of the form X.Y.Z or X.Y.Z-suffix`);
+          }
+          if (titleVersion && titleVersion !== version) {
+            throw new Error(`the PR title says v${titleVersion} but ${source} says ${version}`);
+          }
+          if (previous && cmp(parsed, previous) <= 0) {
+            throw new Error(`version ${version} from ${source} must be later than the previous ${env.STAGE} release, ${show(previous)}`);
+          }
+          const vm = version.match(versionRE);
+          if (isProduction && +vm[1] === 0) {
+            throw new Error(`production release has version ${version}; major version 0 is for pre-production releases`);
+          }
+          if (isProduction && !earlierProduction.length && version !== "1.0.0") {
+            throw new Error(`first production release has version ${version}; it should be 1.0.0`);
+          }
+
+          const fill = (template, fields) => template.replace(/\{(\w+)\}/g, (all, key) => fields[key] ?? all);
+          const tag = fill(env.TAG_FORMAT, {stage: env.STAGE, version, build: `${build}`});
+          if (/[\s~^:?*[\\]|\.\.|@\{|^[.\/-]|[.\/]$|\.lock$/.test(tag)) {
+            throw new Error(`"${tag}" is not a valid tag name; check the tag format and stage`);
+          }
+          if (names.has(tag)) {
+            throw new Error(`tag ${tag} already exists`);
+          }
+          if (checkOnly) {
+            await core.summary
+              .addHeading(`Release check passed for PR #${pr.number}`)
+              .addRaw(`When merged with a merge commit, this will be released as <code>${tag}</code>.`)
+              .write();
+            core.notice(`When merged, PR #${pr.number} will be released as ${tag}`);
+            return {tag, version, build: `${build}`, url: ""};
+          }
+          const name = fill(env.RELEASE_NAME || `{stage} v{version}${usesBuild ? " (build {build})" : ""}`,
+            {stage: env.STAGE, version, build: `${build}`, tag, pr: `${pr.number}`, title: pr.title});
+          const release = (await github.rest.repos.createRelease({
+            ...repo,
+            tag_name: tag,
+            target_commitish: sha,
+            name,
+            draft: env.DRAFT === "true",
+            prerelease: !isProduction || +vm[1] === 0 || !!vm[4],
+            generate_release_notes: true,
+          })).data;
+          core.notice(`Created ${release.draft ? "draft " : ""}release "${name}" (tag ${tag}) for ${sha}: ${release.html_url}`);
+          return {tag, version, build: `${build}`, url: release.html_url};
