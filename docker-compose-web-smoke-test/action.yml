@@ -1,0 +1,357 @@
+# Copyright (c) 2026 The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Docker Compose Web Smoke Test
+author: Josh Woodcock
+description: >
+  Builds and starts a web app's Docker Compose stack, runs any setup commands
+  (such as database migrations), waits until it answers over HTTP, then runs
+  either a bundled check (chosen with app-kind) or your own check script.
+  Logs from every service are always printed at the end, and the stack and
+  its volumes are removed.
+
+  Assumes the repository has already been checked out.
+branding:
+  color: blue
+  icon: layers
+
+inputs:
+  base-url:
+    description: >
+      Where the stack is reached from the runner, through a port it
+      publishes, e.g. http://localhost:8000 or https://localhost.
+    required: false
+    default: http://localhost
+  app-kind:
+    description: >
+      Run the bundled check for this kind of app: django, wagtail, fastapi,
+      flask, shiny, static or streamlit. Also passed to check-script as
+      APP_KIND if both are given.
+    required: false
+    default: ""
+  app-service:
+    description: >
+      The Compose service running the app, e.g. django. Its container is
+      passed to the check as CONTAINER_NAME, so that its logs can be checked
+      for errors.
+    required: false
+    default: ""
+  check-script:
+    description: >
+      Your own check script (relative to the repository root) to run once the
+      stack is up. Takes precedence over the bundled check.
+    required: false
+    default: ""
+  check-env:
+    description: >
+      Extra environment variables for the check, one KEY=value per line.
+      Values may contain spaces.
+    required: false
+    default: ""
+  env-template:
+    description: >
+      A file to copy to .env before starting, e.g. .env.dist.template.
+      Overwrites any existing .env.
+    required: false
+    default: ""
+  env-values:
+    description: >
+      Values to set in .env, one KEY=value per line. A key already in the file
+      is replaced where it is, so later lines that use it as ${KEY} pick up the
+      new value; other keys are added at the end. ${RUNNER_UID} and
+      ${RUNNER_GID} in a value are replaced with the user and group IDs
+      running the job.
+    required: false
+    default: ""
+  generate-secrets:
+    description: >
+      Create any file-based Compose secrets that do not exist yet, filled with
+      random values.
+    required: false
+    default: "true"
+  setup-commands:
+    description: >
+      Commands to run once the stack has started, one per line as
+      "service: command", e.g. "django: python manage.py migrate --no-input".
+      Each runs with docker compose exec in that service's running container,
+      before waiting for ready-path. A failing command is retried every 5
+      seconds until setup-timeout, as services such as a database may still
+      be starting, so commands should be safe to repeat (migrate and
+      collectstatic are). Afterwards each service that ran a command is
+      restarted, so that it picks up the changes (e.g. Django reads the
+      collectstatic manifest only at startup).
+    required: false
+    default: ""
+  setup-timeout:
+    description: Seconds to keep retrying each setup command while it fails.
+    required: false
+    default: "90"
+  insecure-tls:
+    description: >
+      Accept a self-signed HTTPS certificate when waiting for and checking the
+      stack. Passed to the check as INSECURE_TLS.
+    required: false
+    default: "false"
+  compose-files:
+    description: >
+      Compose files to use, one per line. Defaults to Compose's own choice:
+      compose.yaml plus compose.override.yaml if present.
+    required: false
+    default: ""
+  working-directory:
+    description: Directory containing the Compose files, relative to the repository root.
+    required: false
+    default: .
+  ready-path:
+    description: Path that must respond without an error (status below 400; redirects count) once the stack is up.
+    required: false
+    default: /
+  ready-timeout:
+    description: Seconds to wait for ready-path to respond after the stack starts.
+    required: false
+    default: "120"
+  reclaim-disk:
+    description: >
+      Free disk space first by removing all unused Docker images, volumes and
+      build cache on the machine running the job. Only turn this on for
+      GitHub-hosted runners, which are thrown away after each job; on a
+      self-hosted runner or a local run (e.g. with act) it deletes that
+      machine's own Docker data.
+    required: false
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - name: Reclaim runner disk space
+      if: inputs.reclaim-disk == 'true'
+      shell: bash
+      run: |
+        df -h
+        docker system prune -af --volumes || true
+        docker buildx prune -af || true
+        df -h
+
+    - name: Prepare .env
+      if: inputs.env-template != '' || inputs.env-values != ''
+      shell: python
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        ENV_TEMPLATE: ${{ inputs.env-template }}
+        ENV_VALUES: ${{ inputs.env-values }}
+      run: |
+        import os, re, shutil, sys
+
+        template = os.environ["ENV_TEMPLATE"]
+        if template:
+            shutil.copyfile(template, ".env")
+            print(f"Copied {template} to .env")
+
+        lines = []
+        if os.path.exists(".env"):
+            with open(".env", encoding="utf-8") as f:
+                lines = f.read().splitlines()
+
+        for item in os.environ["ENV_VALUES"].splitlines():
+            if not item.strip():
+                continue
+            key, sep, value = item.partition("=")
+            key = key.strip()
+            if not sep or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", key):
+                sys.exit(f"env-values line is not KEY=value: {item}")
+            # Only these two are replaced; anything else such as ${KEY} is
+            # left for Compose to interpolate.
+            value = value.replace("${RUNNER_UID}", str(os.getuid()))
+            value = value.replace("${RUNNER_GID}", str(os.getgid()))
+            # Replace the key where it is defined, so that later lines using
+            # it as ${KEY} see the new value. Only keys are printed, as values
+            # may be secret.
+            pattern = re.compile(rf"\s*(export\s+)?{key}\s*=")
+            found = False
+            for i, line in enumerate(lines):
+                if pattern.match(line):
+                    lines[i] = f"{key}={value}"
+                    found = True
+            if not found:
+                lines.append(f"{key}={value}")
+            print(f"Set {key}")
+
+        with open(".env", "w", encoding="utf-8") as f:
+            f.write("\n".join(lines) + "\n")
+
+    - name: Create missing secret files
+      if: inputs.generate-secrets == 'true'
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        COMPOSE_FILES: ${{ inputs.compose-files }}
+      run: |
+        set -euo pipefail
+        # Read the config first, so that a Compose error (e.g. an unset
+        # variable) fails here with Compose's own message.
+        config="$("$GITHUB_ACTION_PATH/compose.sh" config --format json)"
+        python3 -c '
+        import json, os, secrets, sys
+        for name, secret in json.load(sys.stdin).get("secrets", {}).items():
+            path = secret.get("file")
+            if path and not os.path.exists(path):
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                with open(path, "w", encoding="utf-8") as f:
+                    f.write(secrets.token_hex(32))
+                print(f"Created {name} with a random value")
+        ' <<< "$config"
+
+    - name: Build images
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        COMPOSE_FILES: ${{ inputs.compose-files }}
+      run: '"$GITHUB_ACTION_PATH/compose.sh" build'
+
+    - name: Start stack
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        COMPOSE_FILES: ${{ inputs.compose-files }}
+      run: '"$GITHUB_ACTION_PATH/compose.sh" up -d'
+
+    - name: Run setup commands
+      if: inputs.setup-commands != ''
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        COMPOSE_FILES: ${{ inputs.compose-files }}
+        SETUP_COMMANDS: ${{ inputs.setup-commands }}
+        SETUP_TIMEOUT: ${{ inputs.setup-timeout }}
+      run: |
+        set -euo pipefail
+        # Space-separated, as service names cannot contain spaces.
+        services=""
+        while IFS= read -r line; do
+          [ -z "${line//[[:space:]]/}" ] && continue
+          case "$line" in
+            *:*) ;;
+            *) echo "setup-commands line is not \"service: command\": $line" >&2; exit 1 ;;
+          esac
+          service="$(sed 's/^[[:space:]]*//;s/[[:space:]]*$//' <<< "${line%%:*}")"
+          command="${line#*:}"
+          echo "::group::$service:$command"
+          deadline=$((SECONDS + SETUP_TIMEOUT))
+          # stdin is closed so the command cannot read the remaining lines.
+          until "$GITHUB_ACTION_PATH/compose.sh" exec -T "$service" sh -c "$command" < /dev/null; do
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              echo "::endgroup::"
+              echo "Setup command still failing after ${SETUP_TIMEOUT}s: $service:$command" >&2
+              exit 1
+            fi
+            echo "Failed; retrying in 5s"
+            sleep 5
+          done
+          echo "::endgroup::"
+          case " $services " in
+            *" $service "*) ;;
+            *) services="$services $service" ;;
+          esac
+        done <<< "$SETUP_COMMANDS"
+        if [ -n "$services" ]; then
+          echo "Restarting$services"
+          # shellcheck disable=SC2086
+          "$GITHUB_ACTION_PATH/compose.sh" restart $services
+        fi
+
+    - name: Wait for the stack to respond
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        COMPOSE_FILES: ${{ inputs.compose-files }}
+        BASE_URL: ${{ inputs.base-url }}
+        READY_PATH: ${{ inputs.ready-path }}
+        READY_TIMEOUT: ${{ inputs.ready-timeout }}
+        INSECURE_TLS: ${{ inputs.insecure-tls }}
+      run: |
+        set -euo pipefail
+        curl_args=(--fail --silent --output /dev/null)
+        if [ "$INSECURE_TLS" = true ]; then
+          curl_args+=(--insecure)
+        fi
+        deadline=$((SECONDS + READY_TIMEOUT))
+        until curl "${curl_args[@]}" "$BASE_URL$READY_PATH"; do
+          # A container that is restarting or has exited with an error has
+          # crashed; one-off containers that exited cleanly are fine.
+          crashed="$("$GITHUB_ACTION_PATH/compose.sh" ps -a --format '{{.Service}} {{.State}} {{.ExitCode}}' \
+            | awk '$2 == "restarting" || ($2 == "exited" && $3 != 0)')"
+          if [ -n "$crashed" ]; then
+            echo "Services crashed before the stack became ready (service, state, exit code):" >&2
+            echo "$crashed" >&2
+            exit 1
+          fi
+          if [ "$SECONDS" -ge "$deadline" ]; then
+            echo "Timed out after ${READY_TIMEOUT}s waiting for $BASE_URL$READY_PATH" >&2
+            exit 1
+          fi
+          sleep 2
+        done
+        echo "Stack is responding at $BASE_URL$READY_PATH"
+
+    - name: Run check
+      if: inputs.check-script != '' || inputs.app-kind != ''
+      shell: bash
+      env:
+        COMPOSE_FILES: ${{ inputs.compose-files }}
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+        BASE_URL: ${{ inputs.base-url }}
+        APP_KIND: ${{ inputs.app-kind }}
+        APP_SERVICE: ${{ inputs.app-service }}
+        INSECURE_TLS: ${{ inputs.insecure-tls }}
+        CHECK_SCRIPT: ${{ inputs.check-script }}
+        CHECK_ENV: ${{ inputs.check-env }}
+      run: |
+        set -euo pipefail
+        if [ -n "$APP_SERVICE" ]; then
+          CONTAINER_NAME="$(cd "$WORKING_DIRECTORY" && "$GITHUB_ACTION_PATH/compose.sh" ps -q "$APP_SERVICE")"
+          [ -n "$CONTAINER_NAME" ] || { echo "No running container for app-service $APP_SERVICE" >&2; exit 1; }
+          export CONTAINER_NAME
+        fi
+        while IFS= read -r line; do
+          [ -z "$line" ] && continue
+          case "$line" in
+            # ${line?} exports the KEY=value pair itself (quiets SC2163).
+            *=*) export "${line?}" ;;
+            *) echo "check-env line is not KEY=value: $line" >&2; exit 1 ;;
+          esac
+        done <<< "$CHECK_ENV"
+        if [ -n "$CHECK_SCRIPT" ]; then
+          echo "Running $CHECK_SCRIPT"
+          bash "$CHECK_SCRIPT"
+        else
+          # The bundled check is shared with the docker-web-smoke-test action.
+          echo "Running bundled $APP_KIND check"
+          bash "$GITHUB_ACTION_PATH/../docker-web-smoke-test/docker_smoke_check.sh"
+        fi
+
+    - name: Show logs
+      if: always()
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        COMPOSE_FILES: ${{ inputs.compose-files }}
+      run: '"$GITHUB_ACTION_PATH/compose.sh" logs --no-color || true'
+
+    - name: Remove stack and volumes
+      if: always()
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        COMPOSE_FILES: ${{ inputs.compose-files }}
+      run: '"$GITHUB_ACTION_PATH/compose.sh" down --volumes --remove-orphans || true'

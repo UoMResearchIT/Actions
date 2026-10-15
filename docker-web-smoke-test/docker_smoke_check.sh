@@ -13,15 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Bundled check for the docker-web-smoke-test action. The action runs it when
-# app-kind is set and no check-script is given, with these variables set:
+# Bundled check for the docker-web-smoke-test and docker-compose-web-smoke-test
+# actions. They run it when app-kind is set and no check-script is given, with
+# these variables set:
 #   BASE_URL        e.g. http://127.0.0.1:8000
-#   CONTAINER_NAME  name of the running container
+#   CONTAINER_NAME  name or ID of the app's container
 #   APP_KIND        the app-kind input
 # plus anything passed through the check-env input. Optional settings:
+#   INSECURE_TLS    true to accept self-signed HTTPS certificates (all)
 #   APP_PATH        where the app is served, default / (shiny, static)
 #   EXPECT_TEXT     text the home page must contain (flask)
-#   HEALTH_PATH     path that must return HTTP 200, e.g. /healthz (flask, fastapi)
+#   HEALTH_PATH     path that must return HTTP 200, e.g. /healthz (flask, fastapi,
+#                   django, wagtail)
+#   ADMIN_PATH      admin login page, default /admin/login/ (django, wagtail)
 #   STATIC_PATH     static file that must return HTTP 200 (flask)
 #   OPENAPI_PATH    OpenAPI schema, default /openapi.json; empty skips (fastapi)
 #   DOCS_PATH       API docs page, default /docs; empty skips (fastapi)
@@ -54,10 +58,15 @@ fail() {
   exit 1
 }
 
-# Every request below goes through this, so that none can hang the job; a
-# later --max-time in the arguments takes precedence.
+# Every request below goes through this, so that none can hang the job and
+# INSECURE_TLS applies to all. A later --max-time in the arguments takes
+# precedence.
 curl() {
-  command curl --max-time 30 "$@"
+  if [ "${INSECURE_TLS:-}" = true ]; then
+    command curl --max-time 30 --insecure "$@"
+  else
+    command curl --max-time 30 "$@"
+  fi
 }
 
 # Print the HTTP status code for a GET request.
@@ -73,8 +82,9 @@ expect_status() {
 }
 
 # Unknown routes return 404 rather than a 500 from a broken error handler.
+# Takes an optional path to try instead of the default.
 expect_unknown_404() {
-  expect_status /smoke-test/no-such-page 404
+  expect_status "${1:-/smoke-test/no-such-page}" 404
 }
 
 # Fail unless PATH accepts a websocket upgrade. A reverse proxy or wrong base
@@ -284,7 +294,63 @@ static_check() {
   expect_repeatable "$app_path"
 }
 
+# Fetch the Django admin login page into $page, failing with a hint if it
+# does not load. It needs the database, templates and static files manifest,
+# so it covers most of a Django stack.
+fetch_admin_page() {
+  admin="${ADMIN_PATH:-/admin/login/}"
+  local code
+  code="$(status_of "$base$admin")"
+  [ "$code" = 200 ] \
+    || fail "$admin returned HTTP $code; check the logs (a missing migrate or collectstatic is a common cause)"
+  page="$(curl --fail --silent "$base$admin")"
+}
+
+# Django, typically behind nginx with Postgres (see docker-compose-web-smoke-test).
+# Run migrate and collectstatic first, or the admin page and its static files
+# will fail.
+django_check() {
+  # The home page may legitimately be a 404 or a redirect on a fresh database,
+  # but not a server error. A 400 means Django rejected the Host header.
+  code="$(status_of "$base/")"
+  case "$code" in
+    2?? | 3?? | 401 | 403 | 404) ;;
+    400) fail "/ returned HTTP 400; check ALLOWED_HOSTS includes the host in $base" ;;
+    *) fail "/ returned HTTP $code; check the logs" ;;
+  esac
+
+  if [ -n "${HEALTH_PATH:-}" ]; then
+    expect_status "$HEALTH_PATH"
+  fi
+
+  # The admin page's stylesheets and scripts are served from STATIC_ROOT,
+  # usually by nginx, which catches static files not being served.
+  fetch_admin_page
+  grep -q csrfmiddlewaretoken <<< "$page" || fail "$admin has no login form"
+  expect_assets_load <<< "$page"
+
+  # APPEND_SLASH redirects paths without a trailing slash, so use one.
+  expect_unknown_404 /smoke-test/no-such-page/
+  expect_repeatable "$admin"
+  check_logs_clean
+}
+
+# Wagtail is Django, with its own admin at /admin/ by default.
+wagtail_check() {
+  fetch_admin_page
+  grep -qi wagtail <<< "$page" || fail "$admin is not the Wagtail admin login page"
+  django_check
+}
+
 # --- Run the check named by APP_KIND ----------------------------------------
+
+# Fail early with a hint if HTTPS uses a certificate curl does not trust
+# (curl exit code 60), rather than as a confusing failure inside a check.
+tls_rc=0
+curl --silent -o /dev/null "$base/" || tls_rc=$?
+if [ "$tls_rc" = 60 ]; then
+  fail "$base has an untrusted certificate; set INSECURE_TLS=true if it is self-signed"
+fi
 
 available="$(declare -F | awk '$3 ~ /_check$/ { sub(/_check$/, "", $3); print $3 }' | paste -sd ' ' -)"
 if [ -z "${APP_KIND:-}" ]; then

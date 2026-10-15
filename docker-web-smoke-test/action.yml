@@ -30,8 +30,8 @@ inputs:
     required: true
   app-kind:
     description: >
-      Run the bundled check for this kind of app: fastapi, flask, shiny,
-      static or streamlit.
+      Run the bundled check for this kind of app: django, fastapi, flask,
+      shiny, static, streamlit or wagtail.
       Also passed to check-script as APP_KIND if both are given.
     required: false
     default: ""
