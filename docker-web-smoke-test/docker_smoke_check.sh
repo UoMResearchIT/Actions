@@ -94,6 +94,10 @@ expect_repeatable() {
   done
 }
 
+# Pipes from curl use "grep >/dev/null" rather than "grep -q": grep -q stops
+# reading at the first match, and with pipefail curl's write error would then
+# fail the check.
+
 # Fail unless every local script and stylesheet linked from the HTML on stdin
 # loads. Links are resolved against app_path; external URLs are skipped.
 expect_assets_load() {
@@ -184,7 +188,7 @@ streamlit_check() {
 
   # The page shell is served. The app's own content is rendered in the browser
   # over a websocket, so it cannot be checked with curl.
-  curl --fail --silent "$base/" | grep -q 'You need to enable JavaScript' \
+  curl --fail --silent "$base/" | grep 'You need to enable JavaScript' >/dev/null \
     || fail "home page is not the Streamlit shell"
 
   expect_websocket /_stcore/stream
@@ -236,7 +240,7 @@ static_check() {
   # A single-page app must serve itself for its own routes (nginx try_files),
   # otherwise reloading a deep link gives a 404. Other sites should 404.
   if [ "${SPA_ROUTES:-}" = true ]; then
-    curl --fail --silent "$base${app_path}smoke-test/deep/link" | grep -qi '<html' \
+    curl --fail --silent "$base${app_path}smoke-test/deep/link" | grep -i '<html' >/dev/null \
       || fail "deep link did not serve the app; check the server falls back to index.html"
   else
     code="$(status_of "$base/smoke-test/no-such-page")"
