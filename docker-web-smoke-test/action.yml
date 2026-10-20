@@ -100,6 +100,11 @@ runs:
     - name: Build Docker image
       id: build
       uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+      env:
+        # Skip the build summary and its .dockerbuild artifact, which GitHub
+        # cannot preview and which add nothing to a smoke test.
+        DOCKER_BUILD_SUMMARY: "false"
+        DOCKER_BUILD_RECORD_UPLOAD: "false"
       with:
         context: ${{ inputs.context }}
         file: ${{ inputs.dockerfile }}
