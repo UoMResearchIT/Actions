@@ -83,15 +83,6 @@ inputs:
     description: Seconds to wait for ready-path to respond.
     required: false
     default: "60"
-  reclaim-disk:
-    description: >
-      Free disk space first by removing all unused Docker images, volumes and
-      build cache on the machine running the job. Only turn this on for
-      GitHub-hosted runners, which are thrown away after each job; on a
-      self-hosted runner or a local run (e.g. with act) it deletes that
-      machine's own Docker data.
-    required: false
-    default: "false"
 
 runs:
   using: composite
@@ -105,15 +96,6 @@ runs:
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
-
-    - name: Reclaim runner disk space
-      if: inputs.reclaim-disk == 'true'
-      shell: bash
-      run: |
-        df -h
-        docker system prune -af --volumes || true
-        docker buildx prune -af || true
-        df -h
 
     - name: Build Docker image
       id: build
@@ -153,6 +135,13 @@ runs:
         READY_TIMEOUT: ${{ inputs.ready-timeout }}
       run: |
         set -euo pipefail
+        # Report failures as an annotation and in the job summary, not only
+        # in this step's log.
+        fail() {
+          echo "::error title=Docker web smoke test::$1"
+          echo "### ❌ Docker web smoke test: $1" >> "$GITHUB_STEP_SUMMARY"
+          exit 1
+        }
         deadline=$((SECONDS + READY_TIMEOUT))
         while true; do
           # Each probe is limited to the time left (at most 10s), so an app
@@ -164,12 +153,10 @@ runs:
             break
           fi
           if [ "$(docker inspect -f '{{.State.Running}}' "$CONTAINER_NAME")" != true ]; then
-            echo "Container exited before it became ready" >&2
-            exit 1
+            fail "Container exited before $READY_PATH responded"
           fi
           if [ "$SECONDS" -ge "$deadline" ]; then
-            echo "Timed out after ${READY_TIMEOUT}s waiting for $BASE_URL$READY_PATH" >&2
-            exit 1
+            fail "Timed out after ${READY_TIMEOUT}s waiting for $READY_PATH to respond"
           fi
           sleep 2
         done
