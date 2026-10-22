@@ -123,15 +123,6 @@ inputs:
     description: Seconds to wait for ready-path to respond after the stack starts.
     required: false
     default: "120"
-  reclaim-disk:
-    description: >
-      Free disk space first by removing all unused Docker images, volumes and
-      build cache on the machine running the job. Only turn this on for
-      GitHub-hosted runners, which are thrown away after each job; on a
-      self-hosted runner or a local run (e.g. with act) it deletes that
-      machine's own Docker data.
-    required: false
-    default: "false"
 
 runs:
   using: composite
@@ -144,15 +135,6 @@ runs:
       # remove another's. Containers, networks and volumes with fixed names in
       # the Compose file are not covered by this.
       run: echo "project=smoke-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${RANDOM}${RANDOM}" >> "$GITHUB_OUTPUT"
-
-    - name: Reclaim runner disk space
-      if: inputs.reclaim-disk == 'true'
-      shell: bash
-      run: |
-        df -h
-        docker system prune -af --volumes || true
-        docker buildx prune -af || true
-        df -h
 
     - name: Prepare .env
       if: inputs.env-template != '' || inputs.env-values != ''
