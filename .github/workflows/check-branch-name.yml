@@ -19,8 +19,6 @@
 # limitations under the License.
 
 name: Enforce Handbook Naming Conventions for Branches
-description: >
-  Checks whether the branch name complies with the Handbook Naming Conventions.
 
 on:
   workflow_call:
