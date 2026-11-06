@@ -26,13 +26,17 @@ Every kind needs `port` and `app-kind`; the rest depends on the app.
 
 | `app-kind` | For | `port` (usual) | Recommended `ready-path` | `check-env` settings |
 | --- | --- | --- | --- | --- |
+| [`django`](../docker-compose-web-smoke-test#django) | Django apps | 8000 | `/` (the default) | `ADMIN_PATH`, `HEALTH_PATH` |
 | [`fastapi`](#fastapi) | FastAPI APIs | 8000 | `/openapi.json` | `OPENAPI_PATH`, `DOCS_PATH`, `HEALTH_PATH` |
 | [`flask`](#flask) | Flask apps, including behind Gunicorn | 5000 or 8000 | `/` (the default) | `EXPECT_TEXT`, `HEALTH_PATH`, `STATIC_PATH` |
 | [`shiny`](#shiny) | R Shiny apps: `shiny::runApp()`, Shiny Server or shinylive | 3838 | the app's path, e.g. `/myapp/` for Shiny Server | `APP_PATH` (needed for Shiny Server) |
 | [`static`](#static) | Static sites and single-page apps (React, Vite, etc.) served by nginx or similar | 80 | `/` (the default) | `APP_PATH`, `SPA_ROUTES` (needed for single-page apps) |
 | [`streamlit`](#streamlit) | Streamlit apps | 8501 | `/_stcore/health` | _(none)_ |
+| [`wagtail`](../docker-compose-web-smoke-test#wagtail) | Wagtail sites | 8000 | `/` (the default) | `ADMIN_PATH`, `HEALTH_PATH` |
 
 Each kind can be tuned with settings passed through `check-env`, one `KEY=value` per line.
+
+`django` and `wagtail` are documented with [`docker-compose-web-smoke-test`](../docker-compose-web-smoke-test#checks), as these apps usually need a database alongside them; they should also work here for a Django app in a single container, though they have only been tested with Compose.
 Every failure prints a `FAIL:` line saying what went wrong.
 
 The unknown-path checks below request `/smoke-test/no-such-page`, and the repeated-request checks make ten requests, each on a new connection, so that they are spread across server workers.
@@ -276,7 +280,7 @@ If `APP_KIND` is unset or has no matching function, it fails and lists the kinds
 
 * `app-kind`
 
-  Run the bundled check for this kind of app: `fastapi`, `flask`, `shiny`, `static` or `streamlit`. See [App kinds](#app-kinds). Also passed to `check-script` as `APP_KIND` if both are given. **Optional.**
+  Run the bundled check for this kind of app: `django`, `fastapi`, `flask`, `shiny`, `static`, `streamlit` or `wagtail`. See [App kinds](#app-kinds). Also passed to `check-script` as `APP_KIND` if both are given. **Optional.**
 
 * `check-script`
 
