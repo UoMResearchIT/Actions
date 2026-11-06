@@ -16,4 +16,11 @@
 
 set -e
 
+C='\033[0;33m'
+NC='\033[0m'
+
+echo -e "${C}====== DOWNLOADING PACKAGES ======${NC}"
+sudo apt-get -c "$CFGFILE" install --download-only $PACKAGES
+
+echo -e "${C}====== INSTALLING PACKAGES ======${NC}"
 sudo apt-get -c "$CFGFILE" install $PACKAGES
