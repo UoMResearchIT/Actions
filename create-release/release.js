@@ -16,8 +16,7 @@
 "use strict";
 
 // Types are checked by editors and tsc; there is no build step. For the
-// GitHub API types, run once:
-//   npm i -D @types/github-script@github:actions/github-script
+// GitHub API types, run `npm ci` in this directory (see README.md).
 /**
  * @typedef {import("github-script").AsyncFunctionArguments} AsyncFunctionArguments
  * @typedef {AsyncFunctionArguments["github"]} GitHub

@@ -289,3 +289,18 @@ A draft release (`draft: true`) only triggers this when it is published by hand.
 
 The notes are GitHub's generated release notes: a list of the pull requests merged since the previous release, with their authors, and a link to the full changelog.
 To group them by label or leave some out, add a [`.github/release.yml`](https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes#configuring-automatically-generated-release-notes) to your repository.
+
+## Development
+
+`release.js` is plain JavaScript with [JSDoc types](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html), checked by `// @ts-check`; there is no build step.
+The `package.json` here is only for development and is not needed to use the action.
+To get type checking in your editor, including the GitHub API calls, install the type definitions once:
+
+```sh
+cd create-release
+npm ci
+npm run typecheck
+```
+
+The [Check Types](../.github/workflows/check-types.yml) workflow runs the same check on pull requests that change this action.
+The github-script types are pinned to the same commit that `action.yml` uses, so update both together.
