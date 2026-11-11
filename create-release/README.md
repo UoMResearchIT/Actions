@@ -200,9 +200,90 @@ For `check` mode: `contents: read`, and `issues: read` if `milestone` is given.
 
 > [!NOTE]
 > Tags and releases created with the workflow's `GITHUB_TOKEN` do not trigger other workflows, e.g. ones that run `on: release`.
-> If you need them to, pass a GitHub App token as `token`.
+> See [Deploying the release](#deploying-the-release) for what to do instead.
 >
 > If a ruleset restricts creating tags, the token's identity must be allowed to bypass it.
+
+## Deploying the release
+
+To deploy each release, run the deployment once the release has been created.
+
+A release made by a workflow does not start other workflows, so a deployment workflow that runs `on: release` will not start when `create-release` makes a release.
+(GitHub does this on purpose, so that workflows cannot set each other off in a loop.)
+There are two ways around this.
+
+### A deployment job in the same workflow
+
+Add a job that runs after the release, only if one was created.
+This needs no extra token.
+
+```yml
+name: Release
+on:
+  push:
+    branches: [main]
+permissions: {}
+concurrency:
+  group: release
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      created: ${{ steps.release.outputs.created }}
+      tag: ${{ steps.release.outputs.tag }}
+    steps:
+      - uses: UoMResearchIT/actions/create-release@main
+        id: release
+        with:
+          version-file: VERSION
+
+  deploy:
+    needs: release
+    if: needs.release.outputs.created == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release.outputs.tag }}
+          persist-credentials: false
+      - run: ./deploy.sh
+```
+
+Checking out the tag deploys exactly the released commit, even if more has been pushed since.
+To share one deployment between several workflows, put it in a [reusable workflow](https://docs.github.com/en/actions/sharing-automations/reusing-workflows) and call that from the `deploy` job, passing the tag as an input.
+
+### A separate workflow that runs `on: release`
+
+If you already have a deployment workflow that runs when a release is published, pass `create-release` a token that does trigger workflows, such as one from a GitHub App:
+
+```yml
+    steps:
+      - uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          client-id: ${{ vars.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+      - uses: UoMResearchIT/actions/create-release@main
+        with:
+          version-file: VERSION
+          token: ${{ steps.app-token.outputs.token }}
+```
+
+```yml
+# The deployment workflow
+on:
+  release:
+    types: [published]
+```
+
+The app needs write access to the repository's contents, and to issues if `milestone` is given.
+A draft release (`draft: true`) only triggers this when it is published by hand.
 
 ## Release notes
 
