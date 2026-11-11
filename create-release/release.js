@@ -12,14 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// @ts-check
 "use strict";
+
+// Types are checked by editors and tsc; there is no build step. For the
+// GitHub API types, run once:
+//   npm i -D @types/github-script@github:actions/github-script
+/**
+ * @typedef {import("github-script").AsyncFunctionArguments} AsyncFunctionArguments
+ * @typedef {AsyncFunctionArguments["github"]} GitHub
+ * @typedef {{parts: number[], pre: string}} Version
+ * @typedef {{name: string, version: Version}} VersionTag
+ */
 
 const PLACEHOLDER = "{version}";
 
 /**
  * Parse a version such as 1.2.3, 1.13.6.1 or 2.0.0-rc.1.
  * @param {string} text The version, without any tag prefix.
- * @returns {{parts: number[], pre: string} | null} null if not a version.
+ * @returns {Version | null} null if not a version.
  */
 function parseVersion(text) {
     const m = /^(\d+(?:\.\d+)*)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$/.exec(text);
@@ -33,6 +44,8 @@ function parseVersion(text) {
  * Compare two parsed versions. Missing numeric parts count as 0, so 1.2 equals
  * 1.2.0. A pre-release sorts before the same version without one; two
  * pre-release labels are compared as text.
+ * @param {Version} a
+ * @param {Version} b
  * @returns {number} negative, zero or positive, as for Array.prototype.sort.
  */
 function compareVersions(a, b) {
@@ -58,8 +71,10 @@ function compareVersions(a, b) {
 /**
  * Get the version from a file's contents.
  * @param {string} content The file's contents.
- * @param {string} pattern A regular expression; its first group (or the whole
- *     match if it has none) is the version. If empty, the whole file is used.
+ * @param {string | undefined} pattern A regular expression; its first group
+ *     (or the whole match if it has none) is the version. If empty, the whole
+ *     file is used.
+ * @returns {string}
  */
 function extractVersion(content, pattern) {
     if (!pattern) {
@@ -74,6 +89,8 @@ function extractVersion(content, pattern) {
 
 /**
  * Split a template such as Release_v{version} around its placeholder.
+ * @param {string} name The input's name, for the error message.
+ * @param {string} template
  * @returns {{prefix: string, suffix: string}}
  */
 function splitTemplate(name, template) {
@@ -84,6 +101,11 @@ function splitTemplate(name, template) {
     return { prefix: template.slice(0, at), suffix: template.slice(at + PLACEHOLDER.length) };
 }
 
+/**
+ * @param {string} template
+ * @param {string} version
+ * @returns {string}
+ */
 function fill(template, version) {
     return template.replaceAll(PLACEHOLDER, version);
 }
@@ -91,6 +113,11 @@ function fill(template, version) {
 /**
  * Find the existing tags that follow the tag template, with their versions.
  * Tags that follow the template but do not hold a version are ignored.
+ * @param {GitHub} github
+ * @param {string} owner
+ * @param {string} repo
+ * @param {string} tagTemplate
+ * @returns {Promise<VersionTag[]>}
  */
 async function listVersionTags(github, owner, repo, tagTemplate) {
     const { prefix, suffix } = splitTemplate("tag", tagTemplate);
@@ -100,6 +127,7 @@ async function listVersionTags(github, owner, repo, tagTemplate) {
         ref: `tags/${prefix}`,
         per_page: 100,
     });
+    /** @type {VersionTag[]} */
     const tags = [];
     for (const { ref } of refs) {
         const name = ref.slice("refs/tags/".length);
@@ -114,6 +142,16 @@ async function listVersionTags(github, owner, repo, tagTemplate) {
     return tags;
 }
 
+/**
+ * Read the version from a file in the repository at the given commit.
+ * @param {GitHub} github
+ * @param {string} owner
+ * @param {string} repo
+ * @param {string} ref
+ * @param {string} file
+ * @param {string | undefined} pattern See extractVersion.
+ * @returns {Promise<string>}
+ */
 async function readVersion(github, owner, repo, ref, file, pattern) {
     let data;
     try {
@@ -125,7 +163,7 @@ async function readVersion(github, owner, repo, ref, file, pattern) {
             mediaType: { format: "raw" },
         }));
     } catch (e) {
-        throw new Error(`Cannot read version-file ${file} at ${ref}: ${e.message}`);
+        throw new Error(`Cannot read version-file ${file} at ${ref}: ${e instanceof Error ? e.message : e}`);
     }
     if (typeof data !== "string") {
         throw new Error(`version-file ${file} is not a file`);
@@ -133,6 +171,13 @@ async function readVersion(github, owner, repo, ref, file, pattern) {
     return extractVersion(data, pattern);
 }
 
+/**
+ * Find an open milestone by its title.
+ * @param {GitHub} github
+ * @param {string} owner
+ * @param {string} repo
+ * @param {string} title
+ */
 async function findMilestone(github, owner, repo, title) {
     const milestones = await github.paginate(github.rest.issues.listMilestones, {
         owner,
@@ -146,10 +191,12 @@ async function findMilestone(github, owner, repo, title) {
 /**
  * Entry point, called from actions/github-script. Inputs come from RELEASE_*
  * environment variables set by action.yml.
+ * @param {Pick<AsyncFunctionArguments, "github" | "context" | "core">} args
+ * @returns {Promise<void>}
  */
 async function main({ github, context, core }) {
     const env = process.env;
-    const flag = (name) => env[name] === "true";
+    const flag = (/** @type {string} */ name) => env[name] === "true";
     const mode = env.RELEASE_MODE || "release";
     const ifExists = env.RELEASE_IF_EXISTS || "skip";
     if (!["release", "check"].includes(mode)) {
@@ -158,6 +205,11 @@ async function main({ github, context, core }) {
     if (!["skip", "fail"].includes(ifExists)) {
         throw new Error(`if-exists must be skip or fail, not ${ifExists}`);
     }
+    const latestInput = env.RELEASE_LATEST || "true";
+    if (!["true", "false", "legacy"].includes(latestInput)) {
+        throw new Error(`latest must be true, false or legacy, not ${latestInput}`);
+    }
+    const makeLatest = /** @type {"true" | "false" | "legacy"} */ (latestInput);
     const { owner, repo } = context.repo;
     const target = env.RELEASE_TARGET || context.sha;
     const tagTemplate = env.RELEASE_TAG || `v${PLACEHOLDER}`;
@@ -258,7 +310,7 @@ async function main({ github, context, core }) {
         body: notes.body,
         draft: flag("RELEASE_DRAFT"),
         prerelease,
-        make_latest: prerelease ? "false" : (env.RELEASE_LATEST || "true"),
+        make_latest: prerelease ? "false" : makeLatest,
     });
     core.setOutput("created", "true");
     core.setOutput("release-url", release.html_url);
@@ -277,8 +329,9 @@ async function main({ github, context, core }) {
     }
 }
 
-module.exports = main;
-module.exports.parseVersion = parseVersion;
-module.exports.compareVersions = compareVersions;
-module.exports.extractVersion = extractVersion;
-module.exports.splitTemplate = splitTemplate;
+module.exports = Object.assign(main, {
+    parseVersion,
+    compareVersions,
+    extractVersion,
+    splitTemplate,
+});
