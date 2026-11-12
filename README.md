@@ -46,7 +46,7 @@ These are intended for use in many types of project, wherever relevant.
 
 * [`check-branch-name` (reusable workflow)](.github/workflows/check-branch-name.yml) is a reusable workflow that checks the standard branch name rules.
 
-* [`check-ruleset` (reusable workflow)](.github/workflows/check-ruleset.yml) is a reusable workflow that encodes how to check your repository for compliance with the standard rules for branch access control.
+* [`check-ruleset` (reusable workflow)](.github/workflows/check-ruleset.yaml) is a reusable workflow that encodes how to check your repository for compliance with the standard rules for branch access control. The standard rules are a public copy of the RSE-Repository-Template's rules, kept in [`.github/standard-ruleset`](.github/standard-ruleset), so the check needs no extra secrets and works in any organisation. See that folder's README for how the copy is kept up to date.
 
 * [`scan-for-secrets` (reusable workflow)](.github/workflows/scan-for-secrets.yml) is a reusable workflow that you can use in your repository to scan for API keys (e.g., for AWS) that your code accidentally exposes.
 
