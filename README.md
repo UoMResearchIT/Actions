@@ -11,6 +11,8 @@ These are intended for use in many types of project, wherever relevant.
 
 * [`compare-output`](compare-output) compares the output of a program to a string. Great for testing!
 
+* [`create-release`](create-release) tags a commit and creates a GitHub release for it, with generated release notes, using the version in a file in your repository; it can also check a release pull request for a forgotten version bump.
+
 * [`download`](download) does cached downloads of files from the web.
 
 * [`get-pr-id`](get-pr-id) determines the PR for the current commit.
