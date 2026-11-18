@@ -1,14 +1,16 @@
 # GitHub Actions Workflow: Check Repository Ruleset
 #
 # This workflow ensures that the repository's branch protection rules
-# match the expected ruleset defined in the template repository.
-#
-# It runs on pushes to the main branch and pull requests.
+# contain the standard ruleset published in this repository at
+# .github/standard-ruleset/ruleset.json (a public copy of the rules defined
+# by the RSE-Repository-Template repository).
 #
 # Steps:
-# 1. Fetch the expected Branch Protection Rulesets from the template repository.
+# 1. Fetch the standard ruleset from the same commit as this workflow.
 # 2. Fetch the current repository's Branch Protection Rulesets.
 # 3. Compare the expected and actual rulesets.
+#
+# No extra credentials are needed, so this works in any organisation.
 
 # Copyright (c) 2025-2026 The University of Manchester
 #
@@ -30,16 +32,23 @@ on:
   workflow_call:
     inputs:
       bot-id:
-        description: The ORG_ACTIONS_BOT_APP_ID from the organisation variables.
+        description: >
+          Deprecated and ignored; the standard ruleset no longer needs a token
+          to read it. Accepted so that existing callers keep working.
         type: string
-        required: true
+        required: false
+        default: ''
       standard-owner:
-        description: The owner of the standard repository.
+        description: >
+          Deprecated. Only the default (UoMResearchIT) is supported; the
+          standard ruleset is now read from this repository.
         type: string
         default: UoMResearchIT
         required: false
       standard-repo:
-        description: The name of the standard repository.
+        description: >
+          Deprecated. Only the default (RSE-Repository-Template) is supported;
+          the standard ruleset is now read from this repository.
         type: string
         default: RSE-Repository-Template
         required: false
@@ -50,8 +59,10 @@ on:
         default: '[]'
     secrets:
       bot-key:
-        description: The ORG_ACTIONS_BOT_PRIVATE_KEY from the organisation secrets.
-        required: true
+        description: >
+          Deprecated and ignored; the standard ruleset no longer needs a token
+          to read it. Accepted so that existing callers keep working.
+        required: false
 
 jobs:
   check-ruleset:
@@ -62,12 +73,20 @@ jobs:
       contents: read
 
     steps:
-      - name: Fail if no credentials
-        if: inputs.bot-id == ''
+      - name: Reject unsupported standard repository
+        if: inputs.standard-owner != 'UoMResearchIT' || inputs.standard-repo != 'RSE-Repository-Template'
         shell: bash
         run: |
-          echo "No required valid ORG_ACTIONS_BOT_APP_ID supplied; aborting..."
+          echo "::error title=Unsupported Standard::Checking against $STANDARD is no longer supported. The standard ruleset is now read from .github/standard-ruleset/ruleset.json in UoMResearchIT/actions; remove the standard-owner and standard-repo inputs."
           exit 1
+        env:
+          STANDARD: ${{ inputs.standard-owner }}/${{ inputs.standard-repo }}
+
+      - name: Note unused credentials
+        if: inputs.bot-id != ''
+        shell: bash
+        run: |
+          echo "::notice title=Unused Input::The bot-id input and bot-key secret are no longer needed by check-ruleset and can be removed from the calling workflow."
 
       - name: Checkout Repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -75,23 +94,15 @@ jobs:
           persist-credentials: false
         timeout-minutes: 1
 
-      - name: Create Github App Token
-        id: mint-token
-        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+      - name: Fetch Standard Ruleset
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          client-id: ${{ inputs.bot-id }}
-          private-key: ${{ secrets.bot-key }}
-          owner: ${{ inputs.standard-owner }}
-          repositories: ${{ inputs.standard-repo }}
-          permission-contents: read
-        timeout-minutes: 1
-
-      - name: Fetch Standard Ruleset from ${{ inputs.standard-owner }}/${{ inputs.standard-repo }}
-        id: expected
-        uses: UoMResearchIT/actions/get-repo-ruleset@c62e71b7108986ca2d5c9338fb8f55061b18ac44 # v1.2.7
-        with:
-          repository: ${{ inputs.standard-owner }}/${{ inputs.standard-repo }}
-          token: ${{ steps.mint-token.outputs.token }}
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
+          path: .standard-ruleset
+          sparse-checkout: .github/standard-ruleset/ruleset.json
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
         timeout-minutes: 1
 
       - name: Fetch This Repository's Ruleset
@@ -103,6 +114,6 @@ jobs:
         uses: UoMResearchIT/actions/check-ruleset-containment@c62e71b7108986ca2d5c9338fb8f55061b18ac44 # v1.2.7
         with:
           current: ${{ steps.current.outputs.filename }}
-          expected: ${{ steps.expected.outputs.filename }}
+          expected: .standard-ruleset/.github/standard-ruleset/ruleset.json
           ignore: ${{ inputs.ignore }}
         timeout-minutes: 1
