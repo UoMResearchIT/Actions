@@ -37,9 +37,9 @@ function docker(args) {
  * @param {string} key Unique key.
  */
 function mainStep(key) {
-    const image_id = process.env.INPUT_IMAGE_ID;
-    const port = process.env.INPUT_PORT;
-    const run_args = process.env.INPUT_RUN_ARGS;
+    const image_id = process.env["INPUT_IMAGE-ID"];
+    const port = process.env["INPUT_PORT"];
+    const run_args = process.env["INPUT_RUN-ARGS"];
 
     if (image_id === undefined || image_id == "") {
         console.log(process.env); // DEBUG
