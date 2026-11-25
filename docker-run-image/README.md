@@ -30,9 +30,24 @@ Example usage:
 
   A port to map on the inside of the container to the outside (where the rest of the workflow can see it). **Optional.**
 
+  If you need a more complex mapping, including where the port inside the container is not the same as outside, use `run-args` instead.
+
 * `run-args`
 
   Extra arguments to pass to `docker run`. **Optional.**
+
+  For example, to pass an environment variable in:
+
+  ```yml
+    - uses: UoMResearchIT/actions/docker-run-image@main
+      with:
+        image-id: ${{ steps.make-image.outputs.image-id }}
+        port: 8080
+        run-args: --env FOO --env BAR
+      env:
+        FOO: some value
+        BAR: some other value
+  ```
 
 ## Outputs
 
