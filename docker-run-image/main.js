@@ -42,7 +42,6 @@ function mainStep(key) {
     const run_args = process.env["INPUT_RUN-ARGS"];
 
     if (image_id === undefined || image_id == "") {
-        console.log(process.env); // DEBUG
         throw new Error("no image-id provided");
     }
 
@@ -57,7 +56,7 @@ function mainStep(key) {
 
     // Build the command to run in an array
     let args = ["run", "-d", "--name", container];
-    if (port !== undefined) {
+    if (port !== undefined && port != "") {
         args.push("-p", `${port}:${port}`);
     }
     if (run_args !== undefined) {
