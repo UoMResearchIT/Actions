@@ -42,6 +42,7 @@ function mainStep(key) {
     const run_args = process.env.INPUT_RUN_ARGS;
 
     if (image_id === undefined || image_id == "") {
+        console.log(process.env); // DEBUG
         throw new Error("no image-id provided");
     }
 
