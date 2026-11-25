@@ -1,4 +1,4 @@
-// Copyright (c) 2025 The University of Manchester
+// Copyright (c) 2026 The University of Manchester
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -70,9 +70,7 @@ function mainStep(key) {
     }
     args.push(image_id);
 
-    console.log(`about to run 'docker ${args}'`);
-
-    // Call 'docker run'...
+    // Call 'docker run', and use its exit code as ours...
     process.exit(docker(args));
 }
 
