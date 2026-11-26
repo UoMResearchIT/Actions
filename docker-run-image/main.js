@@ -29,7 +29,7 @@ function docker(args) {
     if (result.error) {
         throw new Error(result.error);
     }
-    return result.status;
+    return result.status ?? 1;
 }
 
 /**
