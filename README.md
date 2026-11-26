@@ -31,6 +31,8 @@ These are intended for use in many types of project, wherever relevant.
 
 * [`docker-publish-to-ghcr`](docker-publish-to-ghcr) publishes a workflow-local Docker image to the Github container registry.
 
+* [`docker-run-image`](docker-run-image) runs a (probably workflow-local) Docker image in a temporary container.
+
 * [`docker-web-smoke-test`](docker-web-smoke-test) builds and starts a Docker image of a web app, then checks it responds over HTTP, with bundled checks for FastAPI, Flask, R Shiny, Streamlit and static sites.
 
 * [`secret-scanner`](secret-scanner) detects secrets such as API keys that have been inadvertently published.
