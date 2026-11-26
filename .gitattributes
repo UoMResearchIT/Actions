@@ -13,3 +13,4 @@
 # limitations under the License.
 *.yml linguist-detectable
 *.yaml linguist-detectable
+*.bash text eol=lf

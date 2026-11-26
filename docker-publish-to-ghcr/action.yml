@@ -64,29 +64,43 @@ runs:
     - name: Log in to the Container registry
       id: login
       if: env.uomRIT_docker_login != inputs.actor
-      uses: docker/login-action@v3
+      uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
       with:
         registry: ghcr.io
         username: ${{ inputs.actor }}
         password: ${{ inputs.token || github.token }}
     - name: Record that we've logged in
       if: steps.login.outcome == 'success'
-      shell: bash
-      run: echo "uomRIT_docker_login=$ACTOR" >> $GITHUB_ENV
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      with:
+        script: |
+          core.exportVariable('uomRIT_docker_login', process.env.ACTOR)
       env:
         ACTOR: ${{ inputs.actor }}
 
     - name: Determine container name
       id: derive-names
-      shell: bash
-      run: python $GITHUB_ACTION_PATH/container-name.py
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      with:
+        script: |
+          let ctr = process.env.CONTAINER;
+          if (ctr == '') {
+            ctr = context.repo.repo;
+            console.log(`determined container name to be ${ctr}`);
+          }
+          ctr = ctr.toLowerCase();
+          let ns = process.env.NAMESPACE.toLowerCase();
+          core.setOutput('container', ctr);
+          core.setOutput('handle', `ghcr.io/${ns}/${ctr}:${process.env.VERSION}`);
       env:
         CONTAINER: ${{ inputs.container-name }}
         NAMESPACE: ${{ inputs.namespace-name }}
         VERSION: ${{ inputs.version }}
 
     - name: Push versioned
-      run: $GITHUB_ACTION_PATH/push.bash
+      run: |
+        docker image tag "${IMAGEID:-${CONTAINER}:${SRCTAG}}" "$HANDLE"
+        docker image push "$HANDLE"
       shell: bash
       env:
         CONTAINER: ${{ steps.derive-names.outputs.container }}

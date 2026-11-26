@@ -22,3 +22,5 @@ updates:
       interval: "weekly"
     assignees:
       - dkfellows
+    cooldown:
+      default-days: 7

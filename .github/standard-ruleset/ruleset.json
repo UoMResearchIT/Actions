@@ -1,0 +1,38 @@
+[
+  {
+    "type": "branch_name_pattern",
+    "parameters": {
+      "operator": "regex",
+      "pattern": "^(copilot\\/)?[a-z0-9]+(-[a-z0-9]+)*$",
+      "negate": false,
+      "name": "Enforces the lower case, dash separated naming convention of branches but allows copilot \"folder\""
+    }
+  },
+  {
+    "type": "deletion",
+    "parameters": null
+  },
+  {
+    "type": "non_fast_forward",
+    "parameters": null
+  },
+  {
+    "type": "pull_request",
+    "parameters": {
+      "required_approving_review_count": 1,
+      "dismiss_stale_reviews_on_push": true,
+      "required_reviewers": [],
+      "require_code_owner_review": false,
+      "dismissal_restriction": {
+        "enabled": false,
+        "allowed_actors": []
+      },
+      "require_last_push_approval": false,
+      "required_review_thread_resolution": true,
+      "require_extra_approval_for_unattributed_changes": true,
+      "allowed_merge_methods": [
+        "merge"
+      ]
+    }
+  }
+]

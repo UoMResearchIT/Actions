@@ -1,0 +1,45 @@
+# GitHub Actions Workflow: Enforce Handbook Naming Conventions for Branches
+#
+# This workflow checks whether the given branch name complies with the Handbook
+# Naming Conventions. If it doesn't, the workflow exits with an error.
+# Dependabot branches are skipped.
+
+# Copyright (c) 2025-2026 The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Enforce Handbook Naming Conventions for Branches
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        type: string
+        required: true
+        description: >
+          The name of the branch. Try the github.head_ref if this is for a pull request.
+
+jobs:
+  check-branch-name-conventions:
+    if: ${{ !startsWith(inputs.branch, 'dependabot/') }}
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: Check branch name
+        run: |
+          if [[ ! "$BRANCH" =~ ^(copilot\/)?[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
+            echo "::error title=Bad Branch Name::Branch name '$BRANCH' does not follow the naming convention established in the RSE Agile Method Handbook."
+            exit 1
+          fi
+        env:
+          BRANCH: ${{ inputs.branch }}

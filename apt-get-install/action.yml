@@ -41,4 +41,4 @@ runs:
     env:
       PACKAGES: ${{ inputs.packages }}
       CFGFILE: ${{ github.action_path }}/apt.conf
-    run: sudo apt-get -c "$CFGFILE" install $PACKAGES
+    run: $GITHUB_ACTION_PATH/install.bash

@@ -46,19 +46,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
     - name: REUSE Compliance Check
-      uses: UoMResearchIT/reuse@v1.0
+      uses: UoMResearchIT/actions/reuse@v1.2.7
 ```
 
 If you would like to run other subcommands, you could use the following snippet which outputs a the SPDX bill of materials:
 
 ```yml
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
     - name: REUSE SPDX SBOM
-      uses: UoMResearchIT/reuse@v1.0
+      uses: UoMResearchIT/actions/reuse@v1.2.7
       with:
         args: spdx
 ```
@@ -67,9 +67,9 @@ In the same fashion, it is possible to add optional arguments like `--include-su
 
 ```yml
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
     - name: REUSE Compliance Check
-      uses: UoMResearchIT/reuse@v1.0
+      uses: UoMResearchIT/actions/reuse@v1.2.7
       with:
         args: --include-submodules lint
 ```
@@ -122,6 +122,11 @@ In the same fashion, it is possible to add optional arguments like `--include-su
   The branch to check out the `reuse-tool` from.
   **Optional.** _Very_ rarely required.
 
+* `image-tag`
+
+  The tag of the `reuse-tool` image to pull.
+  **Optional.** Defaults to `1.0.0`.
+  
 ## Outputs
 None
 

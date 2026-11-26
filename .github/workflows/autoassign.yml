@@ -18,15 +18,17 @@ run-name: "Assign issue #${{ github.event.issue.id }} to default assignee"
 on:
   issues:
     types: [opened]
+permissions: {}
 jobs:
   auto-assign:
+    name: Assign Issue to default assignee
     if: vars.DEFAULT_ISSUE_ASSIGNEE != ''
     runs-on: ubuntu-latest
     permissions:
       issues: write
     steps:
       - name: 'Auto-assign issue'
-        uses: pozil/auto-assign-issue@39c06395cbac76e79afc4ad4e5c5c6db6ecfdd2e
+        uses: pozil/auto-assign-issue@d6e511896e5f1d2408e74db74416647d8ff80c8c # v4.1.0
         with:
           abortIfPreviousAssignees: true
           assignees: ${{ vars.DEFAULT_ISSUE_ASSIGNEE }}

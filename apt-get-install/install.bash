@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Copyright (c) 2025 The University of Manchester
+# Copyright (c) 2026 The University of Manchester
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,5 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-docker image tag "${IMAGEID:-${CONTAINER}:${SRCTAG}}" "$HANDLE" || exit 1
-docker image push "$HANDLE" || exit 1
+set -e
+
+C='\033[0;33m'
+NC='\033[0m'
+
+echo -e "${C}====== DOWNLOADING PACKAGES ======${NC}"
+sudo apt-get -c "$CFGFILE" install --download-only $PACKAGES
+
+echo -e "${C}====== INSTALLING PACKAGES ======${NC}"
+sudo apt-get -c "$CFGFILE" install $PACKAGES

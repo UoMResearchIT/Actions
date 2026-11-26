@@ -65,12 +65,17 @@ branding:
 runs:
   using: composite
   steps:
+    - name: Check version sanity
+      shell: bash
+      run: $GITHUB_ACTION_PATH/checkver.bash
+      env:
+        IN_VERSION: ${{ inputs.version }}
     - name: Cache RAT
       id: cache
-      uses: actions/cache@v5
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ${{ github.action_path }}/apache-rat-${{ inputs.version }}
-        key: apache-rat-${{ inputs.version }}
+        key: apache-rat-${{ inputs.version }}/${{ github.ref }}
     - name: Download RAT
       if: steps.cache.outputs.cache-hit != 'true'
       run: $GITHUB_ACTION_PATH/download.bash

@@ -1,0 +1,14 @@
+{
+  "name": "create-release-dev",
+  "private": true,
+  "description": "Development-only: type-checks release.js. Not needed to use the action.",
+  "license": "Apache-2.0",
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "devDependencies": {
+    "@types/github-script": "github:actions/github-script#3a2844b7e9c422d3c10d287c895573f7108da1b3",
+    "@types/node": "^22.20.5",
+    "typescript": "^7.0.2"
+  }
+}
