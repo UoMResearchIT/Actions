@@ -10,5 +10,8 @@
     "@types/github-script": "github:actions/github-script#3a2844b7e9c422d3c10d287c895573f7108da1b3",
     "@types/node": "^22.20.5",
     "typescript": "^7.0.2"
+  },
+  "overrides": {
+    "undici": "6.29.1"
   }
 }
